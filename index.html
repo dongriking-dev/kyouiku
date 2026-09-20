@@ -1,0 +1,4972 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学びの広場 - 学習質問掲示板</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='56' height='56' rx='8' fill='%231d4ed8'/%3E%3Crect x='8' y='8' width='48' height='48' rx='4' fill='%232563eb'/%3E%3Cpath d='M20 22h24M20 30h24M20 38h16' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='44' cy='44' r='10' fill='%23fbbf24'/%3E%3Cpath d='M40 44l3 3 6-6' stroke='%231f2937' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .threads-scroll { max-height: 560px; overflow-y: auto; scrollbar-width: thin; }
+    .post-number { font-weight: 700; color: #1d4ed8; }
+    .post-author { color: #15803d; font-weight: 600; }
+    .loading-spinner {
+      display: inline-block; width: 1rem; height: 1rem;
+      border: 2px solid #f3f3f3; border-top: 2px solid #1d4ed8;
+      border-radius: 50%; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .optimistic-item { opacity: 0.55; pointer-events: none; position: relative; }
+    .optimistic-item::after {
+      content: "送信中..."; position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%); font-size: 10px; color: #1d4ed8;
+      background: #eff6ff; padding: 2px 6px; border-radius: 4px; border: 1px solid #bfdbfe;
+    }
+    .optimistic-post { opacity: 0.6; border-left: 3px solid #f59e0b !important; }
+    #statusBanner {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+      text-align: center; padding: 6px; font-size: 12px;
+      transition: transform 0.3s; transform: translateY(-100%);
+    }
+    #statusBanner.show { transform: translateY(0); }
+    .admin-badge {
+      background: #7c2d12; color: #fff; font-size: 10px; padding: 2px 6px;
+      border-radius: 4px; margin-left: 6px;
+    }
+    .owner-badge {
+      background: #1e40af; color: #fff; font-size: 10px; padding: 2px 6px;
+      border-radius: 4px; margin-left: 6px;
+    }
+    .vip-badge {
+      background: #7c3aed; color: #fff; font-size: 10px; padding: 2px 6px;
+      border-radius: 4px; margin-left: 6px;
+    }
+    .op-badge {
+      background: #b45309; color: #fff; font-size: 10px; padding: 2px 6px;
+      border-radius: 4px; margin-left: 4px; font-weight: 700;
+    }
+    .role-post-badge {
+      color: #fff; font-size: 10px; padding: 2px 6px;
+      border-radius: 4px; margin-left: 4px; font-weight: 700;
+    }
+    .role-post-badge.admin { background: #7c2d12; }
+    .role-post-badge.owner { background: #1e40af; }
+    .role-post-badge.vip   { background: #7c3aed; }
+    .custom-badge {
+      color: #fff; font-size: 10px; padding: 2px 6px;
+      border-radius: 4px; margin-left: 4px; font-weight: 700;
+      display: inline-block;
+    }
+    .admin-email {
+      background: #fef3c7; color: #92400e; font-size: 11px; padding: 2px 6px;
+      border-radius: 4px; font-family: monospace;
+    }
+    .delete-btn {
+      background: #dc2626; color: #fff; font-size: 11px; padding: 3px 10px;
+      border-radius: 4px; cursor: pointer; border: none;
+    }
+    .delete-btn:hover { background: #b91c1c; }
+    .delete-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+    .reply-btn {
+      background: #2563eb; color: #fff; font-size: 11px; padding: 3px 10px;
+      border-radius: 4px; cursor: pointer; border: none;
+    }
+    .reply-btn:hover { background: #1d4ed8; }
+    .badge-manage-btn {
+      background: #a16207; color: #fff; font-size: 11px; padding: 3px 10px;
+      border-radius: 4px; cursor: pointer; border: none;
+    }
+    .badge-manage-btn:hover { background: #854d0e; }
+    .ban-btn {
+      background: #111827; color: #fff; font-size: 11px; padding: 3px 10px;
+      border-radius: 4px; cursor: pointer; border: none;
+    }
+    .ban-btn:hover { background: #374151; }
+    .banned-mark {
+      background: #991b1b; color: #fff; font-size: 10px; padding: 2px 6px;
+      border-radius: 4px; margin-left: 4px; font-weight: 700;
+    }
+    .reply-cancel-btn {
+      background: #6b7280; color: #fff; font-size: 11px; padding: 3px 10px;
+      border-radius: 4px; cursor: pointer; border: none;
+    }
+    .reply-cancel-btn:hover { background: #4b5563; }
+    .backup-btn {
+      background: #059669; color: #fff; font-size: 11px; padding: 6px 12px;
+      border-radius: 4px; cursor: pointer; border: none; font-weight: 600;
+    }
+    .backup-btn:hover { background: #047857; }
+    .restore-btn {
+      background: #0891b2; color: #fff; font-size: 11px; padding: 6px 12px;
+      border-radius: 4px; cursor: pointer; border: none; font-weight: 600;
+    }
+    .restore-btn:hover { background: #0e7490; }
+    .banlist-btn {
+      background: #7f1d1d; color: #fff; font-size: 11px; padding: 6px 12px;
+      border-radius: 4px; cursor: pointer; border: none; font-weight: 600;
+    }
+    .banlist-btn:hover { background: #991b1b; }
+    .userlist-btn {
+      background: #0369a1; color: #fff; font-size: 11px; padding: 6px 12px;
+      border-radius: 4px; cursor: pointer; border: none; font-weight: 600;
+    }
+    .userlist-btn:hover { background: #075985; }
+    .pending-btn {
+      background: #b45309; color: #fff; font-size: 11px; padding: 6px 12px;
+      border-radius: 4px; cursor: pointer; border: none; font-weight: 700;
+      position: relative;
+    }
+    .pending-btn:hover { background: #92400e; }
+    .pending-btn.has-pending {
+      background: #dc2626;
+      animation: pulseRed 1.5s infinite;
+    }
+    @keyframes pulseRed {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.7); }
+      50% { box-shadow: 0 0 0 8px rgba(220,38,38,0); }
+    }
+    .publish-btn {
+      background: #7c3aed; color: #fff; font-size: 11px; padding: 6px 12px;
+      border-radius: 4px; cursor: pointer; border: none; font-weight: 700;
+    }
+    .publish-btn:hover { background: #6d28d9; }
+    .publish-btn.unpublished {
+      background: #16a34a;
+    }
+    .publish-btn.unpublished:hover { background: #15803d; }
+
+    .lockdown-btn {
+      background: #7f1d1d; color: #fff; font-size: 11px; padding: 6px 14px;
+      border-radius: 4px; cursor: pointer; border: 2px solid #fbbf24;
+      font-weight: 900; letter-spacing: 0.05em;
+      animation: pulseDark 1.8s infinite;
+    }
+    .lockdown-btn:hover { background: #991b1b; }
+    .lockdown-btn.active {
+      background: #dc2626;
+      border-color: #fef2f2;
+      animation: pulseRed 1.2s infinite;
+    }
+    @keyframes pulseDark {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.6); }
+      50% { box-shadow: 0 0 0 6px rgba(251,191,36,0); }
+    }
+
+    .alarm-btn {
+      background: #b91c1c; color: #fff; font-size: 11px; padding: 6px 14px;
+      border-radius: 4px; cursor: pointer; border: 2px solid #fde047;
+      font-weight: 900; letter-spacing: 0.05em;
+    }
+    .alarm-btn:hover { background: #dc2626; }
+    .alarm-btn.active {
+      background: #7c2d12;
+      border-color: #fca5a5;
+      animation: pulseRed 1.2s infinite;
+    }
+
+    #alarmToast {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 99999;
+      max-width: 380px;
+      min-width: 280px;
+      background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%);
+      border: 3px solid #fde047;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 30px rgba(220,38,38,0.6);
+      color: #fff;
+      font-family: sans-serif;
+      padding: 14px 16px;
+      display: none;
+      animation: alarmToastSlide 0.4s ease-out, alarmToastPulse 1.8s infinite;
+      pointer-events: auto;
+    }
+    #alarmToast.show { display: block; }
+    @keyframes alarmToastSlide {
+      from { transform: translateX(120%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes alarmToastPulse {
+      0%, 100% { box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 30px rgba(220,38,38,0.6); }
+      50% { box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 45px rgba(253,224,71,0.8); }
+    }
+    #alarmToast .alarm-toast-head {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid rgba(253,224,71,0.4);
+      padding-bottom: 6px;
+    }
+    #alarmToast .alarm-toast-icon {
+      font-size: 24px;
+      animation: alarmIconShake 0.6s infinite;
+      filter: drop-shadow(0 0 8px #fde047);
+    }
+    @keyframes alarmIconShake {
+      0%, 100% { transform: rotate(-12deg); }
+      50% { transform: rotate(12deg); }
+    }
+    #alarmToast .alarm-toast-title {
+      font-size: 15px; font-weight: 900;
+      letter-spacing: 0.1em;
+      color: #fde047;
+      text-shadow: 0 0 10px rgba(253,224,71,0.8);
+    }
+    #alarmToast .alarm-toast-body {
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    #alarmToast .alarm-toast-body .row {
+      display: flex; gap: 6px;
+      margin-bottom: 4px;
+    }
+    #alarmToast .alarm-toast-body .label {
+      color: #fde047; font-weight: 700;
+      white-space: nowrap;
+    }
+    #alarmToast .alarm-toast-body .value {
+      color: #fff;
+      word-break: break-word;
+    }
+    #alarmToast .alarm-toast-footer {
+      margin-top: 8px;
+      font-size: 10px;
+      color: #fecaca;
+      font-family: monospace;
+      text-align: right;
+      opacity: 0.8;
+    }
+
+    .post-card {
+      background: #fff;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .post-card.banned-post {
+      opacity: 0.5;
+      border-left: 3px solid #111827;
+    }
+    .post-children {
+      margin-left: 20px;
+      padding-left: 12px;
+      border-left: 2px solid #fbbf24;
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .post-tree { display: flex; flex-direction: column; gap: 8px; }
+    .inline-reply-box {
+      margin-top: 8px;
+      padding: 10px;
+      background: #fffbeb;
+      border: 1px dashed #fbbf24;
+      border-radius: 6px;
+    }
+    .inline-reply-box textarea {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      padding: 6px;
+      font-size: 13px;
+      outline: none;
+      resize: vertical;
+      min-height: 60px;
+    }
+    .inline-reply-box textarea:focus {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 2px rgba(239,68,68,0.15);
+    }
+    .reply-target-label {
+      font-size: 11px;
+      color: #92400e;
+      background: #fef3c7;
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+    .post-file {
+      margin-top: 8px;
+      padding: 8px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      border-radius: 6px;
+    }
+    .post-file img {
+      max-height: 320px;
+      max-width: 100%;
+      border-radius: 4px;
+      border: 1px solid #e5e7eb;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .post-file a {
+      font-size: 12px;
+      color: #2563eb;
+      text-decoration: underline;
+      word-break: break-all;
+    }
+    input[type="file"]::file-selector-button {
+      background-color: #e5e7eb;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.75rem;
+      margin-right: 0.5rem;
+      cursor: pointer;
+    }
+    input[type="file"]::file-selector-button:hover { background-color: #d1d5db; }
+    .preview-box {
+      margin-top: 8px;
+      padding: 8px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 6px;
+      background: #f8fafc;
+      display: none;
+    }
+    .preview-box.show { display: block; }
+    .preview-box img { max-height: 160px; border-radius: 4px; }
+    .preview-info { font-size: 11px; color: #64748b; margin-top: 4px; }
+    .badge-toggle-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #374151;
+      margin-left: 6px;
+      background: #f3f4f6;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid #e5e7eb;
+      cursor: pointer;
+      user-select: none;
+    }
+    .badge-toggle-wrap input { cursor: pointer; }
+
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10000; padding: 16px;
+    }
+    .modal-backdrop.hidden { display: none; }
+    .modal-content {
+      background: #fff; border-radius: 8px; padding: 20px;
+      max-width: 560px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      max-height: 90vh; overflow-y: auto;
+    }
+    .color-swatch-row {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;
+    }
+    .color-swatch {
+      width: 28px; height: 28px; border-radius: 6px; cursor: pointer;
+      border: 2px solid transparent;
+    }
+    .color-swatch.selected {
+      border-color: #111827;
+      box-shadow: 0 0 0 2px #fff inset;
+    }
+    .badge-list-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px;
+      background: #f9fafb; margin-bottom: 6px;
+    }
+    .badge-list-item .badge-chip-wrap { flex: 1; min-width: 0; }
+    .badge-list-item .btn-mini {
+      font-size: 11px; padding: 3px 8px; border-radius: 4px;
+      border: none; cursor: pointer; color: #fff;
+    }
+    .badge-list-item .btn-edit { background: #2563eb; }
+    .badge-list-item .btn-edit:hover { background: #1d4ed8; }
+    .badge-list-item .btn-del { background: #dc2626; }
+    .badge-list-item .btn-del:hover { background: #b91c1c; }
+    .add-badge-btn {
+      background: #16a34a; color: #fff; font-size: 12px;
+      padding: 6px 12px; border-radius: 4px; border: none; cursor: pointer;
+      font-weight: 600;
+    }
+    .add-badge-btn:hover { background: #15803d; }
+    .editor-box {
+      border: 1px solid #fbbf24; background: #fffbeb;
+      border-radius: 6px; padding: 12px; margin-top: 10px;
+    }
+    .editor-box.hidden { display: none; }
+
+    .ban-list-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px; border: 1px solid #fecaca; border-radius: 6px;
+      background: #fef2f2; margin-bottom: 6px;
+      font-size: 12px;
+    }
+    .ban-list-row .info { flex: 1; min-width: 0; }
+    .ban-list-row .info .email-line {
+      font-family: monospace; font-size: 11px;
+      color: #991b1b; word-break: break-all;
+    }
+    .ban-list-row .info .meta-line {
+      font-size: 10px; color: #6b7280; margin-top: 2px;
+      word-break: break-all;
+    }
+    .ban-list-row .unban-btn {
+      background: #16a34a; color: #fff; font-size: 11px;
+      padding: 4px 10px; border-radius: 4px; border: none;
+      cursor: pointer; white-space: nowrap;
+    }
+    .ban-list-row .unban-btn:hover { background: #15803d; }
+
+    .user-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px;
+      background: #f9fafb; margin-bottom: 6px; font-size: 12px;
+    }
+    .user-row .info { flex: 1; min-width: 0; }
+    .user-row .email-line {
+      font-family: monospace; font-size: 12px;
+      color: #1e40af; word-break: break-all; font-weight: 600;
+    }
+    .user-row .nickname-line {
+      font-size: 12px; margin-top: 2px;
+      color: #1d4ed8; font-weight: 700;
+      word-break: break-all;
+    }
+    .user-row .nickname-line .nickname-value {
+      background: #dbeafe; color: #1e3a8a;
+      padding: 1px 6px; border-radius: 4px;
+      display: inline-block;
+    }
+    .user-row .nickname-line .nickname-empty {
+      color: #9ca3af; font-weight: 400;
+    }
+    .user-row .meta-line {
+      font-size: 10px; color: #6b7280; margin-top: 2px;
+      word-break: break-all;
+    }
+    .user-row .role-tag {
+      font-size: 10px; padding: 2px 6px; border-radius: 4px;
+      color: #fff; font-weight: 700;
+    }
+    .user-row .role-tag.admin { background: #7c2d12; }
+    .user-row .role-tag.owner { background: #1e40af; }
+    .user-row .role-tag.vip   { background: #7c3aed; }
+    .user-row .role-tag.none  { background: #6b7280; }
+    .user-row .role-tag.banned { background: #991b1b; }
+    .user-row .action-btns { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; max-width: 220px; }
+    .user-row .btn-mini {
+      font-size: 10px; padding: 3px 8px; border-radius: 4px;
+      border: none; cursor: pointer; color: #fff; white-space: nowrap;
+    }
+    .user-row .btn-ban { background: #111827; }
+    .user-row .btn-ban:hover { background: #374151; }
+    .user-row .btn-unban { background: #16a34a; }
+    .user-row .btn-unban:hover { background: #15803d; }
+    .user-row .btn-copy { background: #6b7280; }
+    .user-row .btn-copy:hover { background: #4b5563; }
+    .user-row .btn-nickname { background: #1d4ed8; }
+    .user-row .btn-nickname:hover { background: #1e3a8a; }
+
+    .user-search-input {
+      width: 100%; border: 1px solid #d1d5db; padding: 8px;
+      border-radius: 6px; font-size: 13px; margin-bottom: 10px;
+      outline: none;
+    }
+    .user-search-input:focus {
+      border-color: #0369a1;
+      box-shadow: 0 0 0 2px rgba(3,105,161,0.15);
+    }
+
+    .pending-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px; border: 1px solid #fcd34d; border-radius: 6px;
+      background: #fffbeb; margin-bottom: 6px; font-size: 12px;
+    }
+    .pending-row .info { flex: 1; min-width: 0; }
+    .pending-row .email-line {
+      font-family: monospace; font-size: 12px;
+      color: #92400e; word-break: break-all; font-weight: 700;
+    }
+    .pending-row .meta-line {
+      font-size: 10px; color: #6b7280; margin-top: 2px;
+      word-break: break-all;
+    }
+    .pending-row .approve-btn {
+      background: #16a34a; color: #fff; font-size: 11px;
+      padding: 4px 10px; border-radius: 4px; border: none;
+      cursor: pointer; white-space: nowrap; font-weight: 700;
+    }
+    .pending-row .approve-btn:hover { background: #15803d; }
+    .pending-row .reject-btn {
+      background: #dc2626; color: #fff; font-size: 11px;
+      padding: 4px 10px; border-radius: 4px; border: none;
+      cursor: pointer; white-space: nowrap; font-weight: 700;
+    }
+    .pending-row .reject-btn:hover { background: #b91c1c; }
+
+    #banOverlay {
+      position: fixed; inset: 0; background: #000;
+      z-index: 99999; display: none;
+      align-items: center; justify-content: center;
+      color: #fff; text-align: center; font-family: sans-serif;
+      flex-direction: column; padding: 20px;
+    }
+    #banOverlay.show { display: flex; }
+    #banOverlay .ban-msg {
+      font-size: 24px; font-weight: bold;
+      letter-spacing: 0.1em;
+    }
+    #banOverlay .ban-sub {
+      font-size: 14px; margin-top: 16px; color: #fca5a5;
+      line-height: 1.6; max-width: 400px;
+    }
+    #banOverlay .ban-actions {
+      margin-top: 24px;
+      display: flex; gap: 12px; flex-wrap: wrap;
+      justify-content: center;
+    }
+    #banOverlay .ban-actions button {
+      font-size: 13px; padding: 10px 20px; border-radius: 6px;
+      border: none; cursor: pointer; font-weight: 600;
+      font-family: sans-serif;
+    }
+    #banOverlay .btn-switch-account {
+      background: #2563eb; color: #fff;
+    }
+    #banOverlay .btn-switch-account:hover {
+      background: #1d4ed8;
+    }
+
+    #unpublishedOverlay {
+      position: fixed; inset: 0;
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+      z-index: 99998;
+      display: none;
+      flex-direction: column;
+      border: 8px solid #1e3a8a;
+      box-shadow: inset 0 0 60px rgba(30, 58, 138, 0.3);
+      box-sizing: border-box;
+      overflow: auto;
+    }
+    #unpublishedOverlay.show { display: flex; }
+
+    #unpublishedOverlay .unp-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      text-align: center;
+      font-family: sans-serif;
+      color: #1e3a8a;
+    }
+
+    #unpublishedOverlay .unp-bar {
+      background: #1e3a8a;
+      color: #dbeafe;
+      font-size: 11px;
+      padding: 6px 14px;
+      font-family: monospace;
+      letter-spacing: 0.1em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #unpublishedOverlay .unp-bar::before {
+      content: "🔒";
+      font-size: 12px;
+    }
+
+    #unpublishedOverlay .unp-msg {
+      font-size: 48px; font-weight: bold;
+      letter-spacing: 0.05em;
+      text-shadow: 2px 2px 0 #fff, 4px 4px 0 rgba(0,0,0,0.1);
+      margin-bottom: 8px;
+    }
+    #unpublishedOverlay .unp-sub {
+      font-size: 15px; margin-top: 16px; color: #1e40af;
+      line-height: 1.8; max-width: 480px;
+    }
+    #unpublishedOverlay .unp-action {
+      margin-top: 36px;
+    }
+    #unpublishedOverlay .unp-go-btn {
+      background: #1e3a8a; color: #fff;
+      font-size: 20px; padding: 16px 56px; border-radius: 10px;
+      border: none; cursor: pointer; font-weight: 700;
+      font-family: sans-serif;
+      box-shadow: 0 5px 0 #172554;
+      transition: transform 0.1s, box-shadow 0.1s;
+      letter-spacing: 0.1em;
+    }
+    #unpublishedOverlay .unp-go-btn:hover {
+      background: #172554;
+    }
+    #unpublishedOverlay .unp-go-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #172554;
+    }
+    #unpublishedOverlay .unp-footer {
+      margin-top: 24px;
+      font-size: 11px;
+      color: #3b82f6;
+      font-family: monospace;
+      letter-spacing: 0.05em;
+    }
+
+    #siteRules { transition: box-shadow 0.2s; }
+    #siteRules.collapsed #rulesContent { display: none; }
+    #siteRules.collapsed #rulesToggleIcon { transform: rotate(-90deg); }
+    #rulesToggleIcon { transition: transform 0.2s; display: inline-block; }
+
+    #bootOverlay {
+      position: fixed; inset: 0; background: #111827;
+      z-index: 99997; display: flex;
+      align-items: center; justify-content: center;
+      color: #fff; font-family: sans-serif;
+      flex-direction: column; gap: 16px;
+    }
+    #bootOverlay.hidden { display: none; }
+    #bootOverlay .boot-msg {
+      font-size: 14px; color: #9ca3af;
+    }
+    #bootOverlay .boot-spinner {
+      width: 40px; height: 40px;
+      border: 3px solid #374151;
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    body {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    input, textarea, [contenteditable="true"] {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
+
+    .badge-feature-list {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #4b5563;
+      background: #f3f4f6;
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid #e5e7eb;
+    }
+    .badge-feature-list .feat-tag {
+      display: inline-block;
+      background: #e5e7eb;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      margin: 2px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .badge-feature-list .feat-tag.active {
+      background: #16a34a;
+      color: #fff;
+    }
+
+    #boardView { margin-top: 16px; }
+    .board-card {
+      background: #fff;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border-left: 4px solid #1d4ed8;
+    }
+    .board-card .board-title {
+      font-weight: 700;
+      color: #1e3a8a;
+      font-size: 18px;
+    }
+    .board-card .board-meta {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+    .board-card .board-body {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #1f2937;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .board-card .board-img { margin-top: 10px; }
+    .board-card .board-img img {
+      max-height: 360px;
+      max-width: 100%;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+    }
+    .board-card .board-img a {
+      font-size: 12px;
+      color: #2563eb;
+      text-decoration: underline;
+      word-break: break-all;
+    }
+    .board-delete-btn {
+      background: #dc2626; color: #fff; font-size: 11px; padding: 3px 10px;
+      border-radius: 4px; cursor: pointer; border: none;
+    }
+    .board-delete-btn:hover { background: #b91c1c; }
+
+    .board-publish-btn {
+      background: #1d4ed8; color: #fff; font-size: 12px; padding: 8px 18px;
+      border-radius: 6px; border: none; cursor: pointer; font-weight: 700;
+    }
+    .board-publish-btn:hover { background: #1e40af; }
+    .board-publish-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+
+    .board-form-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .board-readonly-note {
+      font-size: 12px;
+      color: #1e40af;
+      background: #dbeafe;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 16px;
+    }
+
+    /* ===== 教科タブ ===== */
+    .subject-tabs {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-bottom: 16px;
+      padding: 8px;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+    .subject-tab {
+      padding: 8px 18px;
+      border-radius: 9999px;
+      border: 2px solid #e5e7eb;
+      background: #f9fafb;
+      color: #4b5563;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .subject-tab:hover {
+      background: #f3f4f6;
+      border-color: #d1d5db;
+    }
+    .subject-tab.active {
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .subject-tab[data-subject="all"].active { background: #111827; }
+    .subject-tab[data-subject="math"].active { background: #1d4ed8; }
+    .subject-tab[data-subject="science"].active { background: #059669; }
+    .subject-tab[data-subject="social"].active { background: #b45309; }
+    .subject-tab[data-subject="japanese"].active { background: #dc2626; }
+    .subject-tab[data-subject="english"].active { background: #7c3aed; }
+    .subject-tab[data-subject="other"].active { background: #6b7280; }
+
+    .subject-tab .tab-count {
+      display: inline-block;
+      background: rgba(0,0,0,0.1);
+      padding: 1px 7px;
+      border-radius: 9999px;
+      font-size: 10px;
+      margin-left: 4px;
+    }
+    .subject-tab.active .tab-count {
+      background: rgba(255,255,255,0.3);
+    }
+
+    /* ===== 教科バッジ（スレッド・投稿） ===== */
+    .subject-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 9999px;
+      margin-right: 6px;
+      white-space: nowrap;
+    }
+    .subject-badge.math { background: #1d4ed8; }
+    .subject-badge.science { background: #059669; }
+    .subject-badge.social { background: #b45309; }
+    .subject-badge.japanese { background: #dc2626; }
+    .subject-badge.english { background: #7c3aed; }
+    .subject-badge.other { background: #6b7280; }
+
+    .subject-required-note {
+      font-size: 11px;
+      color: #b91c1c;
+      font-weight: 600;
+    }
+
+    .subject-select {
+      width: 100%;
+      border: 2px solid #d1d5db;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+    }
+    .subject-select:focus {
+      border-color: #1d4ed8;
+      box-shadow: 0 0 0 3px rgba(29,78,216,0.15);
+    }
+
+    .subject-select-big {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .subject-select-btn {
+      padding: 12px;
+      border-radius: 8px;
+      border: 2px solid #e5e7eb;
+      background: #fff;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .subject-select-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .subject-select-btn.selected {
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .subject-select-btn.selected[data-subject="math"] { background: #1d4ed8; }
+    .subject-select-btn.selected[data-subject="science"] { background: #059669; }
+    .subject-select-btn.selected[data-subject="social"] { background: #b45309; }
+    .subject-select-btn.selected[data-subject="japanese"] { background: #dc2626; }
+    .subject-select-btn.selected[data-subject="english"] { background: #7c3aed; }
+    .subject-select-btn.selected[data-subject="other"] { background: #6b7280; }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans p-4 max-w-5xl mx-auto">
+
+  <div id="bootOverlay">
+    <div class="boot-spinner"></div>
+    <div class="boot-msg">アカウントを確認しています...</div>
+  </div>
+
+  <div id="alarmToast">
+    <div class="alarm-toast-head">
+      <span class="alarm-toast-icon">🚨</span>
+      <span class="alarm-toast-title">警 報 発 令 中</span>
+    </div>
+    <div class="alarm-toast-body">
+      <div class="row">
+        <span class="label">理由:</span>
+        <span class="value" id="alarmToastReason">緊急対応</span>
+      </div>
+      <div class="row">
+        <span class="label">発令者:</span>
+        <span class="value" id="alarmToastIssuer">管理者</span>
+      </div>
+    </div>
+    <div class="alarm-toast-footer">SYSTEM ALARM / 学びの広場</div>
+  </div>
+
+  <div id="unpublishedOverlay">
+    <div class="unp-bar">SECURE FRAME / SITE PAUSED</div>
+    <div class="unp-center">
+      <div class="unp-msg">ちょっと待って！</div>
+      <div class="unp-sub" id="unpublishedSub">現在このサイトは非公開です。<br>もうしばらくお待ちください。</div>
+      <div class="unp-action">
+        <button class="unp-go-btn" id="unpGoBtn">了解</button>
+      </div>
+      <div class="unp-footer">© 学びの広場 / overlay mode</div>
+    </div>
+  </div>
+
+  <div id="siteRules" class="collapsed bg-white border-2 border-blue-800 rounded-lg shadow mb-4 overflow-hidden">
+    <button id="rulesToggleBtn"
+      class="w-full bg-blue-900 hover:bg-blue-800 text-white text-left px-4 py-3 flex items-center justify-between transition">
+      <span class="font-bold text-base flex items-center gap-2">
+        📜 学びの広場 利用ルール
+      </span>
+      <span id="rulesToggleIcon" class="text-xl">▼</span>
+    </button>
+    <div id="rulesContent" class="px-4 py-4 text-sm text-gray-800 leading-relaxed">
+      <ol class="list-decimal list-inside space-y-2">
+        <li><strong class="text-blue-900">Googleログイン必須</strong><br>当サイトのご利用にはGoogleアカウントでのログインが必要です。投稿は匿名で表示されます。</li>
+        <li><strong class="text-blue-900">初回ログインは承認制</strong><br>初めて当サイトを利用する場合、管理者または主による承認が必要です。承認されるまでサイトをご利用いただけません。荒らし防止のためです。</li>
+        <li><strong class="text-blue-900">禁止事項</strong>
+          <ul class="list-disc list-inside ml-4 mt-1 space-y-1 text-gray-700">
+            <li>他の利用者への誹謗中傷・脅迫・嫌がらせ</li>
+            <li>荒らし行為（連投・意味のない投稿の繰り返し）</li>
+            <li>個人情報の公開（自分や他人の住所・電話番号・顔写真など）</li>
+          </ul>
+        </li>
+        <li><strong class="text-blue-900">投稿内容の責任</strong><br>投稿内容は投稿者自身の責任です。運営は投稿内容について一切の責任を負いません。</li>
+        <li><strong class="text-blue-900">運営による削除・BAN</strong><br>限度を超えたと判断された場合、予告なく投稿の削除・アカウントのBAN（利用停止）を行うことがあります。BANされた場合、当サイトへのアクセスが拒否されます。</li>
+        <li><strong class="text-blue-900">記録される情報</strong><br>運営は以下の情報を記録しています。これらの情報は管理者・主のみが閲覧でき、一般利用者には公開されません。
+          <ul class="list-disc list-inside ml-4 mt-1 space-y-1 text-gray-700">
+            <li>Googleアカウントのメールアドレス</li>
+            <li>ログイン日時</li>
+            <li>デバイス情報（ブラウザ・OS等を組み合わせた識別子）</li>
+          </ul>
+        </li>
+        <li><strong class="text-blue-900">免責事項</strong><br>当サイトの利用によって生じたいかなる損害についても、運営は責任を負いません。予告なくサービスを変更・終了する場合があります。</li>
+        <li><strong class="text-blue-900">ルールの変更</strong><br>本ルールは予告なく変更されることがあります。変更後も利用を継続した場合、変更内容に同意したものとみなします。</li>
+      </ol>
+      <p class="mt-4 text-xs text-gray-500 text-right">最終更新: 2026年9月</p>
+    </div>
+  </div>
+
+  <div id="banOverlay">
+    <div class="ban-msg" id="banOverlayMsg">アクセスが拒否されました</div>
+    <div class="ban-sub" id="banOverlaySub"></div>
+    <div class="ban-actions" id="banOverlayActions" style="display:none;">
+      <button class="btn-switch-account" id="switchAccountBtn">別のGoogleアカウントでログイン</button>
+    </div>
+  </div>
+
+  <div id="statusBanner" class="bg-red-600 text-white"></div>
+
+  <div id="publishModal" class="modal-backdrop hidden">
+    <div class="modal-content">
+      <h3 class="text-lg font-bold text-gray-800 mb-1">🌐 サイト公開設定</h3>
+      <p class="text-xs text-gray-500 mb-4">非公開にすると、一般ユーザー・VIPの画面に「ちょっと待って！」Frameが被さります。<br>管理者・主は通常通りサイトを使えます。</p>
+      <div class="mb-4 p-3 bg-gray-50 rounded border border-gray-200">
+        <p class="text-xs text-gray-600 mb-1">現在のステータス:</p>
+        <p id="publishStatusLabel" class="text-sm font-bold">公開中</p>
+      </div>
+      <label class="block text-xs text-gray-600 mb-1">飛び先URL（非公開時に「何？」ボタンで飛ぶURL）:</label>
+      <input type="url" id="publishUrlInput" placeholder="https://example.com/" class="w-full border p-2 rounded text-sm mb-3 font-mono">
+      <div class="flex justify-end gap-2 flex-wrap">
+        <button id="publishCancelBtn" class="reply-cancel-btn">キャンセル</button>
+        <button id="publishSaveUrlBtn" class="bg-blue-700 hover:bg-blue-800 text-white text-xs py-1.5 px-4 rounded font-bold">URLを保存</button>
+        <button id="publishToggleBtn" class="publish-btn">非公開にする</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="alarmModal" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 520px; border-top: 6px solid #b91c1c;">
+      <h3 class="text-lg font-bold text-red-800 mb-1">🚨 手動警報を発令</h3>
+      <p class="text-xs text-gray-500 mb-4">
+        全ユーザー（未ログイン含む）の画面右上に警報トーストを表示します。<br>
+        管理者・主は影響を受けません。
+      </p>
+      <label class="block text-xs text-gray-600 mb-1">発令理由（任意・全員に表示されます）:</label>
+      <input type="text" id="alarmReasonInput" maxlength="80" placeholder="例: 荒らし対応中です。しばらくお待ちください。" class="w-full border p-2 rounded text-sm mb-3">
+      <div class="flex justify-end gap-2 flex-wrap">
+        <button id="alarmCancelBtn" class="reply-cancel-btn">キャンセル</button>
+        <button id="alarmFireBtn" class="bg-red-700 hover:bg-red-800 text-white text-xs py-2 px-5 rounded font-bold">🚨 警報を発令する</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="badgeModal" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 620px;">
+      <h3 class="text-lg font-bold text-gray-800 mb-1">🏷️ バッジ管理（機能設定可能）</h3>
+      <p class="text-xs text-gray-500 mb-4">
+        対象: <span id="badgeTargetEmail" class="admin-email"></span>
+      </p>
+
+      <div class="mb-3">
+        <p class="text-xs font-bold text-gray-600 mb-2">現在のバッジ:</p>
+        <div id="badgeListContainer">
+          <p class="text-xs text-gray-400">（なし）</p>
+        </div>
+      </div>
+
+      <button id="addBadgeBtn" class="add-badge-btn w-full mb-3">＋ 新しいバッジを追加</button>
+
+      <div id="badgeEditor" class="editor-box hidden">
+        <p class="text-xs font-bold text-gray-700 mb-2" id="badgeEditorTitle">新しいバッジ</p>
+
+        <label class="block text-xs text-gray-600 mb-1">バッジ名（最大12文字）:</label>
+        <input type="text" id="badgeLabelInput" maxlength="12" placeholder="例: 常連 / 荒らし / 神" class="w-full border p-2 rounded text-sm mb-3">
+
+        <label class="block text-xs text-gray-600 mb-1">バッジ色:</label>
+        <div class="color-swatch-row mb-3" id="badgeColorRow"></div>
+        <div class="flex items-center gap-2 mb-3">
+          <input type="color" id="badgeColorPicker" value="#ef4444" class="w-10 h-8 border rounded cursor-pointer">
+          <input type="text" id="badgeColorText" value="#ef4444" maxlength="7" class="flex-1 border p-2 rounded text-sm font-mono">
+        </div>
+
+        <div class="mb-3">
+          <p class="text-xs text-gray-600 mb-1">プレビュー:</p>
+          <span id="badgePreviewChip" class="custom-badge" style="background:#ef4444;">バッジ</span>
+        </div>
+
+        <div class="mb-3 p-3 bg-gray-50 rounded border border-gray-200">
+          <p class="text-xs font-bold text-gray-700 mb-2">⚙️ バッジに付与する機能（複数選択可）</p>
+          <div class="space-y-1">
+            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+              <input type="checkbox" class="badge-feature-checkbox" value="canDeletePost" data-feature="canDeletePost">
+              <span>🗑️ 投稿削除権限（レス削除）</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+              <input type="checkbox" class="badge-feature-checkbox" value="canDeleteThread" data-feature="canDeleteThread">
+              <span>🧵 スレッド削除権限</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+              <input type="checkbox" class="badge-feature-checkbox" value="canBan" data-feature="canBan">
+              <span>🚫 BAN権限</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+              <input type="checkbox" class="badge-feature-checkbox" value="canApprove" data-feature="canApprove">
+              <span>🔔 承認権限</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+              <input type="checkbox" class="badge-feature-checkbox" value="canPublish" data-feature="canPublish">
+              <span>🌐 公開設定権限</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+              <input type="checkbox" class="badge-feature-checkbox" value="canViewEmail" data-feature="canViewEmail">
+              <span>📧 メールアドレス閲覧権限</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+              <input type="checkbox" class="badge-feature-checkbox" value="canBackup" data-feature="canBackup">
+              <span>💾 バックアップ・復元権限</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+              <input type="checkbox" class="badge-feature-checkbox" value="canManageBadge" data-feature="canManageBadge">
+              <span>🏷️ バッジ管理権限</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+              <input type="checkbox" class="badge-feature-checkbox" value="canManageBoard" data-feature="canManageBoard">
+              <span>📋 掲示板管理権限（投稿・削除）</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <button id="badgeEditorCancelBtn" class="reply-cancel-btn">キャンセル</button>
+          <button id="badgeSaveBtn" class="bg-red-800 hover:bg-red-900 text-white text-xs py-1.5 px-4 rounded font-bold">保存</button>
+        </div>
+      </div>
+      <div class="flex justify-end mt-4">
+        <button id="badgeCloseBtn" class="reply-cancel-btn">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="banModal" class="modal-backdrop hidden">
+    <div class="modal-content">
+      <h3 class="text-lg font-bold text-gray-800 mb-1">🚫 BANユーザー管理</h3>
+      <p class="text-xs text-gray-500 mb-4">メールアドレスを指定してBANできます（未投稿でも可）。BANはUID・メール・デバイスの3つに紐づきます。</p>
+      <div class="p-3 border border-red-200 bg-red-50 rounded mb-4">
+        <p class="text-xs font-bold text-red-700 mb-2">新規BAN</p>
+        <label class="block text-xs text-gray-600 mb-1">メールアドレス（必須）:</label>
+        <input type="email" id="banEmailInput" placeholder="例: spammer@gmail.com" class="w-full border p-2 rounded text-sm mb-2 font-mono">
+        <label class="block text-xs text-gray-600 mb-1">理由（任意）:</label>
+        <input type="text" id="banReasonInput" placeholder="例: 荒らし" class="w-full border p-2 rounded text-sm mb-2" maxlength="100">
+        <label class="flex items-center gap-2 text-xs text-gray-600 mb-3 cursor-pointer">
+          <input type="checkbox" id="banDeviceCheck" checked>
+          <span>このメールに紐づくデバイスもBANする（フィンガープリント登録）</span>
+        </label>
+        <button id="banAddBtn" class="bg-red-800 hover:bg-red-900 text-white text-xs py-2 px-4 rounded font-bold w-full">このメールアドレスをBANする</button>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-gray-600 mb-2">現在BANされているユーザー:</p>
+        <div id="banListContainer">
+          <p class="text-xs text-gray-400">（読み込み中...）</p>
+        </div>
+      </div>
+      <div class="flex justify-end mt-4">
+        <button id="banCloseBtn" class="reply-cancel-btn">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="userModal" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 720px;">
+      <h3 class="text-lg font-bold text-gray-800 mb-1">👥 サイトを開いたユーザー一覧</h3>
+      <p class="text-xs text-gray-500 mb-3">ログインしたことがある全ユーザーの一覧です（新しい順）。<br>管理者・主はニックネームを設定できます（一般ユーザーには表示されません）。</p>
+      <input type="text" id="userSearchInput" class="user-search-input" placeholder="🔍 メールアドレスまたはニックネームで検索...">
+      <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+        <p class="text-xs text-gray-600">合計: <span id="userCountLabel" class="font-bold">0</span> 人</p>
+        <div class="flex items-center gap-3 flex-wrap">
+          <label class="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
+            <input type="checkbox" id="userShowOnlyNotBanned">
+            <span>BANされていない人のみ</span>
+          </label>
+          <label class="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
+            <input type="checkbox" id="userShowOnlyNicknamed">
+            <span>ニックネーム設定済みのみ</span>
+          </label>
+        </div>
+      </div>
+      <div id="userListContainer" style="max-height: 55vh; overflow-y: auto;">
+        <p class="text-xs text-gray-400">（読み込み中...）</p>
+      </div>
+      <div class="flex justify-end mt-4">
+        <button id="userCloseBtn" class="reply-cancel-btn">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="nicknameModal" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 480px;">
+      <h3 class="text-lg font-bold text-gray-800 mb-1">✏️ ニックネーム設定</h3>
+      <p class="text-xs text-gray-500 mb-4">
+        対象: <span id="nicknameTargetEmail" class="admin-email"></span>
+      </p>
+      <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mb-3">
+        ⚠️ ニックネームは管理者・主のみが閲覧できます。一般ユーザーには表示されません。
+      </p>
+      <label class="block text-xs text-gray-600 mb-1">ニックネーム（最大20文字）:</label>
+      <input type="text" id="nicknameInput" maxlength="20" placeholder="例: 常連さん / 要注意人物"
+        class="w-full border p-2 rounded text-sm mb-3 focus:ring-2 focus:ring-blue-300 outline-none">
+      <div class="flex justify-end gap-2 flex-wrap">
+        <button id="nicknameCancelBtn" class="reply-cancel-btn">キャンセル</button>
+        <button id="nicknameDeleteBtn" class="delete-btn">削除</button>
+        <button id="nicknameSaveBtn" class="bg-blue-700 hover:bg-blue-800 text-white text-xs py-1.5 px-4 rounded font-bold">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pendingModal" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 640px;">
+      <h3 class="text-lg font-bold text-gray-800 mb-1">🔔 承認待ちユーザー</h3>
+      <p class="text-xs text-gray-500 mb-3">初めてログインしたユーザーです。承認すると利用可能になります。</p>
+      <div class="flex items-center justify-between mb-2">
+        <p class="text-xs text-gray-600">承認待ち: <span id="pendingCountLabel" class="font-bold text-red-700">0</span> 人</p>
+      </div>
+      <div id="pendingListContainer" style="max-height: 55vh; overflow-y: auto;">
+        <p class="text-xs text-gray-400">（読み込み中...）</p>
+      </div>
+      <div class="flex justify-end mt-4">
+        <button id="pendingCloseBtn" class="reply-cancel-btn">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="loginView" class="hidden">
+    <div class="bg-white border border-gray-300 rounded-lg shadow p-8 max-w-md mx-auto mt-16 text-center">
+      <h1 class="text-3xl font-bold text-blue-900 mb-2">学びの広場</h1>
+      <p class="text-sm text-gray-600 mb-2">みんなで学び合う、学習質問掲示板です。</p>
+      <p class="text-sm text-gray-600 mb-6">ご利用にはGoogleアカウントでのログインが必要です。</p>
+      <button id="googleLoginBtn"
+        class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold py-3 px-6 rounded shadow-sm flex items-center justify-center gap-3 mx-auto transition w-full">
+        <svg width="20" height="20" viewBox="0 0 48 48">
+          <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/>
+          <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+          <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+          <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.2 5.2C41.4 35.3 44 30.1 44 24c0-1.3-.1-2.3-.4-3.5z"/>
+        </svg>
+        Googleでログイン
+      </button>
+      <p class="text-xs text-gray-400 mt-4">※ 投稿は匿名で表示されます</p>
+      <p class="text-xs text-amber-700 mt-2 bg-amber-50 border border-amber-200 rounded p-2">⚠️ 初回ログイン時は管理者の承認が必要です</p>
+    </div>
+  </div>
+
+  <div id="mainView" class="hidden">
+    <header class="border-b-2 border-blue-800 pb-2 mb-4 flex justify-between items-center flex-wrap gap-2">
+      <div>
+        <h1 class="text-3xl font-bold text-blue-900 cursor-pointer" onclick="showThreadList()">学びの広場</h1>
+        <p class="text-sm text-gray-600 flex flex-wrap items-center gap-2">
+          <span id="connDot" class="inline-block w-2 h-2 rounded-full bg-gray-400"></span>
+          <span id="connText">接続中...</span>
+          <span id="roleBadgeContainer"></span>
+          <label id="badgeToggleWrap" class="badge-toggle-wrap hidden" title="自分の投稿に付くバッジを他の人に見せるかどうか">
+            <input type="checkbox" id="badgeToggle" checked>
+            <span>バッジを他の人に見せる</span>
+          </label>
+          <label id="emailToggleWrap" class="badge-toggle-wrap hidden" title="投稿者のメールアドレスを表示するかどうか">
+            <input type="checkbox" id="emailToggle" checked>
+            <span>メールアドレスを表示</span>
+          </label>
+        </p>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <div id="adminControls" class="hidden flex gap-2 flex-wrap">
+          <button id="alarmBtn" class="alarm-btn hidden" onclick="openAlarmModal()">🚨 手動警報</button>
+          <button id="lockdownBtn" class="lockdown-btn hidden" onclick="toggleLockdown()">🚨 緊急ロックダウン</button>
+          <button id="pendingBtn" class="pending-btn hidden" onclick="openPendingModal()">🔔 承認待ち <span id="pendingBadgeCount">0</span></button>
+          <button id="backupBtn" class="backup-btn hidden" onclick="doBackup()">💾 バックアップ</button>
+          <button id="restoreBtn" class="restore-btn hidden" onclick="document.getElementById('restoreInput').click()">📥 復元</button>
+          <button id="banListBtn" class="banlist-btn hidden" onclick="openBanModal()">🚫 BAN管理</button>
+          <button id="userListBtn" class="userlist-btn hidden" onclick="openUserModal()">👥 ユーザー一覧</button>
+          <button id="publishBtn" class="publish-btn hidden" onclick="openPublishModal()">🌐 公開設定</button>
+          <input type="file" id="restoreInput" accept="application/json,.json" class="hidden">
+        </div>
+        <button id="boardBtn" class="board-publish-btn" onclick="showBoardView()">📋 掲示板</button>
+        <span id="userEmail" class="text-xs text-gray-500 hidden"></span>
+        <button id="logoutBtn" onclick="doLogout()" class="bg-gray-500 hover:bg-gray-600 text-white text-xs py-1.5 px-3 rounded transition shadow">ログアウト</button>
+        <button id="backToListBtn" onclick="showThreadList()" class="hidden bg-gray-600 hover:bg-gray-700 text-white text-xs py-1.5 px-3 rounded transition shadow">← スレッド一覧に戻る</button>
+      </div>
+    </header>
+
+    <div id="threadListView">
+      <section class="bg-blue-50 border border-blue-200 p-4 rounded mb-6 shadow-sm">
+        <h2 class="text-lg font-bold text-gray-700 mb-2">✏️ 新しい質問・スレッドを作成</h2>
+        <form id="createThreadForm" class="space-y-3">
+          <div>
+            <label class="block text-xs text-gray-600 mb-1 font-bold">教科を選択 <span class="subject-required-note">（必須）</span>:</label>
+            <div class="subject-select-big" id="subjectSelectBig">
+              <button type="button" class="subject-select-btn" data-subject="math">📐 数学</button>
+              <button type="button" class="subject-select-btn" data-subject="science">🔬 理科</button>
+              <button type="button" class="subject-select-btn" data-subject="social">🌏 社会</button>
+              <button type="button" class="subject-select-btn" data-subject="japanese">📖 国語</button>
+              <button type="button" class="subject-select-btn" data-subject="english">🔤 英語</button>
+              <button type="button" class="subject-select-btn" data-subject="other">💭 その他</button>
+            </div>
+            <input type="hidden" id="selectedSubject" value="">
+          </div>
+          <input type="text" id="threadTitle" placeholder="質問・スレッドのタイトル（必須）" maxlength="100" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none" required>
+          <textarea id="firstPostContent" rows="3" placeholder="最初の書き込み内容（質問内容など・任意）" maxlength="2000" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none"></textarea>
+          <div>
+            <label class="block text-xs text-gray-600 mb-1">画像を添付（自動リサイズ・最大200KB、任意）:</label>
+            <input type="file" id="threadFileInput" accept="image/*" class="text-xs text-gray-600 w-full">
+            <div class="preview-box" id="threadPreviewBox">
+              <img id="threadPreviewImg" alt="プレビュー">
+              <div class="preview-info" id="threadPreviewInfo"></div>
+            </div>
+          </div>
+          <button type="submit" id="createThreadBtn" class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-6 rounded text-sm transition shadow-sm">スレッドを立てる</button>
+        </form>
+      </section>
+
+      <main>
+        <h2 class="text-xl font-bold border-b pb-1 mb-4 text-gray-700">📚 スレッド一覧</h2>
+
+        <div class="subject-tabs" id="subjectTabs">
+          <button class="subject-tab active" data-subject="all">すべて <span class="tab-count" id="countAll">0</span></button>
+          <button class="subject-tab" data-subject="math">📐 数学 <span class="tab-count" id="countMath">0</span></button>
+          <button class="subject-tab" data-subject="science">🔬 理科 <span class="tab-count" id="countScience">0</span></button>
+          <button class="subject-tab" data-subject="social">🌏 社会 <span class="tab-count" id="countSocial">0</span></button>
+          <button class="subject-tab" data-subject="japanese">📖 国語 <span class="tab-count" id="countJapanese">0</span></button>
+          <button class="subject-tab" data-subject="english">🔤 英語 <span class="tab-count" id="countEnglish">0</span></button>
+          <button class="subject-tab" data-subject="other">💭 その他 <span class="tab-count" id="countOther">0</span></button>
+        </div>
+
+        <div id="threadsContainer" class="space-y-2 threads-scroll pr-1">
+          <p class="text-gray-500 text-sm"><span class="loading-spinner"></span> スレッドを読み込み中...</p>
+        </div>
+      </main>
+    </div>
+
+    <div id="threadDetailView" class="hidden">
+      <div class="bg-white p-4 border border-gray-300 rounded mb-4 shadow-sm flex justify-between items-start gap-3 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <div id="currentThreadSubjectWrap" class="mb-1"></div>
+          <h2 id="currentThreadTitle" class="text-2xl font-bold text-blue-900 mb-1 break-words"></h2>
+          <p id="currentThreadDate" class="text-xs text-gray-500"></p>
+          <p id="currentThreadAuthor" class="text-xs text-gray-500 mt-1"></p>
+        </div>
+        <button id="deleteThreadBtn" class="delete-btn hidden" onclick="deleteCurrentThread()">スレッドを削除</button>
+      </div>
+
+      <section class="bg-blue-50 border border-blue-200 p-4 rounded mb-6 shadow-sm">
+        <h3 class="text-md font-bold text-gray-700 mb-2">このスレッドに書き込む</h3>
+        <form id="postForm" class="space-y-3">
+          <textarea id="postContent" rows="4" placeholder="コメントを入力してください。URLは自動でリンク化されます。" maxlength="2000" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none"></textarea>
+          <div class="flex items-center justify-between flex-wrap gap-3">
+            <div class="flex-1 min-w-[200px]">
+              <label class="block text-xs text-gray-600 mb-1">画像を添付（自動リサイズ・最大200KB）:</label>
+              <input type="file" id="fileInput" accept="image/*" class="text-xs text-gray-600 w-full">
+              <div class="preview-box" id="postPreviewBox">
+                <img id="postPreviewImg" alt="プレビュー">
+                <div class="preview-info" id="postPreviewInfo"></div>
+              </div>
+            </div>
+            <button type="submit" id="submitBtn" class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-6 rounded text-sm transition shadow-sm whitespace-nowrap">書き込む</button>
+          </div>
+        </form>
+      </section>
+
+      <main>
+        <h3 class="text-lg font-bold border-b pb-1 mb-4 text-gray-700">レス一覧</h3>
+        <div id="postsContainer" class="post-tree">
+          <p class="text-gray-500 text-sm"><span class="loading-spinner"></span> 読み込み中...</p>
+        </div>
+      </main>
+    </div>
+
+    <div id="boardView" class="hidden">
+      <div class="flex justify-between items-center border-b pb-2 mb-4">
+        <h2 class="text-xl font-bold text-gray-700">📋 掲示板</h2>
+        <button onclick="showThreadList()" class="bg-gray-600 hover:bg-gray-700 text-white text-xs py-1.5 px-3 rounded transition shadow">← スレッド一覧に戻る</button>
+      </div>
+
+      <div id="boardReadonlyNote" class="board-readonly-note hidden">
+        📖 掲示板は閲覧のみ可能です。投稿・編集は管理者または主、および掲示板管理権限を持つユーザーのみ行えます。
+      </div>
+
+      <div id="boardFormWrapper" class="board-form-box">
+        <h3 class="text-md font-bold text-gray-700 mb-2">✏️ 新しいお知らせ・イベント投稿</h3>
+        <form id="boardForm" class="space-y-3">
+          <div>
+            <label class="block text-xs text-gray-600 mb-1">タイトル（必須）:</label>
+            <input type="text" id="boardTitle" maxlength="100" placeholder="例: 夏休みイベントのお知らせ" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-300 outline-none" required>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-600 mb-1">本文（任意）:</label>
+            <textarea id="boardContent" rows="4" maxlength="3000" placeholder="イベントの詳細などを入力..." class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-300 outline-none"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-600 mb-1">画像を添付（任意・自動リサイズ）:</label>
+            <input type="file" id="boardFileInput" accept="image/*" class="text-xs text-gray-600 w-full">
+            <div class="preview-box" id="boardPreviewBox">
+              <img id="boardPreviewImg" alt="プレビュー">
+              <div class="preview-info" id="boardPreviewInfo"></div>
+            </div>
+          </div>
+          <button type="submit" id="boardSubmitBtn" class="board-publish-btn">📢 掲示板に投稿する</button>
+        </form>
+      </div>
+
+      <div id="boardListContainer">
+        <p class="text-gray-500 text-sm"><span class="loading-spinner"></span> 掲示板を読み込み中...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+    import {
+      getDatabase, ref, push, set, remove, onValue, off,
+      query, orderByChild, get, update
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import {
+      getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
+      setPersistence, browserLocalPersistence
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBCoiJAnVWIOH9csEPlDyWJgfj6sSlNO2o",
+      authDomain: "chaneler-52b95.firebaseapp.com",
+      projectId: "chaneler-52b95",
+      databaseURL: "https://chaneler-52b95-default-rtdb.firebaseio.com",
+      storageBucket: "chaneler-52b95.firebasestorage.app",
+      messagingSenderId: "538510918184",
+      appId: "1:538510918184:web:58232aa80922ff00b92b1d",
+      measurementId: "G-QF3LDMNQYQ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    setPersistence(auth, browserLocalPersistence).catch((err) => {
+      console.warn('永続化設定失敗:', err);
+    });
+
+    // ===== 教科分類 =====
+    const SUBJECTS = {
+      math:     { id: 'math',     label: '数学', icon: '📐', color: '#1d4ed8' },
+      science:  { id: 'science',  label: '理科', icon: '🔬', color: '#059669' },
+      social:   { id: 'social',   label: '社会', icon: '🌏', color: '#b45309' },
+      japanese: { id: 'japanese', label: '国語', icon: '📖', color: '#dc2626' },
+      english:  { id: 'english',  label: '英語', icon: '🔤', color: '#7c3aed' },
+      other:    { id: 'other',    label: 'その他', icon: '💭', color: '#6b7280' }
+    };
+    function getSubjectInfo(id) {
+      return SUBJECTS[id] || SUBJECTS.other;
+    }
+    function subjectBadgeHtml(subjectId, showLabel = true) {
+      const s = getSubjectInfo(subjectId);
+      return `<span class="subject-badge ${s.id}">${s.icon}${showLabel ? ' ' + s.label : ''}</span>`;
+    }
+
+    // ===== 管理者・主（維持） =====
+    const ROLE_ADMIN_EMAIL = "katou.noel114514@gmail.com";
+    const ROLE_OWNER_EMAIL = "18107@v.nakijin.ed.jp";
+    const ROLE_VIP_EMAILS = [
+      "18104@v.nakijin.ed.jp",
+      "setsu.setsuna1229@gmail.com",
+      "roblox.2026.20th@gmail.com"
+    ];
+
+    // ===== Discord Webhook =====
+    const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1550795111246336062/c-mghw5IuTGYVVsw-xJ5ahbIs-VhZV5d7TOsbq7HWeI6nP2Rr0U__8DHZueFyDt0CZvj";
+
+    async function sendDiscordApprovalNotification(email, displayName, uid, fingerprint) {
+      if (!DISCORD_WEBHOOK_URL) return;
+      try {
+        const payload = {
+          username: "学びの広場 承認Bot",
+          embeds: [
+            {
+              title: "🔔 新しい承認待ちユーザー",
+              color: 0x1d4ed8,
+              fields: [
+                { name: "📧 メール", value: email || "（不明）", inline: false },
+                { name: "👤 表示名", value: displayName || "（なし）", inline: true },
+                { name: "🆔 UID", value: uid ? `\`${uid}\`` : "（不明）", inline: false },
+                { name: "🖥️ フィンガープリント", value: fingerprint ? `\`${fingerprint}\`` : "（なし）", inline: false },
+                { name: "🕐 申請日時", value: new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }), inline: false }
+              ],
+              footer: { text: "学びの広場 管理パネル" },
+              timestamp: new Date().toISOString()
+            }
+          ]
+        };
+        await fetch(DISCORD_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.warn("Discord承認通知送信失敗:", err.message);
+      }
+    }
+
+    async function sendDiscordAdminActionNotification(action, targetEmail, byEmail) {
+      if (!DISCORD_WEBHOOK_URL) return;
+      try {
+        const color = action === "承認" ? 0x16a34a : 0xdc2626;
+        const emoji = action === "承認" ? "✅" : "🚫";
+        const payload = {
+          username: "学びの広場 承認Bot",
+          embeds: [
+            {
+              title: `${emoji} ユーザー${action}`,
+              color: color,
+              fields: [
+                { name: "📧 対象メール", value: targetEmail || "（不明）", inline: false },
+                { name: "👮 実行者", value: byEmail || "（不明）", inline: false },
+                { name: "🕐 日時", value: new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }), inline: false }
+              ],
+              timestamp: new Date().toISOString()
+            }
+          ]
+        };
+        await fetch(DISCORD_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.warn(`Discord${action}通知送信失敗:`, err.message);
+      }
+    }
+
+    async function sendDiscordAlarmNotification(reason, byEmail) {
+      if (!DISCORD_WEBHOOK_URL) return;
+      try {
+        const payload = {
+          username: "学びの広場 警報Bot",
+          embeds: [
+            {
+              title: "🚨 手動警報が発令されました",
+              color: 0xdc2626,
+              fields: [
+                { name: "📢 発令理由", value: reason || "（理由なし）", inline: false },
+                { name: "👮 発令者", value: byEmail || "（不明）", inline: false },
+                { name: "🕐 発令日時", value: new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }), inline: false }
+              ],
+              footer: { text: "学びの広場 手動警報" },
+              timestamp: new Date().toISOString()
+            }
+          ]
+        };
+        await fetch(DISCORD_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.warn("Discord手動警報通知送信失敗:", err.message);
+      }
+    }
+
+    const IMAGE_MAX_WIDTH = 1280;
+    const IMAGE_QUALITY = 0.75;
+    const IMAGE_MAX_BASE64_SIZE = 200 * 1024;
+
+    let currentUser = null;
+    let userRole = null;
+    let currentThreadKey = null;
+    let currentThreadOwnerUid = null;
+    let currentThreadSubject = 'other';
+    let postsUnsubscribe = null;
+    let threadsUnsubscribe = null;
+    let badgesUnsubscribe = null;
+    let bansUnsubscribe = null;
+    let deviceBansUnsubscribe = null;
+    let knownUsersUnsubscribe = null;
+    let pendingUnsubscribe = null;
+    let approvedUnsubscribe = null;
+    let selfApprovalUnsubscribe = null;
+    let siteStatusUnsubscribe = null;
+    let boardUnsubscribe = null;
+    let nicknamesUnsubscribe = null;
+
+    let activeReplyParentId = null;
+    let allPostsCache = [];
+    let allThreadsCache = [];
+    let postNumberMap = new Map();
+
+    let customBadgesCache = {};
+    let bansCache = {};
+    let deviceBansCache = {};
+    let knownUsersCache = {};
+    let pendingCache = {};
+    let approvedCache = {};
+    let siteStatusCache = { published: true, messageUrl: '', lockdown: false, alarm: false, alarmReason: '', alarmBy: '' };
+    let myFingerprint = null;
+    let nicknamesCache = {};
+
+    let badgeEditingTarget = null;
+    let badgeEditingBadgeId = null;
+
+    let myBadgePublic = true;
+    let myEmailVisible = true;
+
+    let intentionalSignOut = false;
+    let userApproved = false;
+
+    let initialAuthCheckDone = false;
+
+    let boardCache = {};
+
+    let badgeFeaturePermissions = {};
+
+    let lockdownEnforcerInterval = null;
+
+    // 教科フィルタ用
+    let currentSubjectFilter = 'all';
+    let selectedSubjectForNewThread = '';
+
+    const loginView = document.getElementById('loginView');
+    const mainView = document.getElementById('mainView');
+    const threadListView = document.getElementById('threadListView');
+    const threadDetailView = document.getElementById('threadDetailView');
+    const boardView = document.getElementById('boardView');
+    const backToListBtn = document.getElementById('backToListBtn');
+    const threadsContainer = document.getElementById('threadsContainer');
+    const postsContainer = document.getElementById('postsContainer');
+    const connDot = document.getElementById('connDot');
+    const connText = document.getElementById('connText');
+    const statusBanner = document.getElementById('statusBanner');
+    const roleBadgeContainer = document.getElementById('roleBadgeContainer');
+    const userEmailSpan = document.getElementById('userEmail');
+    const adminControls = document.getElementById('adminControls');
+    const badgeToggleWrap = document.getElementById('badgeToggleWrap');
+    const badgeToggle = document.getElementById('badgeToggle');
+    const emailToggleWrap = document.getElementById('emailToggleWrap');
+    const emailToggle = document.getElementById('emailToggle');
+    const banOverlay = document.getElementById('banOverlay');
+    const banOverlayMsg = document.getElementById('banOverlayMsg');
+    const banOverlaySub = document.getElementById('banOverlaySub');
+    const banOverlayActions = document.getElementById('banOverlayActions');
+    const bootOverlay = document.getElementById('bootOverlay');
+    const unpublishedOverlay = document.getElementById('unpublishedOverlay');
+    const unpublishedSub = document.getElementById('unpublishedSub');
+    const unpGoBtn = document.getElementById('unpGoBtn');
+    const publishBtn = document.getElementById('publishBtn');
+    const alarmToast = document.getElementById('alarmToast');
+    const alarmToastReason = document.getElementById('alarmToastReason');
+    const alarmToastIssuer = document.getElementById('alarmToastIssuer');
+    let bannerTimer = null;
+
+    function canDelete() {
+      return userRole === 'admin' || userRole === 'owner' || userRole === 'vip';
+    }
+    function canBackup() {
+      if (userRole === 'admin' || userRole === 'owner') return true;
+      return canDo('canBackup');
+    }
+
+    function canViewEmail() {
+      if (!canToggleEmailVisibility()) return false;
+      return myEmailVisible === true;
+    }
+
+    function canToggleEmailVisibility() {
+      if (userRole === 'admin' || userRole === 'owner') return true;
+      return canDo('canViewEmail');
+    }
+
+    function canManageBadge() {
+      if (userRole === 'admin' || userRole === 'owner') return true;
+      return canDo('canManageBadge');
+    }
+    function canBan() {
+      if (userRole === 'admin' || userRole === 'owner') return true;
+      return canDo('canBan');
+    }
+    function canApprove() {
+      if (userRole === 'admin' || userRole === 'owner') return true;
+      return canDo('canApprove');
+    }
+    function canPublish() {
+      if (userRole === 'admin' || userRole === 'owner') return true;
+      return canDo('canPublish');
+    }
+    function canManageBoard() {
+      if (userRole === 'admin' || userRole === 'owner') return true;
+      if (currentUser && currentUser.uid && hasBadgeFeature(currentUser.uid, 'canManageBoard')) return true;
+      return false;
+    }
+    function canSetNickname() {
+      return userRole === 'admin' || userRole === 'owner';
+    }
+    function canLockdown() {
+      return userRole === 'admin' || userRole === 'owner';
+    }
+    function canAlarm() {
+      return userRole === 'admin' || userRole === 'owner';
+    }
+
+    function hasBadgeFeature(uid, feature) {
+      if (!uid || !feature) return false;
+      return !!(badgeFeaturePermissions[uid] && badgeFeaturePermissions[uid][feature]);
+    }
+
+    function canDo(feature) {
+      if (userRole === 'admin' || userRole === 'owner') return true;
+      if (userRole === 'vip' && (feature === 'canDeletePost' || feature === 'canDeleteThread')) return true;
+      if (currentUser && currentUser.uid) {
+        if (hasBadgeFeature(currentUser.uid, feature)) return true;
+      }
+      return false;
+    }
+
+    function isProtectedEmail(email) {
+      if (!email) return false;
+      const e = email.toLowerCase().trim();
+      return e === ROLE_ADMIN_EMAIL.toLowerCase() || e === ROLE_OWNER_EMAIL.toLowerCase();
+    }
+    function getRoleByUid(uid) {
+      if (knownUsersCache[uid] && knownUsersCache[uid].role) return knownUsersCache[uid].role;
+      if (approvedCache[uid] && approvedCache[uid].email) {
+        return roleFromEmail(approvedCache[uid].email);
+      }
+      return null;
+    }
+    function isProtectedUid(uid) {
+      if (!uid) return false;
+      const r = getRoleByUid(uid);
+      if (r === 'admin' || r === 'owner') return true;
+      const u1 = knownUsersCache[uid];
+      if (u1 && u1.email && isProtectedEmail(u1.email)) return true;
+      const u2 = approvedCache[uid];
+      if (u2 && u2.email && isProtectedEmail(u2.email)) return true;
+      return false;
+    }
+    function isCurrentUserProtected() {
+      if (!currentUser) return false;
+      if (userRole === 'admin' || userRole === 'owner') return true;
+      if (isProtectedEmail(currentUser.email)) return true;
+      return false;
+    }
+
+    function generateFingerprint() {
+      const parts = [
+        navigator.userAgent,
+        navigator.language,
+        (navigator.languages || []).join(','),
+        screen.width + 'x' + screen.height,
+        screen.colorDepth,
+        new Date().getTimezoneOffset(),
+        navigator.platform || '',
+        navigator.hardwareConcurrency || '',
+        navigator.deviceMemory || '',
+        navigator.maxTouchPoints || 0
+      ];
+      const raw = parts.join('|');
+      function hash(str) {
+        let h1 = 0x811c9dc5;
+        let h2 = 0xcbf29ce4;
+        for (let i = 0; i < str.length; i++) {
+          const c = str.charCodeAt(i);
+          h1 ^= c; h1 = Math.imul(h1, 0x01000193);
+          h2 ^= c; h2 = Math.imul(h2, 0x01000193);
+        }
+        return (h1 >>> 0).toString(16).padStart(8, '0') +
+               (h2 >>> 0).toString(16).padStart(8, '0');
+      }
+      return 'fp_' + hash(raw);
+    }
+
+    function emailToKey(email) {
+      if (!email) return '';
+      const lower = email.toLowerCase().trim();
+      let h1 = 0x811c9dc5;
+      for (let i = 0; i < lower.length; i++) {
+        h1 ^= lower.charCodeAt(i);
+        h1 = Math.imul(h1, 0x01000193);
+      }
+      return 'em_' + (h1 >>> 0).toString(16).padStart(8, '0');
+    }
+
+    function badgeStorageKey(email) {
+      return 'badgeVisible_' + (email || 'anonymous');
+    }
+    function loadBadgeVisibility(email) {
+      const v = localStorage.getItem(badgeStorageKey(email));
+      return v === null ? true : v === 'true';
+    }
+    function saveBadgeVisibility(email, visible) {
+      localStorage.setItem(badgeStorageKey(email), visible ? 'true' : 'false');
+    }
+
+    function emailStorageKey(email) {
+      return 'emailVisible_' + (email || 'anonymous');
+    }
+    function loadEmailVisibility(email) {
+      const v = localStorage.getItem(emailStorageKey(email));
+      return v === null ? true : v === 'true';
+    }
+    function saveEmailVisibility(email, visible) {
+      localStorage.setItem(emailStorageKey(email), visible ? 'true' : 'false');
+    }
+
+    function subjectStorageKey() {
+      return 'subjectFilter';
+    }
+    function loadSubjectFilter() {
+      return localStorage.getItem(subjectStorageKey()) || 'all';
+    }
+    function saveSubjectFilter(s) {
+      localStorage.setItem(subjectStorageKey(), s);
+    }
+
+    function renderRoleBadge(role) {
+      roleBadgeContainer.innerHTML = '';
+      if (role === 'admin') {
+        roleBadgeContainer.innerHTML = '<span class="admin-badge">管理者</span>';
+      } else if (role === 'owner') {
+        roleBadgeContainer.innerHTML = '<span class="owner-badge">主</span>';
+      } else if (role === 'vip') {
+        roleBadgeContainer.innerHTML = '<span class="vip-badge">VIP</span>';
+      }
+    }
+
+    function setConnection(online) {
+      if (online) {
+        connDot.className = 'inline-block w-2 h-2 rounded-full bg-green-500';
+        connText.textContent = 'オンライン（リアルタイム同期中）';
+      } else {
+        connDot.className = 'inline-block w-2 h-2 rounded-full bg-red-500';
+        connText.textContent = 'オフライン';
+      }
+    }
+    function showBanner(msg, isError = true) {
+      statusBanner.textContent = msg;
+      statusBanner.className = (isError ? 'bg-red-600' : 'bg-green-600') + ' text-white show';
+      statusBanner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;text-align:center;padding:6px;font-size:12px;transform:translateY(0);';
+      clearTimeout(bannerTimer);
+      bannerTimer = setTimeout(() => {
+        statusBanner.style.transform = 'translateY(-100%)';
+      }, 4000);
+    }
+    window.addEventListener('online', () => setConnection(true));
+    window.addEventListener('offline', () => setConnection(false));
+
+    function formatContent(str) {
+      if (!str) return '';
+      const escaped = escapeHtml(str);
+      const urlRegex = /(https?:\/\/[^\s<]+)/g;
+      return escaped.replace(urlRegex, (url) =>
+        `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline break-all">${url}</a>`);
+    }
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+    function showMainView() {
+      loginView.classList.add('hidden');
+      mainView.classList.remove('hidden');
+    }
+    function showLoginView() {
+      loginView.classList.remove('hidden');
+      mainView.classList.add('hidden');
+    }
+    function hideBootOverlay() {
+      bootOverlay.classList.add('hidden');
+    }
+
+    function forceExit(msg, sub, showSwitchButton) {
+      banOverlayMsg.textContent = msg || 'アクセスが拒否されました';
+      banOverlaySub.innerHTML = sub || '';
+      if (showSwitchButton) {
+        banOverlayActions.style.display = 'flex';
+      } else {
+        banOverlayActions.style.display = 'none';
+      }
+      banOverlay.classList.add('show');
+      document.body.style.background = '#000';
+      setInterval(() => {
+        banOverlay.classList.add('show');
+        document.body.style.background = '#000';
+      }, 300);
+    }
+
+    function executeBan() {
+      forceExit(
+        'アクセスが拒否されました',
+        'このアカウントはBANされています。<br>別のGoogleアカウントでログインしてください。',
+        true
+      );
+    }
+
+    function executePending() {
+      forceExit(
+        '承認待ちです',
+        '管理者または主による承認をお待ちください。<br>承認されたら、またサイトを開いてください。<br><br>' +
+        '<small style="color:#9ca3af;">承認されると自動的にサイトが使えるようになります。</small>',
+        true
+      );
+    }
+
+    function executeLockdown() {
+      banOverlayMsg.textContent = '緊急ロックダウン中';
+      banOverlaySub.innerHTML = '現在このサイトは緊急ロックダウン中です。<br>管理者または主による解除をお待ちください。';
+      banOverlayActions.style.display = 'none';
+      banOverlay.classList.add('show');
+      document.body.style.background = '#000';
+
+      if (lockdownEnforcerInterval) clearInterval(lockdownEnforcerInterval);
+      lockdownEnforcerInterval = setInterval(() => {
+        if (!siteStatusCache || siteStatusCache.lockdown !== true) {
+          clearInterval(lockdownEnforcerInterval);
+          lockdownEnforcerInterval = null;
+          return;
+        }
+        banOverlay.classList.add('show');
+        document.body.style.background = '#000';
+      }, 500);
+    }
+
+    function stopLockdownEnforcer() {
+      if (lockdownEnforcerInterval) {
+        clearInterval(lockdownEnforcerInterval);
+        lockdownEnforcerInterval = null;
+      }
+    }
+
+    function checkAndApplyLockdown() {
+      if (isCurrentUserProtected()) {
+        stopLockdownEnforcer();
+        return false;
+      }
+      if (siteStatusCache && siteStatusCache.lockdown === true) {
+        executeLockdown();
+        return true;
+      }
+      return false;
+    }
+
+    function showAlarmToast() {
+      if (!siteStatusCache || siteStatusCache.alarm !== true) {
+        alarmToast.classList.remove('show');
+        return;
+      }
+      alarmToastReason.textContent = siteStatusCache.alarmReason || '緊急対応';
+      alarmToastIssuer.textContent = siteStatusCache.alarmBy || '管理者';
+      alarmToast.classList.add('show');
+    }
+    function hideAlarmToast() {
+      alarmToast.classList.remove('show');
+    }
+    function checkAndApplyAlarm() {
+      if (isCurrentUserProtected()) {
+        hideAlarmToast();
+        return false;
+      }
+      if (siteStatusCache && siteStatusCache.alarm === true) {
+        showAlarmToast();
+        return true;
+      }
+      hideAlarmToast();
+      return false;
+    }
+
+    function showUnpublishedOverlay() {
+      if (!siteStatusCache || siteStatusCache.published !== false) {
+        unpublishedOverlay.classList.remove('show');
+        return;
+      }
+      const msgUrl = siteStatusCache.messageUrl || '';
+      unpublishedSub.innerHTML = '現在このサイトは非公開です。<br>もうしばらくお待ちください。';
+
+      if (msgUrl) {
+        unpGoBtn.dataset.url = msgUrl;
+        unpGoBtn.style.display = '';
+      } else {
+        unpGoBtn.dataset.url = '';
+        unpGoBtn.style.display = 'none';
+      }
+
+      unpublishedOverlay.classList.add('show');
+    }
+    function hideUnpublishedOverlay() {
+      unpublishedOverlay.classList.remove('show');
+    }
+
+    unpGoBtn.addEventListener('click', () => {
+      const url = unpGoBtn.dataset.url;
+      if (url) {
+        try { window.location.href = url; } catch (e) { alert('URLを開けませんでした'); }
+      }
+    });
+
+    function checkSelfBan() {
+      if (!currentUser) return false;
+
+      if (isCurrentUserProtected()) {
+        return false;
+      }
+
+      if (bansCache && bansCache[currentUser.uid]) { executeBan(); return true; }
+      const emailKey = emailToKey(currentUser.email);
+      if (emailKey && bansCache && bansCache[emailKey]) { executeBan(); return true; }
+      if (myFingerprint && deviceBansCache && deviceBansCache[myFingerprint]) {
+        executeBan(); return true;
+      }
+      return false;
+    }
+
+    async function checkAndApplyDeviceBan(user, currentFingerprint) {
+      if (!user || !currentFingerprint) return false;
+
+      const role = roleFromEmail(user.email);
+      if (role === 'admin' || role === 'owner') {
+        return false;
+      }
+      if (isProtectedEmail(user.email)) {
+        return false;
+      }
+
+      try {
+        const deviceBanSnap = await get(ref(db, `deviceBans/${currentFingerprint}`));
+        if (!deviceBanSnap.exists()) {
+          return false;
+        }
+
+        const now = Date.now();
+        const banData = {
+          bannedAt: now,
+          bannedBy: "SYSTEM_DEVICE_LINK",
+          reason: "BAN済み端末からのアクセス検知（アカウント切り替え）",
+          email: user.email || "",
+          uid: user.uid
+        };
+
+        const updates = {};
+        updates[`bans/${user.uid}`] = banData;
+
+        if (user.email) {
+          const ek = emailToKey(user.email);
+          if (ek) updates[`bans/${ek}`] = banData;
+        }
+
+        await update(ref(db), updates);
+        return true;
+      } catch (err) {
+        console.error('端末BAN連鎖エラー:', err);
+        return true;
+      }
+    }
+
+    function checkSelfApproval() {
+      if (!currentUser) return false;
+      if (userRole === 'admin' || userRole === 'owner' || userRole === 'vip') return true;
+      if (approvedCache[currentUser.uid]) return true;
+      return false;
+    }
+
+    function fileToBase64Image(file) {
+      return new Promise((resolve, reject) => {
+        if (!file) { resolve(null); return; }
+        if (!file.type.startsWith('image/')) {
+          reject(new Error('画像ファイルを選択してください'));
+          return;
+        }
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('ファイルの読み込みに失敗しました'));
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onerror = () => reject(new Error('画像の読み込みに失敗しました'));
+          img.onload = () => {
+            let { width, height } = img;
+            if (width > IMAGE_MAX_WIDTH) {
+              height = Math.round(height * (IMAGE_MAX_WIDTH / width));
+              width = IMAGE_MAX_WIDTH;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            let quality = IMAGE_QUALITY;
+            let dataUrl = canvas.toDataURL('image/jpeg', quality);
+            while (dataUrl.length > IMAGE_MAX_BASE64_SIZE && quality > 0.3) {
+              quality -= 0.1;
+              dataUrl = canvas.toDataURL('image/jpeg', quality);
+            }
+            if (dataUrl.length > IMAGE_MAX_BASE64_SIZE) {
+              reject(new Error('画像が大きすぎます。別の画像を選んでください。'));
+              return;
+            }
+            resolve({
+              dataUrl: dataUrl,
+              name: file.name,
+              type: 'image/jpeg',
+              width: width,
+              height: height,
+              size: dataUrl.length
+            });
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function buildFileHtml(file) {
+      if (!file || !file.dataUrl) return '';
+      const name = file.name || '添付画像';
+      const dataUrl = file.dataUrl;
+      return `
+        <div class="post-file">
+          <a href="${dataUrl}" target="_blank" rel="noopener noreferrer">
+            <img src="${dataUrl}" alt="${escapeHtml(name)}" loading="lazy">
+          </a>
+          <a href="${dataUrl}" download="${escapeHtml(name)}">📎 ${escapeHtml(name)}（${formatSize(file.size)}）</a>
+        </div>`;
+    }
+    function formatSize(bytes) {
+      if (!bytes) return '';
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+    }
+
+    async function updatePreview(fileInput, boxId, imgId, infoId) {
+      const file = fileInput.files[0];
+      const box = document.getElementById(boxId);
+      const img = document.getElementById(imgId);
+      const info = document.getElementById(infoId);
+      if (!file) {
+        box.classList.remove('show');
+        img.src = '';
+        info.textContent = '';
+        return null;
+      }
+      try {
+        const result = await fileToBase64Image(file);
+        img.src = result.dataUrl;
+        info.textContent = `${file.name}（${result.width}×${result.height}, ${formatSize(result.size)}）`;
+        box.classList.add('show');
+        return result;
+      } catch (err) {
+        alert(err.message);
+        fileInput.value = '';
+        box.classList.remove('show');
+        return null;
+      }
+    }
+
+    (function initSiteRules() {
+      const rulesEl = document.getElementById('siteRules');
+      const toggleBtn = document.getElementById('rulesToggleBtn');
+      if (!rulesEl || !toggleBtn) return;
+      const saved = localStorage.getItem('siteRulesOpen');
+      const isOpen = saved === 'true';
+      if (isOpen) {
+        rulesEl.classList.remove('collapsed');
+      } else {
+        rulesEl.classList.add('collapsed');
+      }
+      toggleBtn.addEventListener('click', () => {
+        const nowCollapsed = rulesEl.classList.toggle('collapsed');
+        localStorage.setItem('siteRulesOpen', nowCollapsed ? 'false' : 'true');
+      });
+    })();
+
+    document.addEventListener('contextmenu', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+        return true;
+      }
+      e.preventDefault();
+      return false;
+    });
+
+    document.addEventListener('dragstart', (e) => {
+      if (e.target.tagName === 'IMG' || e.target.tagName === 'A') {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    let badgeFeatureUnsubscribe = null;
+
+    function initBadgeFeatureListener() {
+      if (badgeFeatureUnsubscribe) badgeFeatureUnsubscribe();
+      const featureRef = ref(db, 'badgeFeatures');
+      badgeFeatureUnsubscribe = onValue(featureRef, (snap) => {
+        badgeFeaturePermissions = snap.exists() ? snap.val() : {};
+        if (currentThreadKey) renderPostsFromCache();
+        updateAdminControlsVisibility();
+        updateBoardEditability();
+        updateMyBadgeToggleVisibility();
+        updateEmailToggleVisibility();
+      }, (err) => {
+        console.error('バッジ機能権限監視エラー:', err);
+      });
+    }
+
+    function initNicknamesListener() {
+      if (nicknamesUnsubscribe) nicknamesUnsubscribe();
+      const ref0 = ref(db, 'nicknames');
+      nicknamesUnsubscribe = onValue(ref0, (snap) => {
+        nicknamesCache = snap.exists() ? snap.val() : {};
+        const um = document.getElementById('userModal');
+        if (um && !um.classList.contains('hidden')) {
+          renderUserList();
+        }
+      }, (err) => {
+        console.error('ニックネーム監視エラー:', err);
+      });
+    }
+
+    function updateMyBadgeToggleVisibility() {
+      if (!currentUser) return;
+      const hasCustomBadge = currentUser.uid && customBadgesCache[currentUser.uid] &&
+                             Object.keys(customBadgesCache[currentUser.uid]).length > 0;
+      if (userRole === 'admin' || userRole === 'owner' || userRole === 'vip' || hasCustomBadge) {
+        badgeToggleWrap.classList.remove('hidden');
+        badgeToggle.checked = myBadgePublic;
+      } else {
+        badgeToggleWrap.classList.add('hidden');
+      }
+    }
+
+    function updateEmailToggleVisibility() {
+      if (!currentUser) {
+        emailToggleWrap.classList.add('hidden');
+        return;
+      }
+      if (canToggleEmailVisibility()) {
+        emailToggleWrap.classList.remove('hidden');
+        emailToggle.checked = myEmailVisible;
+      } else {
+        emailToggleWrap.classList.add('hidden');
+      }
+    }
+
+    function updateBoardEditability() {
+      const formWrapper = document.getElementById('boardFormWrapper');
+      const readonlyNote = document.getElementById('boardReadonlyNote');
+      if (!formWrapper || !readonlyNote) return;
+      if (canManageBoard()) {
+        formWrapper.classList.remove('hidden');
+        readonlyNote.classList.add('hidden');
+      } else {
+        formWrapper.classList.add('hidden');
+        readonlyNote.classList.remove('hidden');
+      }
+    }
+
+    function updateAdminControlsVisibility() {
+      if (!currentUser) return;
+
+      const alarmBtn = document.getElementById('alarmBtn');
+      const lockdownBtn = document.getElementById('lockdownBtn');
+      const pendingBtn = document.getElementById('pendingBtn');
+      const backupBtn = document.getElementById('backupBtn');
+      const restoreBtn = document.getElementById('restoreBtn');
+      const banListBtn = document.getElementById('banListBtn');
+      const userListBtn = document.getElementById('userListBtn');
+      const publishBtnEl = document.getElementById('publishBtn');
+
+      const showPending = canApprove();
+      const showBackup = canBackup();
+      const showBan = canBan();
+      const showPublish = canPublish();
+      const showLockdown = canLockdown();
+      const showAlarm = canAlarm();
+
+      if (showAlarm) {
+        alarmBtn.classList.remove('hidden');
+        updateAlarmBtnUI();
+      } else {
+        alarmBtn.classList.add('hidden');
+      }
+
+      if (showLockdown) {
+        lockdownBtn.classList.remove('hidden');
+        updateLockdownBtnUI();
+      } else {
+        lockdownBtn.classList.add('hidden');
+      }
+
+      if (showPending) pendingBtn.classList.remove('hidden');
+      else pendingBtn.classList.add('hidden');
+
+      if (showBackup) {
+        backupBtn.classList.remove('hidden');
+        restoreBtn.classList.remove('hidden');
+      } else {
+        backupBtn.classList.add('hidden');
+        restoreBtn.classList.add('hidden');
+      }
+
+      if (showBan) {
+        banListBtn.classList.remove('hidden');
+        userListBtn.classList.remove('hidden');
+      } else {
+        banListBtn.classList.add('hidden');
+        userListBtn.classList.add('hidden');
+      }
+
+      if (showPublish) publishBtnEl.classList.remove('hidden');
+      else publishBtnEl.classList.add('hidden');
+
+      const anyVisible = showPending || showBackup || showBan || showPublish || showLockdown || showAlarm;
+      if (anyVisible) {
+        adminControls.classList.remove('hidden');
+      } else {
+        adminControls.classList.add('hidden');
+      }
+    }
+
+    function updateLockdownBtnUI() {
+      const btn = document.getElementById('lockdownBtn');
+      if (!btn) return;
+      const isOn = siteStatusCache && siteStatusCache.lockdown === true;
+      if (isOn) {
+        btn.textContent = '🔓 ロックダウン解除';
+        btn.classList.add('active');
+      } else {
+        btn.textContent = '🚨 緊急ロックダウン';
+        btn.classList.remove('active');
+      }
+    }
+
+    function updateAlarmBtnUI() {
+      const btn = document.getElementById('alarmBtn');
+      if (!btn) return;
+      const isOn = siteStatusCache && siteStatusCache.alarm === true;
+      if (isOn) {
+        btn.textContent = '🔕 警報解除';
+        btn.classList.add('active');
+      } else {
+        btn.textContent = '🚨 手動警報';
+        btn.classList.remove('active');
+      }
+    }
+
+    window.openAlarmModal = function() {
+      if (!canAlarm()) {
+        alert('この操作は管理者または主のみ可能です。');
+        return;
+      }
+      if (siteStatusCache.alarm === true) {
+        if (!confirm('🚨 警報を解除しますか？\n\n全ユーザーの警報トーストが消えます。')) return;
+        releaseAlarm();
+        return;
+      }
+      document.getElementById('alarmReasonInput').value = '';
+      document.getElementById('alarmModal').classList.remove('hidden');
+      setTimeout(() => {
+        const inp = document.getElementById('alarmReasonInput');
+        if (inp) inp.focus();
+      }, 100);
+    };
+
+    function closeAlarmModal() {
+      document.getElementById('alarmModal').classList.add('hidden');
+    }
+
+    document.getElementById('alarmCancelBtn').addEventListener('click', closeAlarmModal);
+    document.getElementById('alarmModal').addEventListener('click', (e) => {
+      if (e.target.id === 'alarmModal') closeAlarmModal();
+    });
+
+    document.getElementById('alarmFireBtn').addEventListener('click', async () => {
+      if (!canAlarm()) { alert('この操作は管理者または主のみ可能です。'); return; }
+      const reason = document.getElementById('alarmReasonInput').value.trim();
+
+      if (!confirm(
+        '🚨【手動警報を発令】🚨\n\n' +
+        '全ユーザー（未ログイン含む）の画面右上に警報トーストを表示します。\n' +
+        '管理者・主は影響を受けません。\n\n' +
+        '本当に発令しますか？'
+      )) return;
+
+      try {
+        await set(ref(db, 'siteStatus'), {
+          published: siteStatusCache.published !== false,
+          messageUrl: siteStatusCache.messageUrl || '',
+          lockdown: siteStatusCache.lockdown === true,
+          alarm: true,
+          alarmReason: reason || '緊急対応',
+          alarmBy: currentUser ? currentUser.email : '管理者',
+          alarmAt: Date.now(),
+          updatedAt: Date.now(),
+          updatedBy: currentUser ? currentUser.email : 'system'
+        });
+        closeAlarmModal();
+        showBanner('🚨 手動警報を発令しました', false);
+
+        sendDiscordAlarmNotification(reason || '緊急対応', currentUser ? currentUser.email : '管理者');
+      } catch (err) {
+        console.error('警報発令エラー:', err);
+        showBanner('警報発令失敗: ' + (err.code || err.message), true);
+        alert('警報の発令に失敗しました。');
+      }
+    });
+
+    async function releaseAlarm() {
+      if (!canAlarm()) { alert('この操作は管理者または主のみ可能です。'); return; }
+      try {
+        await set(ref(db, 'siteStatus'), {
+          published: siteStatusCache.published !== false,
+          messageUrl: siteStatusCache.messageUrl || '',
+          lockdown: siteStatusCache.lockdown === true,
+          alarm: false,
+          alarmReason: '',
+          alarmBy: '',
+          alarmAt: 0,
+          updatedAt: Date.now(),
+          updatedBy: currentUser ? currentUser.email : 'system'
+        });
+        showBanner('✅ 警報を解除しました', false);
+      } catch (err) {
+        console.error('警報解除エラー:', err);
+        showBanner('警報解除失敗: ' + (err.code || err.message), true);
+        alert('警報の解除に失敗しました。');
+      }
+    }
+
+    window.toggleLockdown = async function() {
+      if (!canLockdown()) {
+        alert('この操作は管理者または主のみ可能です。');
+        return;
+      }
+      const isOn = siteStatusCache && siteStatusCache.lockdown === true;
+      const newState = !isOn;
+
+      if (newState === true) {
+        if (!confirm(
+          '🚨【緊急ロックダウン】🚨\n\n' +
+          '管理者・主以外のすべてのユーザー（未ログイン含む）を\n' +
+          'ブラックアウト画面に切り替えます。\n\n' +
+          '本当に実行しますか？'
+        )) return;
+      } else {
+        if (!confirm('ロックダウンを解除しますか？')) return;
+      }
+
+      try {
+        await set(ref(db, 'siteStatus'), {
+          published: siteStatusCache.published !== false,
+          messageUrl: siteStatusCache.messageUrl || '',
+          lockdown: newState,
+          alarm: siteStatusCache.alarm === true,
+          alarmReason: siteStatusCache.alarmReason || '',
+          alarmBy: siteStatusCache.alarmBy || '',
+          alarmAt: siteStatusCache.alarmAt || 0,
+          updatedAt: Date.now(),
+          updatedBy: currentUser.email
+        });
+        showBanner(newState ? '🚨 緊急ロックダウンを発動しました' : '✅ ロックダウンを解除しました', false);
+      } catch (err) {
+        console.error('ロックダウン切替エラー:', err);
+        showBanner('ロックダウン切替失敗: ' + (err.code || err.message), true);
+        alert('ロックダウン切替に失敗しました。');
+      }
+    };
+
+    function initBoardListener() {
+      if (boardUnsubscribe) boardUnsubscribe();
+      const boardRef = ref(db, 'board');
+      boardUnsubscribe = onValue(boardRef, (snap) => {
+        boardCache = snap.exists() ? snap.val() : {};
+        if (!boardView.classList.contains('hidden')) {
+          renderBoardList();
+        }
+      }, (err) => {
+        console.error('掲示板監視エラー:', err);
+      });
+    }
+
+    function renderBoardList() {
+      const container = document.getElementById('boardListContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const entries = Object.entries(boardCache || {});
+      if (entries.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-sm">まだ投稿がありません。</p>';
+        return;
+      }
+
+      entries.sort((a, b) => (b[1].createdAt || 0) - (a[1].createdAt || 0));
+
+      entries.forEach(([key, item]) => {
+        if (!item) return;
+        const date = item.createdAt ? new Date(item.createdAt).toLocaleString('ja-JP') : '不明';
+        const card = document.createElement('div');
+        card.className = 'board-card';
+        const canEdit = canManageBoard();
+        card.innerHTML = `
+          <div class="flex justify-between items-start gap-2">
+            <div>
+              <div class="board-title">${escapeHtml(item.title || '（無題）')}</div>
+              <div class="board-meta">${date} ／ ${escapeHtml(item.authorEmail || '不明')}</div>
+            </div>
+            ${canEdit ? `<button class="board-delete-btn" data-key="${key}">削除</button>` : ''}
+          </div>
+          ${item.content ? `<div class="board-body">${formatContent(item.content)}</div>` : ''}
+          ${item.file ? `<div class="board-img">${buildFileHtml(item.file)}</div>` : ''}
+        `;
+        const delBtn = card.querySelector('.board-delete-btn');
+        if (delBtn) {
+          delBtn.addEventListener('click', async () => {
+            if (!canManageBoard()) {
+              alert('掲示板管理権限がありません。');
+              return;
+            }
+            if (!confirm('この投稿を削除しますか？')) return;
+            try {
+              await remove(ref(db, `board/${key}`));
+              showBanner('掲示板投稿を削除しました', false);
+            } catch (err) {
+              console.error('掲示板削除エラー:', err);
+              showBanner('削除失敗: ' + (err.code || err.message), true);
+            }
+          });
+        }
+        container.appendChild(card);
+      });
+    }
+
+    window.showBoardView = function() {
+      threadListView.classList.add('hidden');
+      threadDetailView.classList.add('hidden');
+      boardView.classList.remove('hidden');
+      backToListBtn.classList.remove('hidden');
+      currentThreadKey = null;
+      if (postsUnsubscribe) { postsUnsubscribe(); postsUnsubscribe = null; }
+      postsContainer.innerHTML = '';
+      updateBoardEditability();
+      initBoardListener();
+      renderBoardList();
+    };
+
+    document.getElementById('boardForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) { alert('ログインが必要です。'); return; }
+      if (!canManageBoard()) {
+        alert('掲示板管理権限がありません。');
+        return;
+      }
+
+      const title = document.getElementById('boardTitle').value.trim();
+      const content = document.getElementById('boardContent').value.trim();
+      const fileInput = document.getElementById('boardFileInput');
+      const file = fileInput.files[0];
+      const btn = document.getElementById('boardSubmitBtn');
+
+      if (!title) { alert('タイトルを入力してください。'); return; }
+
+      btn.disabled = true;
+      btn.textContent = file ? '画像処理中...' : '投稿中...';
+
+      try {
+        let fileData = null;
+        if (file) fileData = await fileToBase64Image(file);
+
+        const boardRef = ref(db, 'board');
+        const newRef = push(boardRef);
+        await set(newRef, {
+          title: title,
+          content: content || '',
+          file: fileData,
+          authorEmail: currentUser.email,
+          authorUid: currentUser.uid,
+          createdAt: Date.now()
+        });
+
+        document.getElementById('boardForm').reset();
+        document.getElementById('boardPreviewBox').classList.remove('show');
+        showBanner('掲示板に投稿しました', false);
+      } catch (err) {
+        console.error('掲示板投稿エラー:', err);
+        showBanner('投稿失敗: ' + (err.code || err.message), true);
+        alert('投稿に失敗しました。\n' + (err.message || ''));
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '📢 掲示板に投稿する';
+      }
+    });
+
+    document.getElementById('boardFileInput').addEventListener('change', () => {
+      updatePreview(document.getElementById('boardFileInput'), 'boardPreviewBox', 'boardPreviewImg', 'boardPreviewInfo');
+    });
+
+    document.getElementById('switchAccountBtn').addEventListener('click', async () => {
+      intentionalSignOut = true;
+      try { await signOut(auth); } catch (e) { console.error(e); }
+      banOverlay.classList.remove('show');
+      document.body.style.background = '';
+      showLoginView();
+      hideBootOverlay();
+      setTimeout(() => {
+        intentionalSignOut = false;
+        initialAuthCheckDone = false;
+      }, 500);
+    });
+
+    document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (err) {
+        console.error("ログインエラー:", err);
+        if (err.code !== 'auth/popup-closed-by-user') {
+          alert("ログインに失敗しました: " + (err.message || ''));
+        }
+      }
+    });
+
+    async function trySilentSignIn() {
+      try {
+        const p = new GoogleAuthProvider();
+        p.setCustomParameters({ prompt: 'none' });
+        const result = await signInWithPopup(auth, p);
+        console.log('サイレントサインイン成功:', result.user.email);
+      } catch (err) {
+        console.warn('サイレントサインイン失敗:', err.code || err.message);
+        hideBootOverlay();
+        showLoginView();
+      } finally {
+        initialAuthCheckDone = true;
+      }
+    }
+
+    window.doLogout = async function() {
+      intentionalSignOut = true;
+      if (postsUnsubscribe) { postsUnsubscribe(); postsUnsubscribe = null; }
+      if (threadsUnsubscribe) { threadsUnsubscribe(); threadsUnsubscribe = null; }
+      if (badgesUnsubscribe) { badgesUnsubscribe(); badgesUnsubscribe = null; }
+      if (bansUnsubscribe) { bansUnsubscribe(); bansUnsubscribe = null; }
+      if (deviceBansUnsubscribe) { deviceBansUnsubscribe(); deviceBansUnsubscribe = null; }
+      if (knownUsersUnsubscribe) { knownUsersUnsubscribe(); knownUsersUnsubscribe = null; }
+      if (pendingUnsubscribe) { pendingUnsubscribe(); pendingUnsubscribe = null; }
+      if (approvedUnsubscribe) { approvedUnsubscribe(); approvedUnsubscribe = null; }
+      if (selfApprovalUnsubscribe) { selfApprovalUnsubscribe(); selfApprovalUnsubscribe = null; }
+      if (siteStatusUnsubscribe) { siteStatusUnsubscribe(); siteStatusUnsubscribe = null; }
+      if (badgeFeatureUnsubscribe) { badgeFeatureUnsubscribe(); badgeFeatureUnsubscribe = null; }
+      if (boardUnsubscribe) { boardUnsubscribe(); boardUnsubscribe = null; }
+      if (nicknamesUnsubscribe) { nicknamesUnsubscribe(); nicknamesUnsubscribe = null; }
+      stopLockdownEnforcer();
+      try { await signOut(auth); } catch (e) { console.error(e); }
+      banOverlay.classList.remove('show');
+      hideUnpublishedOverlay();
+      hideAlarmToast();
+      document.body.style.background = '';
+      showLoginView();
+      hideBootOverlay();
+      setTimeout(() => {
+        intentionalSignOut = false;
+        initialAuthCheckDone = false;
+      }, 500);
+    };
+
+    function roleFromEmail(email) {
+      if (email === ROLE_ADMIN_EMAIL) return 'admin';
+      if (email === ROLE_OWNER_EMAIL) return 'owner';
+      if (ROLE_VIP_EMAILS.includes(email)) return 'vip';
+      return null;
+    }
+
+    function initSiteStatusListener() {
+      if (siteStatusUnsubscribe) siteStatusUnsubscribe();
+      const ref0 = ref(db, 'siteStatus');
+      siteStatusUnsubscribe = onValue(ref0, (snap) => {
+        const val = snap.exists() ? snap.val() : { published: true, messageUrl: '', lockdown: false, alarm: false };
+        siteStatusCache = {
+          published: val.published !== false,
+          messageUrl: val.messageUrl || '',
+          lockdown: val.lockdown === true,
+          alarm: val.alarm === true,
+          alarmReason: val.alarmReason || '',
+          alarmBy: val.alarmBy || '',
+          alarmAt: val.alarmAt || 0
+        };
+
+        updateLockdownBtnUI();
+        updateAlarmBtnUI();
+        updatePublishModalUI();
+
+        if (checkAndApplyLockdown()) {
+          return;
+        }
+
+        checkAndApplyAlarm();
+
+        if (isCurrentUserProtected()) {
+          hideUnpublishedOverlay();
+          return;
+        }
+
+        if (siteStatusCache.published === false) {
+          showUnpublishedOverlay();
+        } else {
+          hideUnpublishedOverlay();
+        }
+      }, (err) => {
+        console.error('サイト公開状態監視エラー:', err);
+      });
+    }
+
+    function initCustomBadgesListener() {
+      if (badgesUnsubscribe) badgesUnsubscribe();
+      const badgesRef = ref(db, 'customBadges');
+      badgesUnsubscribe = onValue(badgesRef, (snap) => {
+        customBadgesCache = snap.exists() ? snap.val() : {};
+        if (currentThreadKey) renderPostsFromCache();
+        updateMyBadgeToggleVisibility();
+        updateAdminControlsVisibility();
+      }, (err) => {
+        console.error('カスタムバッジ監視エラー:', err);
+      });
+    }
+
+    function initBansListener() {
+      if (bansUnsubscribe) bansUnsubscribe();
+      const bansRef = ref(db, 'bans');
+      bansUnsubscribe = onValue(bansRef, (snap) => {
+        bansCache = snap.exists() ? snap.val() : {};
+        checkSelfBan();
+        if (currentThreadKey) renderPostsFromCache();
+      }, (err) => {
+        console.error('BANリスト監視エラー:', err);
+      });
+    }
+
+    function initDeviceBansListener() {
+      if (deviceBansUnsubscribe) deviceBansUnsubscribe();
+      const ref0 = ref(db, 'deviceBans');
+      deviceBansUnsubscribe = onValue(ref0, (snap) => {
+        deviceBansCache = snap.exists() ? snap.val() : {};
+        checkSelfBan();
+      }, (err) => {
+        console.error('デバイスBANリスト監視エラー:', err);
+      });
+    }
+
+    function initKnownUsersListener() {
+      if (knownUsersUnsubscribe) knownUsersUnsubscribe();
+      const ref0 = ref(db, 'knownUsers');
+      knownUsersUnsubscribe = onValue(ref0, (snap) => {
+        knownUsersCache = snap.exists() ? snap.val() : {};
+        const um = document.getElementById('userModal');
+        if (um && !um.classList.contains('hidden')) {
+          renderUserList();
+        }
+      }, (err) => {
+        console.error('既知ユーザー監視エラー:', err);
+      });
+    }
+
+    function initPendingListener() {
+      if (pendingUnsubscribe) pendingUnsubscribe();
+      const ref0 = ref(db, 'pendingUsers');
+      pendingUnsubscribe = onValue(ref0, (snap) => {
+        pendingCache = snap.exists() ? snap.val() : {};
+        updatePendingBadge();
+        const pm = document.getElementById('pendingModal');
+        if (pm && !pm.classList.contains('hidden')) {
+          renderPendingList();
+        }
+      }, (err) => {
+        console.error('承認待ちリスト監視エラー:', err);
+      });
+    }
+
+    function initApprovedListener() {
+      if (approvedUnsubscribe) approvedUnsubscribe();
+      const ref0 = ref(db, 'approvedUsers');
+      approvedUnsubscribe = onValue(ref0, (snap) => {
+        approvedCache = snap.exists() ? snap.val() : {};
+        const um = document.getElementById('userModal');
+        if (um && !um.classList.contains('hidden')) {
+          renderUserList();
+        }
+      }, (err) => {
+        console.error('承認済みリスト監視エラー:', err);
+      });
+    }
+
+    function updatePendingBadge() {
+      const cnt = Object.keys(pendingCache || {}).length;
+      const badgeEl = document.getElementById('pendingBadgeCount');
+      const btnEl = document.getElementById('pendingBtn');
+      if (badgeEl) badgeEl.textContent = cnt;
+      if (btnEl) {
+        if (cnt > 0) btnEl.classList.add('has-pending');
+        else btnEl.classList.remove('has-pending');
+      }
+    }
+
+    async function registerMyFingerprint() {
+      if (!currentUser || !myFingerprint) return;
+      const now = Date.now();
+
+      try {
+        await update(ref(db, `userDevices/${currentUser.uid}`), {
+          [myFingerprint]: now
+        });
+      } catch (e) {
+        console.warn('フィンガープリント登録スキップ:', e.message);
+      }
+
+      try {
+        const userRef = ref(db, `knownUsers/${currentUser.uid}`);
+        const existingSnap = await get(userRef);
+        const existing = existingSnap.exists() ? existingSnap.val() : null;
+
+        const data = {
+          email: currentUser.email || '',
+          displayName: currentUser.displayName || '',
+          lastSeen: now,
+          firstSeen: existing && existing.firstSeen ? existing.firstSeen : now,
+          role: userRole || null,
+          lastFingerprint: myFingerprint
+        };
+        await update(userRef, data);
+      } catch (e) {
+        console.warn('knownUsers 登録スキップ:', e.message);
+      }
+    }
+
+    async function requestApproval() {
+      if (!currentUser) return;
+      try {
+        const approvedSnap = await get(ref(db, `approvedUsers/${currentUser.uid}`));
+        if (approvedSnap.exists()) return;
+
+        const pendingSnap = await get(ref(db, `pendingUsers/${currentUser.uid}`));
+        const alreadyPending = pendingSnap.exists();
+
+        await set(ref(db, `pendingUsers/${currentUser.uid}`), {
+          email: currentUser.email || '',
+          displayName: currentUser.displayName || '',
+          requestedAt: Date.now(),
+          fingerprint: myFingerprint || ''
+        });
+
+        if (!alreadyPending) {
+          await sendDiscordApprovalNotification(
+            currentUser.email || '',
+            currentUser.displayName || '',
+            currentUser.uid,
+            myFingerprint || ''
+          );
+        }
+      } catch (e) {
+        console.warn('承認申請スキップ:', e.message);
+      }
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (intentionalSignOut) {
+        currentUser = null;
+        userRole = null;
+        return;
+      }
+
+      currentUser = user;
+
+      if (!user) {
+        userRole = null;
+        initSiteStatusListener();
+
+        if (!initialAuthCheckDone) {
+          trySilentSignIn();
+          return;
+        }
+
+        if (checkAndApplyLockdown()) return;
+
+        hideBootOverlay();
+        showLoginView();
+        hideUnpublishedOverlay();
+        checkAndApplyAlarm();
+        return;
+      }
+
+      userRole = roleFromEmail(user.email);
+      myBadgePublic = loadBadgeVisibility(user.email);
+      myEmailVisible = loadEmailVisibility(user.email);
+      myFingerprint = generateFingerprint();
+
+      initSiteStatusListener();
+      initBadgeFeatureListener();
+
+      try {
+        const initSiteSnap = await get(ref(db, 'siteStatus'));
+        const initVal = initSiteSnap.exists() ? initSiteSnap.val() : { published: true, messageUrl: '', lockdown: false, alarm: false };
+        siteStatusCache = {
+          published: initVal.published !== false,
+          messageUrl: initVal.messageUrl || '',
+          lockdown: initVal.lockdown === true,
+          alarm: initVal.alarm === true,
+          alarmReason: initVal.alarmReason || '',
+          alarmBy: initVal.alarmBy || '',
+          alarmAt: initVal.alarmAt || 0
+        };
+      } catch (e) {
+        console.warn('siteStatus初期取得失敗:', e.message);
+      }
+
+      if (checkAndApplyLockdown()) return;
+
+      if (isCurrentUserProtected()) {
+        initBansListener();
+        initDeviceBansListener();
+        initApprovedListener();
+        hideUnpublishedOverlay();
+        checkAndApplyAlarm();
+      } else {
+        const isDeviceBanned = await checkAndApplyDeviceBan(user, myFingerprint);
+        if (isDeviceBanned) {
+          executeBan();
+          return;
+        }
+
+        if (checkSelfBan()) return;
+
+        initBansListener();
+        initDeviceBansListener();
+        initApprovedListener();
+        checkAndApplyAlarm();
+      }
+
+      try {
+        const approvedSnap = await get(ref(db, 'approvedUsers'));
+        approvedCache = approvedSnap.exists() ? approvedSnap.val() : {};
+      } catch (e) {
+        console.warn('承認済みリスト取得スキップ:', e.message);
+      }
+
+      const isApproved = checkSelfApproval();
+
+      if (!isApproved) {
+        await requestApproval();
+        executePending();
+        return;
+      }
+
+      userApproved = true;
+
+      updateMyBadgeToggleVisibility();
+      updateEmailToggleVisibility();
+
+      renderRoleBadge(userRole);
+
+      userEmailSpan.classList.add('hidden');
+      userEmailSpan.textContent = '';
+      if (userRole === 'admin') {
+        userEmailSpan.classList.remove('hidden');
+        userEmailSpan.textContent = user.email + '（管理者）';
+        userEmailSpan.className = 'text-xs text-red-700 font-bold';
+      } else if (userRole === 'owner') {
+        userEmailSpan.classList.remove('hidden');
+        userEmailSpan.textContent = user.email + '（主）';
+        userEmailSpan.className = 'text-xs text-blue-700 font-bold';
+      } else if (userRole === 'vip') {
+        userEmailSpan.classList.remove('hidden');
+        userEmailSpan.textContent = user.email + '（VIP）';
+        userEmailSpan.className = 'text-xs text-purple-700 font-bold';
+      }
+
+      updateAdminControlsVisibility();
+      updateBoardEditability();
+      setTimeout(updateAdminControlsVisibility, 500);
+
+      if (selfApprovalUnsubscribe) selfApprovalUnsubscribe();
+      selfApprovalUnsubscribe = onValue(ref(db, `approvedUsers/${user.uid}`), (snap) => {
+        if (!snap.exists() && userRole !== 'admin' && userRole !== 'owner' && userRole !== 'vip') {
+          approvedCache = {};
+          userApproved = false;
+          requestApproval();
+          executePending();
+        }
+      });
+
+      hideBootOverlay();
+      showMainView();
+      setConnection(navigator.onLine);
+
+      // 教科フィルタを復元
+      currentSubjectFilter = loadSubjectFilter();
+
+      showThreadList();
+      initThreadsListener();
+      initCustomBadgesListener();
+      initKnownUsersListener();
+      initPendingListener();
+      initNicknamesListener();
+      registerMyFingerprint();
+      initBoardListener();
+    });
+
+    badgeToggle.addEventListener('change', async () => {
+      if (!currentUser) return;
+      const visible = badgeToggle.checked;
+      saveBadgeVisibility(currentUser.email, visible);
+      myBadgePublic = visible;
+
+      showBanner('バッジ表示を更新中...', false);
+
+      try {
+        const snap = await get(ref(db, 'threads'));
+        if (snap.exists()) {
+          const updates = {};
+          snap.forEach((threadSnap) => {
+            const tid = threadSnap.key;
+            const posts = threadSnap.child('posts');
+            if (posts.exists()) {
+              posts.forEach((postSnap) => {
+                const post = postSnap.val();
+                if (post && post.authorUid === currentUser.uid) {
+                  updates[`threads/${tid}/posts/${postSnap.key}/badgeVisible`] = visible;
+                }
+              });
+            }
+          });
+          if (Object.keys(updates).length > 0) {
+            await update(ref(db), updates);
+          }
+        }
+        showBanner(visible ? 'バッジを他の人に表示します' : 'バッジを他の人に非表示にしました', false);
+      } catch (err) {
+        console.error('バッジ更新エラー:', err);
+        showBanner('バッジ設定の保存に失敗: ' + (err.code || err.message), true);
+        badgeToggle.checked = !visible;
+        myBadgePublic = !visible;
+      }
+    });
+
+    emailToggle.addEventListener('change', () => {
+      if (!currentUser) return;
+      const visible = emailToggle.checked;
+      saveEmailVisibility(currentUser.email, visible);
+      myEmailVisible = visible;
+
+      if (currentThreadKey) renderPostsFromCache();
+      refreshThreadAuthorDisplay();
+
+      showBanner(visible ? 'メールアドレスを表示します' : 'メールアドレスを非表示にしました', false);
+    });
+
+    let currentThreadAuthorEmail = '';
+    function refreshThreadAuthorDisplay() {
+      const authorEl = document.getElementById('currentThreadAuthor');
+      if (!authorEl) return;
+      if (canViewEmail() && currentThreadAuthorEmail) {
+        authorEl.textContent = '作成者: ' + currentThreadAuthorEmail;
+        authorEl.className = 'text-xs text-red-700 font-bold mt-1';
+      } else {
+        authorEl.textContent = '';
+      }
+    }
+
+    document.getElementById('threadFileInput').addEventListener('change', () => {
+      updatePreview(document.getElementById('threadFileInput'), 'threadPreviewBox', 'threadPreviewImg', 'threadPreviewInfo');
+    });
+    document.getElementById('fileInput').addEventListener('change', () => {
+      updatePreview(document.getElementById('fileInput'), 'postPreviewBox', 'postPreviewImg', 'postPreviewInfo');
+    });
+
+    /* ===== 教科選択UI ===== */
+    function setupSubjectSelectUI() {
+      const container = document.getElementById('subjectSelectBig');
+      if (!container) return;
+      container.querySelectorAll('.subject-select-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const subj = btn.dataset.subject;
+          container.querySelectorAll('.subject-select-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedSubjectForNewThread = subj;
+          document.getElementById('selectedSubject').value = subj;
+        });
+      });
+    }
+    setupSubjectSelectUI();
+
+    /* ===== 教科タブ ===== */
+    function setupSubjectTabs() {
+      const tabs = document.getElementById('subjectTabs');
+      if (!tabs) return;
+      tabs.querySelectorAll('.subject-tab').forEach(tab => {
+        // 初期アクティブを復元
+        if (tab.dataset.subject === currentSubjectFilter) {
+          tab.classList.add('active');
+        } else {
+          tab.classList.remove('active');
+        }
+        tab.addEventListener('click', () => {
+          tabs.querySelectorAll('.subject-tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentSubjectFilter = tab.dataset.subject;
+          saveSubjectFilter(currentSubjectFilter);
+          renderThreadList();
+        });
+      });
+    }
+
+    function updateSubjectTabCounts() {
+      const counts = { all: 0, math: 0, science: 0, social: 0, japanese: 0, english: 0, other: 0 };
+      allThreadsCache.forEach(t => {
+        counts.all++;
+        const s = t.subject && SUBJECTS[t.subject] ? t.subject : 'other';
+        counts[s]++;
+      });
+      document.getElementById('countAll').textContent = counts.all;
+      document.getElementById('countMath').textContent = counts.math;
+      document.getElementById('countScience').textContent = counts.science;
+      document.getElementById('countSocial').textContent = counts.social;
+      document.getElementById('countJapanese').textContent = counts.japanese;
+      document.getElementById('countEnglish').textContent = counts.english;
+      document.getElementById('countOther').textContent = counts.other;
+    }
+
+    function renderThreadList() {
+      threadsContainer.innerHTML = '';
+
+      let threads = allThreadsCache;
+      if (currentSubjectFilter !== 'all') {
+        threads = threads.filter(t => {
+          const s = t.subject && SUBJECTS[t.subject] ? t.subject : 'other';
+          return s === currentSubjectFilter;
+        });
+      }
+
+      if (threads.length === 0) {
+        threadsContainer.innerHTML = '<p class="text-gray-500 text-sm">該当するスレッドがありません。新しく作成してください。</p>';
+        updateSubjectTabCounts();
+        return;
+      }
+
+      threads.forEach((thread) => {
+        let date = '日時不明';
+        if (thread.createdAt) {
+          try { date = new Date(thread.createdAt).toLocaleString('ja-JP'); }
+          catch (e) { date = '日時不明'; }
+        }
+
+        const subjHtml = subjectBadgeHtml(thread.subject);
+
+        const item = document.createElement('div');
+        item.className = 'bg-white p-3 border border-gray-300 rounded hover:bg-blue-50 cursor-pointer transition flex justify-between items-center shadow-sm';
+        item.onclick = () => openThread(thread.key, thread.title, date, thread.authorEmail, thread.authorUid, thread.subject);
+        item.innerHTML = `
+          <div class="flex-1 min-w-0">
+            ${subjHtml}
+            <span class="font-bold text-blue-900 break-words">${escapeHtml(thread.title)}</span>
+            <span class="text-xs text-gray-400 ml-2 whitespace-nowrap">(${date})</span>
+          </div>
+          <span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full ml-2 whitespace-nowrap">開く</span>`;
+        threadsContainer.appendChild(item);
+      });
+
+      updateSubjectTabCounts();
+    }
+
+    window.showThreadList = function() {
+      threadListView.classList.remove('hidden');
+      threadDetailView.classList.add('hidden');
+      boardView.classList.add('hidden');
+      backToListBtn.classList.add('hidden');
+      currentThreadKey = null;
+      currentThreadOwnerUid = null;
+      currentThreadSubject = 'other';
+      currentThreadAuthorEmail = '';
+      activeReplyParentId = null;
+      if (postsUnsubscribe) { postsUnsubscribe(); postsUnsubscribe = null; }
+      postsContainer.innerHTML = '<p class="text-gray-500 text-sm">読み込み中...</p>';
+      setupSubjectTabs();
+    };
+
+    function openThread(threadKey, title, createdAt, authorEmail, authorUid, subject) {
+      currentThreadKey = threadKey;
+      currentThreadOwnerUid = authorUid || null;
+      currentThreadSubject = subject || 'other';
+      currentThreadAuthorEmail = authorEmail || '';
+      activeReplyParentId = null;
+      document.getElementById('currentThreadTitle').innerText = title;
+      document.getElementById('currentThreadDate').innerText = '作成日時: ' + createdAt;
+
+      // 教科バッジを表示
+      const subjWrap = document.getElementById('currentThreadSubjectWrap');
+      if (subjWrap) {
+        subjWrap.innerHTML = subjectBadgeHtml(currentThreadSubject);
+      }
+
+      refreshThreadAuthorDisplay();
+
+      const delBtn = document.getElementById('deleteThreadBtn');
+      if (canDelete() || canDo('canDeleteThread')) {
+        delBtn.classList.remove('hidden');
+      } else {
+        delBtn.classList.add('hidden');
+      }
+
+      threadListView.classList.add('hidden');
+      threadDetailView.classList.remove('hidden');
+      boardView.classList.add('hidden');
+      backToListBtn.classList.remove('hidden');
+
+      loadPosts(threadKey);
+    }
+
+    document.getElementById('createThreadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) { alert('ログインが必要です。'); return; }
+      if (checkSelfBan()) return;
+
+      const subject = document.getElementById('selectedSubject').value;
+      const title = document.getElementById('threadTitle').value.trim();
+      const content = document.getElementById('firstPostContent').value.trim();
+      const fileInput = document.getElementById('threadFileInput');
+      const file = fileInput.files[0];
+      const btn = document.getElementById('createThreadBtn');
+
+      if (!subject) {
+        alert('教科を選択してください。');
+        return;
+      }
+      if (!title) { alert('スレッドタイトルを入力してください。'); return; }
+
+      btn.disabled = true;
+      btn.innerText = file ? '画像処理中...' : '作成中...';
+
+      const tempKey = 'temp_' + Date.now();
+      const tempItem = document.createElement('div');
+      tempItem.id = 'optimistic_thread_' + tempKey;
+      tempItem.className = 'bg-white p-3 border border-gray-300 rounded flex justify-between items-center shadow-sm optimistic-item';
+      tempItem.innerHTML = `
+        <div class="flex-1 min-w-0">
+          ${subjectBadgeHtml(subject)}
+          <span class="font-bold text-blue-900 break-words">${escapeHtml(title)}</span>
+          <span class="text-xs text-gray-400 ml-2 whitespace-nowrap">(送信中...)</span>
+        </div>`;
+      threadsContainer.prepend(tempItem);
+
+      try {
+        let fileData = null;
+        if (file) fileData = await fileToBase64Image(file);
+
+        document.getElementById('createThreadForm').reset();
+        document.getElementById('threadPreviewBox').classList.remove('show');
+        // 教科選択をリセット
+        document.querySelectorAll('#subjectSelectBig .subject-select-btn').forEach(b => b.classList.remove('selected'));
+        document.getElementById('selectedSubject').value = '';
+        selectedSubjectForNewThread = '';
+
+        const threadsRef = ref(db, 'threads');
+        const newThreadRef = push(threadsRef);
+        const threadKey = newThreadRef.key;
+
+        const threadData = {
+          title: title,
+          subject: subject,
+          createdAt: Date.now(),
+          postCount: content || fileData ? 1 : 0,
+          authorEmail: currentUser.email,
+          authorUid: currentUser.uid,
+          authorRole: userRole || null
+        };
+
+        const writes = [set(newThreadRef, threadData)];
+
+        if (content || fileData) {
+          const postRef = push(ref(db, `threads/${threadKey}/posts`));
+          writes.push(set(postRef, {
+            author: '名無しさん',
+            content: content || '',
+            createdAt: Date.now(),
+            authorEmail: currentUser.email,
+            authorUid: currentUser.uid,
+            authorRole: userRole || null,
+            badgeVisible: myBadgePublic,
+            parentId: null,
+            file: fileData
+          }));
+        }
+
+        await Promise.all(writes);
+        showBanner('スレッドを保存しました', false);
+        const tempEl = document.getElementById('optimistic_thread_' + tempKey);
+        if (tempEl) tempEl.remove();
+      } catch (err) {
+        console.error("スレッド作成エラー:", err);
+        const el = document.getElementById('optimistic_thread_' + tempKey);
+        if (el) el.remove();
+        showBanner('保存失敗: ' + (err.code || err.message || 'ネットワークエラー'), true);
+        alert("スレッドの作成に失敗しました。\n" + (err.message || ''));
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'スレッドを立てる';
+      }
+    });
+
+    function initThreadsListener() {
+      if (threadsUnsubscribe) threadsUnsubscribe();
+
+      const threadsRef = ref(db, 'threads');
+      const q = query(threadsRef, orderByChild('createdAt'));
+
+      threadsUnsubscribe = onValue(q, (snapshot) => {
+        setConnection(true);
+        threadsContainer.innerHTML = '';
+
+        if (!snapshot.exists()) {
+          allThreadsCache = [];
+          threadsContainer.innerHTML = '<p class="text-gray-500 text-sm">スレッドがありません。新しく作成してください。</p>';
+          updateSubjectTabCounts();
+          return;
+        }
+
+        const threads = [];
+        snapshot.forEach((child) => {
+          threads.push({ key: child.key, ...child.val() });
+        });
+        threads.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        allThreadsCache = threads;
+
+        renderThreadList();
+        setupSubjectTabs();
+      }, (error) => {
+        console.error("スレッド一覧の取得エラー:", error);
+        setConnection(false);
+        threadsContainer.innerHTML =
+          '<p class="text-red-500 text-sm">スレッド一覧の読み込みに失敗しました。<br>' +
+          'Realtime Database のルールを確認してください。</p>';
+        showBanner('読み込み失敗: ' + (error.code || error.message), true);
+      });
+    }
+
+    function loadPosts(threadKey) {
+      if (postsUnsubscribe) { postsUnsubscribe(); postsUnsubscribe = null; }
+      postsContainer.innerHTML = '<p class="text-gray-500 text-sm"><span class="loading-spinner"></span> 読み込み中...</p>';
+
+      const postsRef = ref(db, `threads/${threadKey}/posts`);
+      const q = query(postsRef, orderByChild('createdAt'));
+
+      postsUnsubscribe = onValue(q, (snapshot) => {
+        setConnection(true);
+
+        if (!snapshot.exists()) {
+          allPostsCache = [];
+          postNumberMap = new Map();
+          postsContainer.innerHTML = '<p class="text-gray-500 text-sm">まだ書き込みがありません。</p>';
+          return;
+        }
+
+        const posts = [];
+        snapshot.forEach((child) => {
+          posts.push({ key: child.key, ...child.val() });
+        });
+        posts.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+        allPostsCache = posts;
+
+        postNumberMap = new Map();
+        posts.forEach((p, i) => postNumberMap.set(p.key, i + 1));
+
+        renderPostsFromCache();
+      }, (error) => {
+        console.error("レス読み込みエラー:", error);
+        setConnection(false);
+        postsContainer.innerHTML = '<p class="text-red-500 text-sm">レス一覧の読み込みに失敗しました。</p>';
+        showBanner('レス読み込み失敗: ' + (error.code || error.message), true);
+      });
+    }
+
+    function renderPostsFromCache() {
+      postsContainer.innerHTML = '';
+
+      if (allPostsCache.length === 0) {
+        postsContainer.innerHTML = '<p class="text-gray-500 text-sm">まだ書き込みがありません。</p>';
+        return;
+      }
+
+      const posts = allPostsCache;
+      const childrenMap = new Map();
+      const rootPosts = [];
+      const keySet = new Set(posts.map(p => p.key));
+
+      posts.forEach((p) => {
+        let pid = p.parentId || null;
+        if (pid && !keySet.has(pid)) pid = null;
+        if (pid === null) {
+          rootPosts.push(p);
+        } else {
+          if (!childrenMap.has(pid)) childrenMap.set(pid, []);
+          childrenMap.get(pid).push(p);
+        }
+      });
+
+      const frag = document.createDocumentFragment();
+      rootPosts.forEach((p) => frag.appendChild(renderPostTree(p, childrenMap)));
+      postsContainer.appendChild(frag);
+
+      if (activeReplyParentId && keySet.has(activeReplyParentId)) {
+        openReplyBox(activeReplyParentId);
+      } else {
+        activeReplyParentId = null;
+      }
+    }
+
+    function isPostBanned(post) {
+      if (!post) return false;
+      if (post.authorUid && bansCache[post.authorUid]) return true;
+      if (post.authorEmail) {
+        const ek = emailToKey(post.authorEmail);
+        if (ek && bansCache[ek]) return true;
+      }
+      return false;
+    }
+
+    function buildPostRoleBadge(post) {
+      if (!post) return '';
+      if (post.badgeVisible === false) return '';
+      const role = post.authorRole;
+      if (role === 'admin') return `<span class="role-post-badge admin">管理者</span>`;
+      if (role === 'owner') return `<span class="role-post-badge owner">主</span>`;
+      if (role === 'vip')   return `<span class="role-post-badge vip">VIP</span>`;
+      return '';
+    }
+
+    function buildPostCustomBadge(post) {
+      if (!post) return '';
+      if (post.badgeVisible === false) return '';
+      const uid = post.authorUid;
+      if (!uid) return '';
+      const badges = customBadgesCache[uid];
+      if (!badges) return '';
+      let html = '';
+      Object.values(badges).forEach((b) => {
+        if (b && b.label && b.color) {
+          html += `<span class="custom-badge" style="background:${escapeHtml(b.color)};">${escapeHtml(b.label)}</span>`;
+        }
+      });
+      return html;
+    }
+
+    function renderPostTree(post, childrenMap) {
+      const wrap = document.createElement('div');
+      wrap.className = 'post-tree';
+      wrap.dataset.postKey = post.key;
+
+      const number = postNumberMap.get(post.key) || '?';
+      let date = '送信中...';
+      if (post.createdAt) {
+        try { date = new Date(post.createdAt).toLocaleString('ja-JP'); }
+        catch (e) { date = '日時不明'; }
+      }
+
+      let opBadge = '';
+      if (currentThreadOwnerUid && post.authorUid === currentThreadOwnerUid) {
+        opBadge = `<span class="op-badge">スレ主</span>`;
+      }
+
+      const roleBadgeHtml = buildPostRoleBadge(post);
+      const customBadgeHtml = buildPostCustomBadge(post);
+
+      const isBanned = isPostBanned(post);
+      const bannedMark = isBanned ? `<span class="banned-mark">BAN中</span>` : '';
+
+      const isProtected = post.authorUid && isProtectedUid(post.authorUid);
+
+      let adminInfo = '';
+      if (canViewEmail()) {
+        adminInfo = `<span class="admin-email">${escapeHtml(post.authorEmail || 'メール不明')}</span>`;
+      }
+
+      let replyLabel = '';
+      if (post.parentId && postNumberMap.has(post.parentId)) {
+        const parentNum = postNumberMap.get(post.parentId);
+        replyLabel = `<span class="reply-target-label">↩ >>${parentNum}</span>`;
+      }
+
+      const fileHtml = post.file ? buildFileHtml(post.file) : '';
+
+      let badgeManageBtn = '';
+      if (canManageBadge()) {
+        badgeManageBtn = `<button class="badge-manage-btn" data-badge-uid="${post.authorUid}" data-badge-email="${escapeHtml(post.authorEmail || '')}">バッジ管理</button>`;
+      }
+      let banBtn = '';
+      if (canBan() && post.authorUid && !isProtected) {
+        if (isBanned) {
+          banBtn = `<button class="ban-btn" data-ban-action="unban" data-ban-uid="${post.authorUid}" data-ban-email="${escapeHtml(post.authorEmail || '')}">BAN解除</button>`;
+        } else {
+          banBtn = `<button class="ban-btn" data-ban-action="ban" data-ban-uid="${post.authorUid}" data-ban-email="${escapeHtml(post.authorEmail || '')}">BAN</button>`;
+        }
+      }
+
+      const postDiv = document.createElement('div');
+      postDiv.className = 'post-card' + (isBanned ? ' banned-post' : '');
+      postDiv.innerHTML = `
+        <div class="font-bold text-gray-700 mb-1 flex flex-wrap items-baseline gap-x-1 items-center">
+          <span class="post-number">${number}</span>
+          <span>：</span>
+          <span class="post-author">${escapeHtml(post.author || '名無しさん')}</span>
+          ${opBadge}
+          ${roleBadgeHtml}
+          ${customBadgeHtml}
+          ${bannedMark}
+          <span>：</span>
+          <span class="text-gray-500 text-xs font-normal">${date}</span>
+          ${adminInfo}
+          <span class="ml-auto flex gap-1">
+            ${badgeManageBtn}
+            ${banBtn}
+            <button class="reply-btn" data-reply-key="${post.key}">返信</button>
+            ${canDelete() || canDo('canDeletePost') ? `<button class="delete-btn" data-post-key="${post.key}">削除</button>` : ''}
+          </span>
+        </div>
+        ${post.content ? `<div class="text-gray-900 whitespace-pre-wrap mb-1 break-words">${formatContent(post.content)}</div>` : ''}
+        ${fileHtml}
+        ${replyLabel ? `<div class="mt-1">${replyLabel}</div>` : ''}
+      `;
+
+      const rbtn = postDiv.querySelector('.reply-btn');
+      if (rbtn) rbtn.addEventListener('click', () => onReplyClick(post.key));
+      if (canDelete() || canDo('canDeletePost')) {
+        const dbtn = postDiv.querySelector('.delete-btn');
+        if (dbtn) dbtn.addEventListener('click', () => deletePost(currentThreadKey, post.key, postNumberMap.get(post.key)));
+      }
+      const bbtn = postDiv.querySelector('.badge-manage-btn');
+      if (bbtn) {
+        bbtn.addEventListener('click', () => {
+          openBadgeModal(bbtn.dataset.badgeUid, bbtn.dataset.badgeEmail);
+        });
+      }
+      const bnbtn = postDiv.querySelector('.ban-btn');
+      if (bnbtn) {
+        bnbtn.addEventListener('click', () => {
+          handleBanAction(bnbtn.dataset.banAction, bnbtn.dataset.banUid, bnbtn.dataset.banEmail);
+        });
+      }
+
+      wrap.appendChild(postDiv);
+
+      const children = childrenMap.get(post.key) || [];
+      if (children.length > 0) {
+        const childWrap = document.createElement('div');
+        childWrap.className = 'post-children';
+        children.forEach((c) => childWrap.appendChild(renderPostTree(c, childrenMap)));
+        wrap.appendChild(childWrap);
+      }
+
+      return wrap;
+    }
+
+    async function handleBanAction(action, uid, email) {
+      if (!canBan()) { alert('BAN権限がありません。'); return; }
+      if (!uid && !email) return;
+
+      if (isProtectedEmail(email)) {
+        alert('管理者および主はBANできません。');
+        return;
+      }
+      if (uid && isProtectedUid(uid)) {
+        alert('管理者および主はBANできません。');
+        return;
+      }
+      if (uid) {
+        const u1 = knownUsersCache[uid];
+        if (u1 && u1.email && isProtectedEmail(u1.email)) {
+          alert('管理者および主はBANできません。');
+          return;
+        }
+        const u2 = approvedCache[uid];
+        if (u2 && u2.email && isProtectedEmail(u2.email)) {
+          alert('管理者および主はBANできません。');
+          return;
+        }
+      }
+
+      if (action === 'ban') {
+        if (!confirm(
+          `このユーザーをBANしますか？\n\n対象: ${email || '（メール不明）'}\nUID: ${uid}\n\n` +
+          `・UID・メール・デバイスの3つでブロックします。\n` +
+          `・同じデバイスを使っている他のアカウントもBANされます。`
+        )) return;
+        try {
+          const now = Date.now();
+          const data = {
+            bannedAt: now,
+            bannedBy: currentUser.email,
+            email: email || '',
+            uid: uid || ''
+          };
+
+          const ops = [];
+          if (uid) ops.push(set(ref(db, `bans/${uid}`), data));
+          if (email) {
+            const ek = emailToKey(email);
+            if (ek) ops.push(set(ref(db, `bans/${ek}`), data));
+          }
+          await Promise.all(ops);
+
+          if (uid) {
+            try {
+              const devSnap = await get(ref(db, `userDevices/${uid}`));
+              if (devSnap.exists()) {
+                const devOps = [];
+                devSnap.forEach((child) => {
+                  const fp = child.key;
+                  if (currentUser && myFingerprint && fp === myFingerprint) return;
+                  devOps.push(set(ref(db, `deviceBans/${fp}`), {
+                    bannedAt: now,
+                    bannedBy: currentUser.email,
+                    email: email || '',
+                    uid: uid
+                  }));
+                });
+                if (devOps.length > 0) await Promise.all(devOps);
+              }
+            } catch (e) {
+              console.warn('デバイスBAN登録スキップ:', e.message);
+            }
+          }
+
+          showBanner('BANしました（同じデバイスの他アカウントも対象）', false);
+        } catch (err) {
+          console.error('BANエラー:', err);
+          showBanner('BAN失敗: ' + (err.code || err.message), true);
+          alert('BANに失敗しました。');
+        }
+      } else if (action === 'unban') {
+        if (!confirm(`このユーザーのBANを解除しますか？\n\n対象: ${email || '（メール不明）'}\n\n※関連するデバイスBANもすべて解除されます。`)) return;
+        try {
+          let targetFps = [];
+          if (uid) {
+            try {
+              const devSnap = await get(ref(db, `userDevices/${uid}`));
+              if (devSnap.exists()) {
+                devSnap.forEach((child) => targetFps.push(child.key));
+              }
+            } catch (e) {
+              console.warn('デバイス取得スキップ:', e.message);
+            }
+          }
+
+          const ops = [];
+          if (uid) ops.push(remove(ref(db, `bans/${uid}`)));
+          if (email) {
+            const ek = emailToKey(email);
+            if (ek) ops.push(remove(ref(db, `bans/${ek}`)));
+          }
+          targetFps.forEach((fp) => {
+            ops.push(remove(ref(db, `deviceBans/${fp}`)));
+          });
+          await Promise.all(ops);
+
+          showBanner('BANを解除しました（関連デバイス含む）', false);
+        } catch (err) {
+          console.error('BAN解除エラー:', err);
+          showBanner('解除失敗: ' + (err.code || err.message), true);
+          alert('BAN解除に失敗しました。');
+        }
+      }
+    }
+
+    const banModal = document.getElementById('banModal');
+    const banListContainer = document.getElementById('banListContainer');
+    const banEmailInput = document.getElementById('banEmailInput');
+    const banReasonInput = document.getElementById('banReasonInput');
+    const banDeviceCheck = document.getElementById('banDeviceCheck');
+
+    window.openBanModal = function() {
+      if (!canBan()) { alert('BAN管理権限がありません。'); return; }
+      banModal.classList.remove('hidden');
+      renderBanList();
+    };
+
+    function closeBanModal() {
+      banModal.classList.add('hidden');
+    }
+
+    document.getElementById('banCloseBtn').addEventListener('click', closeBanModal);
+    banModal.addEventListener('click', (e) => {
+      if (e.target.id === 'banModal') closeBanModal();
+    });
+
+    function renderBanList() {
+      banListContainer.innerHTML = '';
+
+      const entries = Object.entries(bansCache || {});
+      const byUid = {};
+      const byEmailKey = {};
+      entries.forEach(([key, val]) => {
+        if (!val) return;
+        if (key.startsWith('em_')) {
+          byEmailKey[key] = val;
+        } else {
+          byUid[key] = val;
+        }
+      });
+
+      Object.entries(byUid).forEach(([uid, b]) => {
+        const row = document.createElement('div');
+        row.className = 'ban-list-row';
+        const date = b.bannedAt ? new Date(b.bannedAt).toLocaleString('ja-JP') : '不明';
+        row.innerHTML = `
+          <div class="info">
+            <div class="email-line">${escapeHtml(b.email || '（メール不明）')}</div>
+            <div class="meta-line">UID: ${escapeHtml(uid)}</div>
+            <div class="meta-line">理由: ${escapeHtml(b.reason || '（なし）')} ／ BAN者: ${escapeHtml(b.bannedBy || '不明')} ／ ${date}</div>
+          </div>
+          <button class="unban-btn">解除</button>
+        `;
+        row.querySelector('.unban-btn').addEventListener('click', () => {
+          handleBanAction('unban', uid, b.email);
+        });
+        banListContainer.appendChild(row);
+      });
+
+      Object.entries(byEmailKey).forEach(([ek, b]) => {
+        const alreadyShown = Object.values(byUid).some(u => u.email && b.email && u.email.toLowerCase() === b.email.toLowerCase());
+        if (alreadyShown) return;
+        const row = document.createElement('div');
+        row.className = 'ban-list-row';
+        const date = b.bannedAt ? new Date(b.bannedAt).toLocaleString('ja-JP') : '不明';
+        row.innerHTML = `
+          <div class="info">
+            <div class="email-line">${escapeHtml(b.email || '（メール不明）')}</div>
+            <div class="meta-line">（メールアドレス指定でBAN）</div>
+            <div class="meta-line">理由: ${escapeHtml(b.reason || '（なし）')} ／ BAN者: ${escapeHtml(b.bannedBy || '不明')} ／ ${date}</div>
+          </div>
+          <button class="unban-btn">解除</button>
+        `;
+        row.querySelector('.unban-btn').addEventListener('click', () => {
+          handleBanAction('unban', '', b.email);
+        });
+        banListContainer.appendChild(row);
+      });
+
+      if (banListContainer.children.length === 0) {
+        banListContainer.innerHTML = '<p class="text-xs text-gray-400">現在BANされているユーザーはいません。</p>';
+      }
+    }
+
+    document.getElementById('banAddBtn').addEventListener('click', async () => {
+      if (!canBan()) { alert('BAN管理権限がありません。'); return; }
+      const email = banEmailInput.value.trim().toLowerCase();
+      const reason = banReasonInput.value.trim();
+
+      if (!email) { alert('メールアドレスを入力してください。'); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert('メールアドレスの形式が正しくありません。');
+        return;
+      }
+
+      if (currentUser && currentUser.email && currentUser.email.toLowerCase() === email) {
+        alert('自分自身はBANできません。');
+        return;
+      }
+
+      if (isProtectedEmail(email)) {
+        alert('管理者および主はBANできません。');
+        return;
+      }
+
+      if (!confirm(`${email} をBANしますか？\n\nこのメールアドレスでログインしようとした人は即座にブロックされます。`)) return;
+
+      try {
+        const now = Date.now();
+        const ek = emailToKey(email);
+        const data = {
+          bannedAt: now,
+          bannedBy: currentUser.email,
+          email: email,
+          reason: reason || ''
+        };
+
+        const ops = [];
+        if (ek) ops.push(set(ref(db, `bans/${ek}`), data));
+
+        const targetUids = new Set();
+        Object.entries(knownUsersCache || {}).forEach(([uid, u]) => {
+          if (u && u.email && u.email.toLowerCase() === email) {
+            targetUids.add(uid);
+          }
+        });
+        Object.entries(approvedCache || {}).forEach(([uid, u]) => {
+          if (u && u.email && u.email.toLowerCase() === email) {
+            targetUids.add(uid);
+          }
+        });
+
+        targetUids.forEach((tu) => {
+          ops.push(set(ref(db, `bans/${tu}`), {
+            bannedAt: now,
+            bannedBy: currentUser.email,
+            email: email,
+            uid: tu,
+            reason: reason || ''
+          }));
+        });
+
+        await Promise.all(ops);
+
+        for (const tu of targetUids) {
+          try {
+            const devSnap = await get(ref(db, `userDevices/${tu}`));
+            if (devSnap.exists()) {
+              const devOps = [];
+              devSnap.forEach((child) => {
+                const fp = child.key;
+                if (currentUser && myFingerprint && fp === myFingerprint) return;
+                devOps.push(set(ref(db, `deviceBans/${fp}`), {
+                  bannedAt: now,
+                  bannedBy: currentUser.email,
+                  email: email,
+                  uid: tu
+                }));
+              });
+              if (devOps.length > 0) await Promise.all(devOps);
+            }
+          } catch (e) {
+            console.warn('デバイスBAN登録スキップ:', e.message);
+          }
+        }
+
+        banEmailInput.value = '';
+        banReasonInput.value = '';
+        showBanner('メールアドレスをBANしました（同じデバイスの他アカウントも対象）', false);
+        renderBanList();
+      } catch (err) {
+        console.error('BANエラー:', err);
+        showBanner('BAN失敗: ' + (err.code || err.message), true);
+        alert('BANに失敗しました。');
+      }
+    });
+
+    const userModal = document.getElementById('userModal');
+    const userListContainer = document.getElementById('userListContainer');
+    const userSearchInput = document.getElementById('userSearchInput');
+    const userCountLabel = document.getElementById('userCountLabel');
+    const userShowOnlyNotBanned = document.getElementById('userShowOnlyNotBanned');
+    const userShowOnlyNicknamed = document.getElementById('userShowOnlyNicknamed');
+
+    window.openUserModal = function() {
+      if (!canBan()) { alert('ユーザー一覧の閲覧権限がありません。'); return; }
+      userModal.classList.remove('hidden');
+      renderUserList();
+    };
+
+    function closeUserModal() {
+      userModal.classList.add('hidden');
+    }
+
+    document.getElementById('userCloseBtn').addEventListener('click', closeUserModal);
+    userModal.addEventListener('click', (e) => {
+      if (e.target.id === 'userModal') closeUserModal();
+    });
+    userSearchInput.addEventListener('input', renderUserList);
+    userShowOnlyNotBanned.addEventListener('change', renderUserList);
+    if (userShowOnlyNicknamed) userShowOnlyNicknamed.addEventListener('change', renderUserList);
+
+    function renderUserList() {
+      userListContainer.innerHTML = '';
+      const keyword = (userSearchInput.value || '').trim().toLowerCase();
+      const onlyNotBanned = userShowOnlyNotBanned.checked;
+      const onlyNicknamed = userShowOnlyNicknamed ? userShowOnlyNicknamed.checked : false;
+
+      const list = Object.entries(knownUsersCache || {}).map(([uid, u]) => ({
+        uid,
+        email: (u && u.email) || '',
+        displayName: (u && u.displayName) || '',
+        lastSeen: (u && u.lastSeen) || 0,
+        firstSeen: (u && u.firstSeen) || 0,
+        role: (u && u.role) || null,
+        lastFingerprint: (u && u.lastFingerprint) || ''
+      }));
+
+      Object.entries(approvedCache || {}).forEach(([uid, u]) => {
+        if (!list.find(x => x.uid === uid)) {
+          list.push({
+            uid,
+            email: (u && u.email) || '',
+            displayName: (u && u.displayName) || '',
+            lastSeen: (u && u.approvedAt) || 0,
+            firstSeen: (u && u.approvedAt) || 0,
+            role: roleFromEmail(u && u.email),
+            lastFingerprint: ''
+          });
+        }
+      });
+
+      let filtered = list;
+      if (keyword) {
+        filtered = filtered.filter(u => {
+          const nick = nicknamesCache[u.uid] && nicknamesCache[u.uid].nickname
+            ? nicknamesCache[u.uid].nickname.toLowerCase()
+            : '';
+          return u.email.toLowerCase().includes(keyword) ||
+                 u.uid.toLowerCase().includes(keyword) ||
+                 nick.includes(keyword);
+        });
+      }
+      if (onlyNotBanned) {
+        filtered = filtered.filter(u => {
+          if (bansCache[u.uid]) return false;
+          const ek = emailToKey(u.email);
+          if (ek && bansCache[ek]) return false;
+          return true;
+        });
+      }
+      if (onlyNicknamed) {
+        filtered = filtered.filter(u => {
+          const n = nicknamesCache[u.uid];
+          return n && n.nickname && n.nickname.length > 0;
+        });
+      }
+
+      filtered.sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
+
+      userCountLabel.textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        userListContainer.innerHTML = '<p class="text-xs text-gray-400">該当するユーザーがいません。</p>';
+        return;
+      }
+
+      filtered.forEach((u) => {
+        const lastSeenDate = u.lastSeen ? new Date(u.lastSeen).toLocaleString('ja-JP') : '不明';
+        const firstSeenDate = u.firstSeen ? new Date(u.firstSeen).toLocaleString('ja-JP') : '不明';
+
+        const isBannedByUid = !!bansCache[u.uid];
+        const ek = emailToKey(u.email);
+        const isBannedByEmail = ek ? !!bansCache[ek] : false;
+        const isBanned = isBannedByUid || isBannedByEmail;
+
+        const isProtected = (u.role === 'admin') || (u.role === 'owner') ||
+                            isProtectedEmail(u.email);
+
+        let roleTag = '<span class="role-tag none">一般</span>';
+        if (u.role === 'admin') roleTag = '<span class="role-tag admin">管理者</span>';
+        else if (u.role === 'owner') roleTag = '<span class="role-tag owner">主</span>';
+        else if (u.role === 'vip') roleTag = '<span class="role-tag vip">VIP</span>';
+        if (isBanned) roleTag += ' <span class="role-tag banned">BAN中</span>';
+
+        const nicknameData = nicknamesCache[u.uid];
+        const nickname = nicknameData && nicknameData.nickname ? nicknameData.nickname : '';
+
+        let nicknameHtml = '';
+        if (canSetNickname()) {
+          nicknameHtml = nickname
+            ? `<div class="nickname-line">🏷️ ニックネーム: <span class="nickname-value">${escapeHtml(nickname)}</span></div>`
+            : `<div class="nickname-line">🏷️ ニックネーム: <span class="nickname-empty">（未設定）</span></div>`;
+        }
+
+        const row = document.createElement('div');
+        row.className = 'user-row';
+        row.innerHTML = `
+          <div class="info">
+            <div class="email-line">${escapeHtml(u.email || '（メール不明）')}</div>
+            ${nicknameHtml}
+            <div class="meta-line">UID: ${escapeHtml(u.uid)}</div>
+            <div class="meta-line">初回: ${escapeHtml(firstSeenDate)} ／ 最終: ${escapeHtml(lastSeenDate)}</div>
+            <div class="meta-line">${roleTag}</div>
+          </div>
+          <div class="action-btns">
+            <button class="btn-mini btn-copy" data-copy="${escapeHtml(u.email)}">📋 コピー</button>
+            ${canSetNickname() ? `<button class="btn-mini btn-nickname" data-nick-uid="${escapeHtml(u.uid)}" data-nick-email="${escapeHtml(u.email)}">🏷️ ニックネーム</button>` : ''}
+            ${canBan() && !isProtected ? (
+              isBanned
+                ? `<button class="btn-mini btn-unban" data-unban-uid="${escapeHtml(u.uid)}" data-unban-email="${escapeHtml(u.email)}">解除</button>`
+                : `<button class="btn-mini btn-ban" data-ban-uid="${escapeHtml(u.uid)}" data-ban-email="${escapeHtml(u.email)}">BAN</button>`
+            ) : ''}
+          </div>
+        `;
+
+        row.querySelector('.btn-copy').addEventListener('click', () => {
+          navigator.clipboard.writeText(u.email).then(() => {
+            showBanner('メールアドレスをコピーしました', false);
+          }).catch(() => {
+            alert('コピーに失敗しました');
+          });
+        });
+
+        const nickBtn = row.querySelector('.btn-nickname');
+        if (nickBtn) {
+          nickBtn.addEventListener('click', () => {
+            window.openNicknameModal(nickBtn.dataset.nickUid, nickBtn.dataset.nickEmail);
+          });
+        }
+
+        const banBtn = row.querySelector('.btn-ban');
+        if (banBtn) {
+          banBtn.addEventListener('click', () => {
+            handleBanAction('ban', banBtn.dataset.banUid, banBtn.dataset.banEmail);
+          });
+        }
+        const unbanBtn = row.querySelector('.btn-unban');
+        if (unbanBtn) {
+          unbanBtn.addEventListener('click', () => {
+            handleBanAction('unban', unbanBtn.dataset.unbanUid, unbanBtn.dataset.unbanEmail);
+          });
+        }
+
+        userListContainer.appendChild(row);
+      });
+    }
+
+    let nicknameEditingUid = null;
+    let nicknameEditingEmail = '';
+
+    window.openNicknameModal = function(uid, email) {
+      if (!canSetNickname()) { alert('ニックネーム設定権限がありません。'); return; }
+      if (!uid) { alert('UIDが取得できませんでした。'); return; }
+      nicknameEditingUid = uid;
+      nicknameEditingEmail = email || '';
+      const targetEl = document.getElementById('nicknameTargetEmail');
+      if (targetEl) targetEl.textContent = email || '（メール不明）';
+      const existing = nicknamesCache[uid];
+      const inputEl = document.getElementById('nicknameInput');
+      if (inputEl) inputEl.value = (existing && existing.nickname) || '';
+      document.getElementById('nicknameModal').classList.remove('hidden');
+      setTimeout(() => { if (inputEl) inputEl.focus(); }, 100);
+    };
+
+    function closeNicknameModal() {
+      nicknameEditingUid = null;
+      nicknameEditingEmail = '';
+      const m = document.getElementById('nicknameModal');
+      if (m) m.classList.add('hidden');
+    }
+
+    (function initNicknameModalEvents() {
+      const cancelBtn = document.getElementById('nicknameCancelBtn');
+      const modal = document.getElementById('nicknameModal');
+      const saveBtn = document.getElementById('nicknameSaveBtn');
+      const delBtn = document.getElementById('nicknameDeleteBtn');
+
+      if (cancelBtn) cancelBtn.addEventListener('click', closeNicknameModal);
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target.id === 'nicknameModal') closeNicknameModal();
+        });
+      }
+
+      if (saveBtn) {
+        saveBtn.addEventListener('click', async () => {
+          if (!canSetNickname()) { alert('ニックネーム設定権限がありません。'); return; }
+          if (!currentUser) { alert('ログインが必要です。'); return; }
+          if (!nicknameEditingUid) { alert('対象ユーザーが選択されていません。'); return; }
+          const nickname = (document.getElementById('nicknameInput').value || '').trim();
+          if (!nickname) { alert('ニックネームを入力してください。'); return; }
+          if (nickname.length > 20) { alert('ニックネームは20文字以内で入力してください。'); return; }
+
+          saveBtn.disabled = true;
+          const originalText = saveBtn.textContent;
+          saveBtn.textContent = '保存中...';
+
+          try {
+            await set(ref(db, `nicknames/${nicknameEditingUid}`), {
+              nickname: nickname,
+              email: nicknameEditingEmail,
+              updatedAt: Date.now(),
+              updatedBy: currentUser.email
+            });
+            showBanner('ニックネームを保存しました', false);
+            closeNicknameModal();
+          } catch (err) {
+            console.error('ニックネーム保存エラー:', err);
+            showBanner('保存失敗: ' + (err.code || err.message || '不明なエラー'), true);
+            alert('保存に失敗しました。\n' + (err.message || ''));
+          } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = originalText;
+          }
+        });
+      }
+
+      if (delBtn) {
+        delBtn.addEventListener('click', async () => {
+          if (!canSetNickname()) { alert('ニックネーム設定権限がありません。'); return; }
+          if (!currentUser) { alert('ログインが必要です。'); return; }
+          if (!nicknameEditingUid) return;
+          if (!confirm('このニックネームを削除しますか？')) return;
+
+          delBtn.disabled = true;
+          const originalText = delBtn.textContent;
+          delBtn.textContent = '削除中...';
+
+          try {
+            await remove(ref(db, `nicknames/${nicknameEditingUid}`));
+            showBanner('ニックネームを削除しました', false);
+            closeNicknameModal();
+          } catch (err) {
+            console.error('ニックネーム削除エラー:', err);
+            showBanner('削除失敗: ' + (err.code || err.message || '不明なエラー'), true);
+            alert('削除に失敗しました。\n' + (err.message || ''));
+          } finally {
+            delBtn.disabled = false;
+            delBtn.textContent = originalText;
+          }
+        });
+      }
+    })();
+
+    const pendingModal = document.getElementById('pendingModal');
+    const pendingListContainer = document.getElementById('pendingListContainer');
+    const pendingCountLabel = document.getElementById('pendingCountLabel');
+
+    window.openPendingModal = function() {
+      if (!canApprove()) { alert('承認権限がありません。'); return; }
+      pendingModal.classList.remove('hidden');
+      renderPendingList();
+    };
+
+    function closePendingModal() {
+      pendingModal.classList.add('hidden');
+    }
+
+    document.getElementById('pendingCloseBtn').addEventListener('click', closePendingModal);
+    pendingModal.addEventListener('click', (e) => {
+      if (e.target.id === 'pendingModal') closePendingModal();
+    });
+
+    function renderPendingList() {
+      pendingListContainer.innerHTML = '';
+      const entries = Object.entries(pendingCache || {});
+      pendingCountLabel.textContent = entries.length;
+
+      if (entries.length === 0) {
+        pendingListContainer.innerHTML = '<p class="text-xs text-gray-400">承認待ちのユーザーはいません。</p>';
+        return;
+      }
+
+      entries.sort((a, b) => (a[1].requestedAt || 0) - (b[1].requestedAt || 0));
+
+      entries.forEach(([uid, p]) => {
+        const date = p.requestedAt ? new Date(p.requestedAt).toLocaleString('ja-JP') : '不明';
+        const row = document.createElement('div');
+        row.className = 'pending-row';
+        row.innerHTML = `
+          <div class="info">
+            <div class="email-line">${escapeHtml(p.email || '（メール不明）')}</div>
+            <div class="meta-line">UID: ${escapeHtml(uid)}</div>
+            <div class="meta-line">申請日時: ${escapeHtml(date)}</div>
+          </div>
+          <div class="action-btns">
+            <button class="approve-btn">承認</button>
+            <button class="reject-btn">拒否</button>
+          </div>
+        `;
+        row.querySelector('.approve-btn').addEventListener('click', () => approveUser(uid, p));
+        row.querySelector('.reject-btn').addEventListener('click', () => rejectUser(uid, p));
+        pendingListContainer.appendChild(row);
+      });
+    }
+
+    async function approveUser(uid, p) {
+      if (!canApprove()) { alert('承認権限がありません。'); return; }
+      if (!confirm(`${p.email || 'このユーザー'} を承認しますか？`)) return;
+      try {
+        const now = Date.now();
+        await set(ref(db, `approvedUsers/${uid}`), {
+          email: p.email || '',
+          displayName: p.displayName || '',
+          approvedAt: now,
+          approvedBy: currentUser.email
+        });
+        await remove(ref(db, `pendingUsers/${uid}`));
+        showBanner('承認しました', false);
+        await sendDiscordAdminActionNotification('承認', p.email || '', currentUser.email || '');
+      } catch (err) {
+        console.error('承認エラー:', err);
+        showBanner('承認失敗: ' + (err.code || err.message), true);
+        alert('承認に失敗しました。');
+      }
+    }
+
+    async function rejectUser(uid, p) {
+      if (!canApprove()) { alert('承認権限がありません。'); return; }
+
+      if (isProtectedEmail(p.email)) {
+        alert('管理者および主は拒否できません。');
+        return;
+      }
+      if (uid && isProtectedUid(uid)) {
+        alert('管理者および主は拒否できません。');
+        return;
+      }
+
+      if (!confirm(`${p.email || 'このユーザー'} を拒否しますか？\n\n拒否すると、その人は今後もサイトを利用できません。`)) return;
+      try {
+        const now = Date.now();
+        const data = {
+          bannedAt: now,
+          bannedBy: currentUser.email,
+          email: p.email || '',
+          uid: uid,
+          reason: '承認拒否'
+        };
+        await set(ref(db, `bans/${uid}`), data);
+        if (p.email) {
+          const ek = emailToKey(p.email);
+          if (ek) await set(ref(db, `bans/${ek}`), data);
+        }
+
+        try {
+          const devSnap = await get(ref(db, `userDevices/${uid}`));
+          if (devSnap.exists()) {
+            const devOps = [];
+            devSnap.forEach((child) => {
+              const fp = child.key;
+              if (currentUser && myFingerprint && fp === myFingerprint) return;
+              devOps.push(set(ref(db, `deviceBans/${fp}`), {
+                bannedAt: now,
+                bannedBy: currentUser.email,
+                email: p.email || '',
+                uid: uid
+              }));
+            });
+            if (devOps.length > 0) await Promise.all(devOps);
+          }
+        } catch (e) {
+          console.warn('デバイスBAN登録スキップ:', e.message);
+        }
+
+        await remove(ref(db, `pendingUsers/${uid}`));
+        showBanner('拒否しました（同じデバイスの他アカウントも対象）', false);
+        await sendDiscordAdminActionNotification('拒否', p.email || '', currentUser.email || '');
+      } catch (err) {
+        console.error('拒否エラー:', err);
+        showBanner('拒否失敗: ' + (err.code || err.message), true);
+        alert('拒否に失敗しました。');
+      }
+    }
+
+    const publishModal = document.getElementById('publishModal');
+    const publishStatusLabel = document.getElementById('publishStatusLabel');
+    const publishUrlInput = document.getElementById('publishUrlInput');
+    const publishToggleBtn = document.getElementById('publishToggleBtn');
+
+    window.openPublishModal = function() {
+      if (!canPublish()) { alert('公開設定権限がありません。'); return; }
+      publishUrlInput.value = siteStatusCache.messageUrl || '';
+      updatePublishModalUI();
+      publishModal.classList.remove('hidden');
+    };
+
+    function updatePublishModalUI() {
+      if (!publishStatusLabel || !publishToggleBtn) return;
+      const isPublished = siteStatusCache.published !== false;
+      const isLockdown = siteStatusCache.lockdown === true;
+      const isAlarm = siteStatusCache.alarm === true;
+
+      let label = '🌐 公開中';
+      let cls = 'text-sm font-bold text-green-700';
+      if (isAlarm) {
+        label = '🚨 手動警報中';
+        cls = 'text-sm font-bold text-red-700 animate-pulse';
+      } else if (isLockdown) {
+        label = '🚨 緊急ロックダウン中';
+        cls = 'text-sm font-bold text-red-700 animate-pulse';
+      } else if (!isPublished) {
+        label = '🚫 非公開中';
+        cls = 'text-sm font-bold text-red-700';
+      }
+      publishStatusLabel.textContent = label;
+      publishStatusLabel.className = cls;
+
+      publishToggleBtn.textContent = isPublished ? '非公開にする' : '公開する';
+      publishToggleBtn.className = isPublished ? 'publish-btn' : 'publish-btn unpublished';
+    }
+
+    function closePublishModal() {
+      publishModal.classList.add('hidden');
+    }
+
+    document.getElementById('publishCancelBtn').addEventListener('click', closePublishModal);
+    publishModal.addEventListener('click', (e) => {
+      if (e.target.id === 'publishModal') closePublishModal();
+    });
+
+    document.getElementById('publishSaveUrlBtn').addEventListener('click', async () => {
+      if (!canPublish()) { alert('公開設定権限がありません。'); return; }
+      const url = publishUrlInput.value.trim();
+
+      if (url && !/^https?:\/\//i.test(url)) {
+        alert('URLは http:// または https:// で始まる必要があります。');
+        return;
+      }
+
+      try {
+        await set(ref(db, 'siteStatus'), {
+          published: siteStatusCache.published !== false,
+          messageUrl: url,
+          lockdown: siteStatusCache.lockdown === true,
+          alarm: siteStatusCache.alarm === true,
+          alarmReason: siteStatusCache.alarmReason || '',
+          alarmBy: siteStatusCache.alarmBy || '',
+          alarmAt: siteStatusCache.alarmAt || 0,
+          updatedAt: Date.now(),
+          updatedBy: currentUser.email
+        });
+        showBanner('URLを保存しました', false);
+      } catch (err) {
+        console.error('URL保存エラー:', err);
+        showBanner('URL保存失敗: ' + (err.code || err.message), true);
+        alert('URLの保存に失敗しました。\n' + (err.message || ''));
+      }
+    });
+
+    publishToggleBtn.addEventListener('click', async () => {
+      if (!canPublish()) { alert('公開設定権限がありません。'); return; }
+      const isPublished = siteStatusCache.published !== false;
+      const newState = !isPublished;
+
+      const url = publishUrlInput.value.trim();
+      if (url && !/^https?:\/\//i.test(url)) {
+        alert('URLは http:// または https:// で始まる必要があります。');
+        return;
+      }
+
+      if (!confirm(
+        newState === false
+          ? 'サイトを非公開にします。\n一般ユーザー・VIPの画面に「ちょっと待って！」Frameが被さります。\nよろしいですか？'
+          : 'サイトを公開します。\nよろしいですか？'
+      )) return;
+
+      try {
+        await set(ref(db, 'siteStatus'), {
+          published: newState,
+          messageUrl: url,
+          lockdown: siteStatusCache.lockdown === true,
+          alarm: siteStatusCache.alarm === true,
+          alarmReason: siteStatusCache.alarmReason || '',
+          alarmBy: siteStatusCache.alarmBy || '',
+          alarmAt: siteStatusCache.alarmAt || 0,
+          updatedAt: Date.now(),
+          updatedBy: currentUser.email
+        });
+        showBanner(newState ? 'サイトを公開しました' : 'サイトを非公開にしました', false);
+        closePublishModal();
+      } catch (err) {
+        console.error('公開設定エラー:', err);
+        showBanner('公開設定失敗: ' + (err.code || err.message), true);
+        alert('公開設定に失敗しました。');
+      }
+    });
+
+    const COLOR_PRESETS = [
+      '#7c2d12', '#dc2626', '#ea580c', '#d97706', '#ca8a04',
+      '#16a34a', '#0d9488', '#0284c7', '#1e40af', '#7c3aed',
+      '#c026d3', '#db2777', '#475569', '#111827'
+    ];
+
+    function buildColorRow() {
+      const row = document.getElementById('badgeColorRow');
+      row.innerHTML = '';
+      COLOR_PRESETS.forEach((c) => {
+        const sw = document.createElement('div');
+        sw.className = 'color-swatch';
+        sw.style.background = c;
+        sw.dataset.color = c;
+        sw.addEventListener('click', () => {
+          document.querySelectorAll('.color-swatch').forEach(el => el.classList.remove('selected'));
+          sw.classList.add('selected');
+          document.getElementById('badgeColorPicker').value = c;
+          document.getElementById('badgeColorText').value = c;
+          updateBadgePreview();
+        });
+        row.appendChild(sw);
+      });
+    }
+
+    function updateBadgePreview() {
+      const label = document.getElementById('badgeLabelInput').value.trim() || 'バッジ';
+      const color = document.getElementById('badgeColorText').value.trim() || '#ef4444';
+      const chip = document.getElementById('badgePreviewChip');
+      chip.textContent = label;
+      chip.style.background = color;
+    }
+
+    function openBadgeModal(uid, email) {
+      if (!canManageBadge()) { alert('バッジ管理権限がありません。'); return; }
+      badgeEditingTarget = { uid, email };
+      document.getElementById('badgeTargetEmail').textContent = email || '（メール不明）';
+      renderBadgeList();
+      closeBadgeEditor();
+      document.getElementById('badgeModal').classList.remove('hidden');
+    }
+
+    function closeBadgeModal() {
+      badgeEditingTarget = null;
+      badgeEditingBadgeId = null;
+      document.getElementById('badgeModal').classList.add('hidden');
+    }
+
+    function renderBadgeList() {
+      const container = document.getElementById('badgeListContainer');
+      container.innerHTML = '';
+      if (!badgeEditingTarget) return;
+      const badges = customBadgesCache[badgeEditingTarget.uid];
+      if (!badges || Object.keys(badges).length === 0) {
+        container.innerHTML = '<p class="text-xs text-gray-400">（なし）</p>';
+        return;
+      }
+      Object.entries(badges).forEach(([bid, b]) => {
+        if (!b || !b.label) return;
+
+        let featuresHtml = '';
+        const features = b.features || {};
+        const featureNames = {
+          canDeletePost: '投稿削除',
+          canDeleteThread: 'スレッド削除',
+          canBan: 'BAN',
+          canApprove: '承認',
+          canPublish: '公開設定',
+          canViewEmail: 'メール閲覧',
+          canBackup: 'バックアップ',
+          canManageBadge: 'バッジ管理',
+          canManageBoard: '掲示板管理'
+        };
+        Object.keys(featureNames).forEach(f => {
+          if (features[f]) {
+            featuresHtml += `<span class="feat-tag active">${featureNames[f]}</span>`;
+          }
+        });
+        if (!featuresHtml) featuresHtml = '<span class="feat-tag">機能なし</span>';
+
+        const row = document.createElement('div');
+        row.className = 'badge-list-item';
+        row.innerHTML = `
+          <div class="badge-chip-wrap">
+            <span class="custom-badge" style="background:${escapeHtml(b.color || '#666')};">${escapeHtml(b.label)}</span>
+            <div class="badge-feature-list">${featuresHtml}</div>
+          </div>
+          <button class="btn-mini btn-edit" data-bid="${bid}">編集</button>
+          <button class="btn-mini btn-del" data-bid="${bid}">削除</button>
+        `;
+        row.querySelector('.btn-edit').addEventListener('click', () => openBadgeEditor(bid));
+        row.querySelector('.btn-del').addEventListener('click', async () => {
+          if (!confirm(`バッジ「${b.label}」を削除しますか？`)) return;
+          try {
+            await remove(ref(db, `customBadges/${badgeEditingTarget.uid}/${bid}`));
+            await updateBadgeFeaturesFromCustomBadges(badgeEditingTarget.uid);
+            showBanner('バッジを削除しました', false);
+          } catch (err) {
+            console.error('削除エラー:', err);
+            showBanner('削除失敗: ' + (err.code || err.message), true);
+          }
+        });
+        container.appendChild(row);
+      });
+    }
+
+    function openBadgeEditor(badgeId) {
+      badgeEditingBadgeId = badgeId || null;
+      const title = document.getElementById('badgeEditorTitle');
+      const labelInput = document.getElementById('badgeLabelInput');
+      const colorPicker = document.getElementById('badgeColorPicker');
+      const colorText = document.getElementById('badgeColorText');
+
+      document.querySelectorAll('.badge-feature-checkbox').forEach(cb => cb.checked = false);
+
+      if (badgeId && customBadgesCache[badgeEditingTarget.uid]?.[badgeId]) {
+        const b = customBadgesCache[badgeEditingTarget.uid][badgeId];
+        title.textContent = 'バッジを編集';
+        labelInput.value = b.label || '';
+        colorPicker.value = b.color || '#ef4444';
+        colorText.value = b.color || '#ef4444';
+
+        if (b.features) {
+          document.querySelectorAll('.badge-feature-checkbox').forEach(cb => {
+            cb.checked = !!b.features[cb.value];
+          });
+        }
+      } else {
+        title.textContent = '新しいバッジ';
+        labelInput.value = '';
+        colorPicker.value = '#ef4444';
+        colorText.value = '#ef4444';
+      }
+
+      const cur = colorText.value.toLowerCase();
+      document.querySelectorAll('.color-swatch').forEach(el => {
+        el.classList.toggle('selected', el.dataset.color.toLowerCase() === cur);
+      });
+
+      updateBadgePreview();
+      document.getElementById('badgeEditor').classList.remove('hidden');
+    }
+
+    function closeBadgeEditor() {
+      badgeEditingBadgeId = null;
+      document.getElementById('badgeEditor').classList.add('hidden');
+    }
+
+    document.getElementById('badgeCloseBtn').addEventListener('click', closeBadgeModal);
+    document.getElementById('badgeEditorCancelBtn').addEventListener('click', closeBadgeEditor);
+    document.getElementById('addBadgeBtn').addEventListener('click', () => openBadgeEditor(null));
+    document.getElementById('badgeModal').addEventListener('click', (e) => {
+      if (e.target.id === 'badgeModal') closeBadgeModal();
+    });
+
+    document.getElementById('badgeLabelInput').addEventListener('input', updateBadgePreview);
+    document.getElementById('badgeColorPicker').addEventListener('input', (e) => {
+      const c = e.target.value;
+      document.getElementById('badgeColorText').value = c;
+      document.querySelectorAll('.color-swatch').forEach(el => {
+        el.classList.toggle('selected', el.dataset.color.toLowerCase() === c.toLowerCase());
+      });
+      updateBadgePreview();
+    });
+    document.getElementById('badgeColorText').addEventListener('input', (e) => {
+      let v = e.target.value.trim();
+      if (v && !v.startsWith('#')) v = '#' + v;
+      if (/^#[0-9a-fA-F]{0,6}$/.test(v)) {
+        if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+          document.getElementById('badgeColorPicker').value = v;
+          document.querySelectorAll('.color-swatch').forEach(el => {
+            el.classList.toggle('selected', el.dataset.color.toLowerCase() === v.toLowerCase());
+          });
+        }
+        updateBadgePreview();
+      }
+    });
+
+    document.getElementById('badgeSaveBtn').addEventListener('click', async () => {
+      if (!badgeEditingTarget) return;
+      if (!canManageBadge()) { alert('バッジ管理権限がありません。'); return; }
+
+      const label = document.getElementById('badgeLabelInput').value.trim();
+      const color = document.getElementById('badgeColorText').value.trim();
+
+      if (!label) { alert('バッジ名を入力してください。'); return; }
+      if (!/^#[0-9a-fA-F]{6}$/.test(color)) { alert('色は #RRGGBB の形式で入力してください。'); return; }
+
+      const features = {};
+      document.querySelectorAll('.badge-feature-checkbox:checked').forEach(cb => {
+        features[cb.value] = true;
+      });
+
+      const uid = badgeEditingTarget.uid;
+      const data = {
+        label: label,
+        color: color,
+        features: features,
+        grantedBy: currentUser.email,
+        grantedAt: Date.now()
+      };
+
+      try {
+        if (badgeEditingBadgeId) {
+          await update(ref(db, `customBadges/${uid}/${badgeEditingBadgeId}`), data);
+          showBanner('バッジを更新しました', false);
+        } else {
+          const newRef = push(ref(db, `customBadges/${uid}`));
+          await set(newRef, data);
+          showBanner('バッジを追加しました', false);
+        }
+
+        await updateBadgeFeaturesFromCustomBadges(uid);
+        closeBadgeEditor();
+      } catch (err) {
+        console.error('バッジ保存エラー:', err);
+        showBanner('保存失敗: ' + (err.code || err.message), true);
+        alert('バッジの保存に失敗しました。\n' + (err.message || ''));
+      }
+    });
+
+    async function updateBadgeFeaturesFromCustomBadges(uid) {
+      try {
+        const snap = await get(ref(db, `customBadges/${uid}`));
+        const badges = snap.exists() ? snap.val() : {};
+        const mergedFeatures = {};
+        Object.values(badges).forEach(b => {
+          if (b && b.features && typeof b.features === 'object') {
+            Object.keys(b.features).forEach(f => {
+              if (b.features[f]) mergedFeatures[f] = true;
+            });
+          }
+        });
+        await set(ref(db, `badgeFeatures/${uid}`), mergedFeatures);
+      } catch (err) {
+        console.error('バッジ機能更新エラー:', err);
+      }
+    }
+
+    buildColorRow();
+
+    function onReplyClick(parentId) {
+      if (!currentUser) { alert('ログインが必要です。'); return; }
+      if (checkSelfBan()) return;
+      if (activeReplyParentId === parentId) { closeReplyBox(); return; }
+      activeReplyParentId = parentId;
+      openReplyBox(parentId);
+    }
+
+    function openReplyBox(parentId) {
+      document.querySelectorAll('.inline-reply-box').forEach(el => el.remove());
+
+      const targetWrap = postsContainer.querySelector(`.post-tree[data-post-key="${parentId}"]`);
+      if (!targetWrap) return;
+      const targetCard = targetWrap.querySelector('.post-card');
+      if (!targetCard) return;
+
+      const parentNum = postNumberMap.get(parentId) || '?';
+
+      const box = document.createElement('div');
+      box.className = 'inline-reply-box';
+      box.innerHTML = `
+        <div class="reply-target-label">>>${parentNum} への返信</div>
+        <textarea class="reply-textarea" placeholder="返信を入力（最大2000文字）" maxlength="2000"></textarea>
+        <div class="mt-2">
+          <label class="block text-xs text-gray-600 mb-1">画像を添付（任意）:</label>
+          <input type="file" class="reply-file text-xs text-gray-600 w-full" accept="image/*">
+          <div class="preview-box reply-preview">
+            <img class="reply-preview-img" alt="プレビュー">
+            <div class="preview-info reply-preview-info"></div>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 mt-2">
+          <button class="reply-cancel-btn">キャンセル</button>
+          <button class="reply-send-btn bg-blue-800 hover:bg-blue-900 text-white text-xs py-1.5 px-4 rounded">返信する</button>
+        </div>
+      `;
+
+      targetCard.insertAdjacentElement('afterend', box);
+
+      const ta = box.querySelector('.reply-textarea');
+      const fileInp = box.querySelector('.reply-file');
+      const cancelBtn = box.querySelector('.reply-cancel-btn');
+      const sendBtn = box.querySelector('.reply-send-btn');
+      const previewBox = box.querySelector('.reply-preview');
+      const previewImg = box.querySelector('.reply-preview-img');
+      const previewInfo = box.querySelector('.reply-preview-info');
+
+      fileInp.addEventListener('change', async () => {
+        const f = fileInp.files[0];
+        if (!f) { previewBox.classList.remove('show'); return; }
+        try {
+          const result = await fileToBase64Image(f);
+          previewImg.src = result.dataUrl;
+          previewInfo.textContent = `${f.name}（${result.width}×${result.height}, ${formatSize(result.size)}）`;
+          previewBox.classList.add('show');
+        } catch (err) {
+          alert(err.message);
+          fileInp.value = '';
+          previewBox.classList.remove('show');
+        }
+      });
+
+      cancelBtn.addEventListener('click', () => {
+        activeReplyParentId = null;
+        box.remove();
+      });
+
+      sendBtn.addEventListener('click', async () => {
+        const content = ta.value.trim();
+        const file = fileInp.files[0];
+        if (!content && !file) { alert('返信内容または画像を指定してください。'); return; }
+        sendBtn.disabled = true;
+        sendBtn.textContent = file ? '画像処理中...' : '送信中...';
+        try {
+          await submitReply(parentId, content, file);
+          activeReplyParentId = null;
+          box.remove();
+        } catch (err) {
+          console.error(err);
+          sendBtn.disabled = false;
+          sendBtn.textContent = '返信する';
+        }
+      });
+
+      ta.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') sendBtn.click();
+      });
+
+      ta.focus();
+    }
+
+    function closeReplyBox() {
+      activeReplyParentId = null;
+      document.querySelectorAll('.inline-reply-box').forEach(el => el.remove());
+    }
+
+    async function submitReply(parentId, content, file) {
+      if (!currentUser) throw new Error('ログインが必要です');
+      if (!currentThreadKey) throw new Error('スレッドが選択されていません');
+      if (checkSelfBan()) throw new Error('BANされています');
+
+      let fileData = null;
+      if (file) fileData = await fileToBase64Image(file);
+
+      const postsRef = ref(db, `threads/${currentThreadKey}/posts`);
+      const newPostRef = push(postsRef);
+      await set(newPostRef, {
+        author: '名無しさん',
+        content: content || '',
+        createdAt: Date.now(),
+        authorEmail: currentUser.email,
+        authorUid: currentUser.uid,
+        authorRole: userRole || null,
+        badgeVisible: myBadgePublic,
+        parentId: parentId,
+        file: fileData
+      });
+      showBanner('返信を保存しました', false);
+    }
+
+    document.getElementById('postForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) { alert('ログインが必要です。'); return; }
+      if (!currentThreadKey) { alert('スレッドが選択されていません。'); return; }
+      if (checkSelfBan()) return;
+
+      const content = document.getElementById('postContent').value.trim();
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (!content && !file) { alert('コメントまたは画像を指定してください。'); return; }
+
+      const originalText = submitBtn.innerText;
+      submitBtn.disabled = true;
+      submitBtn.innerText = file ? '画像処理中...' : '送信中...';
+
+      const tempId = 'optimistic_post_' + Date.now();
+      const tempPost = document.createElement('div');
+      tempPost.id = tempId;
+      tempPost.className = 'post-card optimistic-post';
+      const optimisticIndex = allPostsCache.length + 1;
+      let opBadge = '';
+      if (currentThreadOwnerUid && currentUser.uid === currentThreadOwnerUid) {
+        opBadge = `<span class="op-badge">スレ主</span>`;
+      }
+      let optimisticRoleBadge = '';
+      if (myBadgePublic) {
+        if (userRole === 'admin') optimisticRoleBadge = `<span class="role-post-badge admin">管理者</span>`;
+        else if (userRole === 'owner') optimisticRoleBadge = `<span class="role-post-badge owner">主</span>`;
+        else if (userRole === 'vip') optimisticRoleBadge = `<span class="role-post-badge vip">VIP</span>`;
+      }
+      let optimisticCustomBadge = '';
+      if (myBadgePublic && customBadgesCache[currentUser.uid]) {
+        Object.values(customBadgesCache[currentUser.uid]).forEach((b) => {
+          if (b && b.label && b.color) {
+            optimisticCustomBadge += `<span class="custom-badge" style="background:${escapeHtml(b.color)};">${escapeHtml(b.label)}</span>`;
+          }
+        });
+      }
+      tempPost.innerHTML = `
+        <div class="font-bold text-gray-700 mb-1 flex flex-wrap items-baseline gap-x-1">
+          <span class="post-number">${optimisticIndex}</span>
+          <span>：</span>
+          <span class="post-author">名無しさん</span>
+          ${opBadge}
+          ${optimisticRoleBadge}
+          ${optimisticCustomBadge}
+          <span>：</span>
+          <span class="text-gray-500 text-xs font-normal">送信中...</span>
+        </div>
+        ${content ? `<div class="text-gray-900 whitespace-pre-wrap mb-2 break-words">${formatContent(content)}</div>` : ''}
+        ${file ? `<div class="text-xs text-gray-400 mt-1">📎 ${escapeHtml(file.name)}（処理中...）</div>` : ''}`;
+      postsContainer.appendChild(tempPost);
+      tempPost.scrollIntoView({ behavior: 'smooth', block: 'end' });
+
+      try {
+        let fileData = null;
+        if (file) fileData = await fileToBase64Image(file);
+
+        document.getElementById('postForm').reset();
+        document.getElementById('postPreviewBox').classList.remove('show');
+
+        const postsRef = ref(db, `threads/${currentThreadKey}/posts`);
+        const newPostRef = push(postsRef);
+        await set(newPostRef, {
+          author: '名無しさん',
+          content: content || '',
+          createdAt: Date.now(),
+          authorEmail: currentUser.email,
+          authorUid: currentUser.uid,
+          authorRole: userRole || null,
+          badgeVisible: myBadgePublic,
+          parentId: null,
+          file: fileData
+        });
+
+        showBanner('書き込みを保存しました', false);
+        const el = document.getElementById(tempId);
+        if (el) el.remove();
+      } catch (error) {
+        console.error("投稿エラー:", error);
+        const el = document.getElementById(tempId);
+        if (el) el.remove();
+        showBanner('保存失敗: ' + (error.code || error.message || ''), true);
+        alert(`書き込みに失敗しました: ${error.message || '不明なエラー'}`);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = originalText;
+      }
+    });
+
+    window.deletePost = async function(threadKey, postKey, index) {
+      if (!canDelete() && !canDo('canDeletePost')) { alert('削除権限がありません。'); return; }
+
+      const hasChildren = allPostsCache.some(p => p.parentId === postKey);
+      const msg = hasChildren
+        ? `レス #${index} を削除しますか？\n※ このレスへの返信もすべて削除されます。\nこの操作は取り消せません。`
+        : `レス #${index} を削除しますか？\nこの操作は取り消せません。`;
+      if (!confirm(msg)) return;
+
+      try {
+        const toDelete = collectDescendants(postKey);
+        toDelete.push(postKey);
+        for (const key of toDelete) {
+          await remove(ref(db, `threads/${threadKey}/posts/${key}`));
+        }
+        showBanner('レスを削除しました', false);
+      } catch (err) {
+        console.error("削除エラー:", err);
+        showBanner('削除失敗: ' + (err.code || err.message), true);
+        alert('削除に失敗しました。');
+      }
+    };
+
+    function collectDescendants(parentKey) {
+      const result = [];
+      const stack = [parentKey];
+      while (stack.length) {
+        const cur = stack.pop();
+        allPostsCache.forEach(p => {
+          if (p.parentId === cur) {
+            result.push(p.key);
+            stack.push(p.key);
+          }
+        });
+      }
+      return result;
+    }
+
+    window.deleteCurrentThread = async function() {
+      if (!canDelete() && !canDo('canDeleteThread')) { alert('削除権限がありません。'); return; }
+      if (!currentThreadKey) return;
+      if (!confirm('このスレッドをすべてのレスごと削除しますか？\nこの操作は取り消せません。')) return;
+
+      const key = currentThreadKey;
+      try {
+        await remove(ref(db, `threads/${key}`));
+        showBanner('スレッドを削除しました', false);
+        showThreadList();
+      } catch (err) {
+        console.error("スレッド削除エラー:", err);
+        showBanner('削除失敗: ' + (err.code || err.message), true);
+        alert('削除に失敗しました。');
+      }
+    };
+
+    window.doBackup = async function() {
+      if (!canBackup()) { alert('バックアップ権限がありません。'); return; }
+      try {
+        showBanner('バックアップを作成中...', false);
+        const snapThreads = await get(ref(db, 'threads'));
+        const snapBadges = await get(ref(db, 'customBadges'));
+        const snapBans = await get(ref(db, 'bans'));
+        const snapDevBans = await get(ref(db, 'deviceBans'));
+        const snapKnown = await get(ref(db, 'knownUsers'));
+        const snapApproved = await get(ref(db, 'approvedUsers'));
+        const snapPending = await get(ref(db, 'pendingUsers'));
+        const snapSite = await get(ref(db, 'siteStatus'));
+        const snapFeatures = await get(ref(db, 'badgeFeatures'));
+        const snapBoard = await get(ref(db, 'board'));
+        const snapNicknames = await get(ref(db, 'nicknames'));
+        const payload = {
+          _meta: {
+            exportedAt: new Date().toISOString(),
+            exportedBy: currentUser.email,
+            app: 'manabi-no-hiroba'
+          },
+          threads: snapThreads.exists() ? snapThreads.val() : {},
+          customBadges: snapBadges.exists() ? snapBadges.val() : {},
+          bans: snapBans.exists() ? snapBans.val() : {},
+          deviceBans: snapDevBans.exists() ? snapDevBans.val() : {},
+          knownUsers: snapKnown.exists() ? snapKnown.val() : {},
+          approvedUsers: snapApproved.exists() ? snapApproved.val() : {},
+          pendingUsers: snapPending.exists() ? snapPending.val() : {},
+          siteStatus: snapSite.exists() ? snapSite.val() : {},
+          badgeFeatures: snapFeatures.exists() ? snapFeatures.val() : {},
+          board: snapBoard.exists() ? snapBoard.val() : {},
+          nicknames: snapNicknames.exists() ? snapNicknames.val() : {}
+        };
+        const json = JSON.stringify(payload, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        a.href = url;
+        a.download = `manabi-backup-${ts}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showBanner('バックアップをダウンロードしました', false);
+      } catch (err) {
+        console.error("バックアップエラー:", err);
+        showBanner('バックアップ失敗: ' + (err.code || err.message), true);
+        alert('バックアップに失敗しました。');
+      }
+    };
+
+    document.getElementById('restoreInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      e.target.value = '';
+      if (!file) return;
+      if (!canBackup()) { alert('復元権限がありません。'); return; }
+
+      if (!confirm(
+        '【警告】\n' +
+        '選択したバックアップファイルで、現在のすべてのデータを上書きします。\n' +
+        '現在のデータは完全に失われます（バックアップを取っていない場合）。\n\n' +
+        '本当に復元しますか？'
+      )) return;
+
+      const doubleCheck = prompt('確認のため「RESTORE」と入力してください（大文字・半角）:');
+      if (doubleCheck !== 'RESTORE') {
+        alert('キャンセルしました。');
+        return;
+      }
+
+      try {
+        showBanner('復元中...', false);
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+
+        let threadsData = {};
+        let badgesData = {};
+        let bansData = {};
+        let devBansData = {};
+        let knownUsersData = {};
+        let approvedData = {};
+        let pendingData = {};
+        let siteStatusData = {};
+        let badgeFeaturesData = {};
+        let boardData = {};
+        let nicknamesData = {};
+
+        if (parsed && typeof parsed === 'object' && parsed.threads && typeof parsed.threads === 'object') {
+          threadsData = parsed.threads;
+          if (parsed.customBadges && typeof parsed.customBadges === 'object') badgesData = parsed.customBadges;
+          if (parsed.bans && typeof parsed.bans === 'object') bansData = parsed.bans;
+          if (parsed.deviceBans && typeof parsed.deviceBans === 'object') devBansData = parsed.deviceBans;
+          if (parsed.knownUsers && typeof parsed.knownUsers === 'object') knownUsersData = parsed.knownUsers;
+          if (parsed.approvedUsers && typeof parsed.approvedUsers === 'object') approvedData = parsed.approvedUsers;
+          if (parsed.pendingUsers && typeof parsed.pendingUsers === 'object') pendingData = parsed.pendingUsers;
+          if (parsed.siteStatus && typeof parsed.siteStatus === 'object') siteStatusData = parsed.siteStatus;
+          if (parsed.badgeFeatures && typeof parsed.badgeFeatures === 'object') badgeFeaturesData = parsed.badgeFeatures;
+          if (parsed.board && typeof parsed.board === 'object') boardData = parsed.board;
+          if (parsed.nicknames && typeof parsed.nicknames === 'object') nicknamesData = parsed.nicknames;
+        } else if (parsed && typeof parsed === 'object') {
+          threadsData = parsed;
+        } else {
+          throw new Error('不正なバックアップファイル形式です');
+        }
+
+        try {
+          const adminEmailKey = emailToKey(ROLE_ADMIN_EMAIL);
+          const ownerEmailKey = emailToKey(ROLE_OWNER_EMAIL);
+          if (bansData && adminEmailKey) delete bansData[adminEmailKey];
+          if (bansData && ownerEmailKey) delete bansData[ownerEmailKey];
+          if (knownUsersData) {
+            Object.entries(knownUsersData).forEach(([uid, u]) => {
+              if (u && u.email && isProtectedEmail(u.email)) {
+                if (bansData) delete bansData[uid];
+              }
+            });
+          }
+          if (approvedData) {
+            Object.entries(approvedData).forEach(([uid, u]) => {
+              if (u && u.email && isProtectedEmail(u.email)) {
+                if (bansData) delete bansData[uid];
+              }
+            });
+          }
+        } catch (e) {
+          console.warn('管理者・主BAN除外スキップ:', e.message);
+        }
+
+        await set(ref(db, 'threads'), threadsData);
+        await set(ref(db, 'customBadges'), badgesData);
+        await set(ref(db, 'bans'), bansData);
+        await set(ref(db, 'deviceBans'), devBansData);
+        await set(ref(db, 'knownUsers'), knownUsersData);
+        await set(ref(db, 'approvedUsers'), approvedData);
+        await set(ref(db, 'pendingUsers'), pendingData);
+        await set(ref(db, 'badgeFeatures'), badgeFeaturesData);
+        await set(ref(db, 'board'), boardData);
+        await set(ref(db, 'nicknames'), nicknamesData);
+        if (Object.keys(siteStatusData).length > 0) {
+          await set(ref(db, 'siteStatus'), siteStatusData);
+        }
+
+        showBanner('復元が完了しました', false);
+        alert('復元が完了しました。');
+        showThreadList();
+      } catch (err) {
+        console.error("復元エラー:", err);
+        showBanner('復元失敗: ' + (err.code || err.message), true);
+        alert('復元に失敗しました。\n' + (err.message || ''));
+      }
+    });
+
+    window.addEventListener('beforeunload', () => {
+      if (postsUnsubscribe) postsUnsubscribe();
+      if (threadsUnsubscribe) threadsUnsubscribe();
+      if (badgesUnsubscribe) badgesUnsubscribe();
+      if (bansUnsubscribe) bansUnsubscribe();
+      if (deviceBansUnsubscribe) deviceBansUnsubscribe();
+      if (knownUsersUnsubscribe) knownUsersUnsubscribe();
+      if (pendingUnsubscribe) pendingUnsubscribe();
+      if (approvedUnsubscribe) approvedUnsubscribe();
+      if (selfApprovalUnsubscribe) selfApprovalUnsubscribe();
+      if (siteStatusUnsubscribe) siteStatusUnsubscribe();
+      if (badgeFeatureUnsubscribe) badgeFeatureUnsubscribe();
+      if (boardUnsubscribe) boardUnsubscribe();
+      if (nicknamesUnsubscribe) nicknamesUnsubscribe();
+      stopLockdownEnforcer();
+    });
+    window.addEventListener('unhandledrejection', (event) => {
+      console.error('未処理のPromiseエラー:', event.reason);
+    });
+  </script>
+</body>
+</html>
