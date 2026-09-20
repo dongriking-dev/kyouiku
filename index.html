@@ -807,8 +807,19 @@
       try { localStorage.setItem(readThreadsKey(uid), JSON.stringify(data)); } catch (e) {}
     }
 
+    /**
+     * スレッドが新着かどうか判定
+     * - 新着マーク無効時 → false
+     * - 未読の場合 → true
+     * - 既読でも、スレッド作成時刻 or 最新レス時刻が既読時刻より新しい → true
+     */
     function isThreadNew(thread) {
       if (!newMarkEnabled) return false;
+      if (!thread || !thread.id) return false;
+      // ★ 削除済みスレッドは新着マークを付けない（allThreadsCacheに存在するもののみ）
+      const exists = allThreadsCache.some(t => t.id === thread.id);
+      if (!exists) return false;
+
       const lastRead = readThreads[thread.id] || 0;
       if (!lastRead) return true;
       if ((thread.createdAt || 0) > lastRead) return true;
@@ -820,6 +831,25 @@
       if (!currentUser) return;
       readThreads[threadId] = Date.now();
       saveReadThreads(currentUser.uid, readThreads);
+    }
+
+    /**
+     * ★ 削除済みスレッドの既読記録をクリーンアップ
+     */
+    function cleanupReadThreads() {
+      if (!currentUser) return;
+      const activeIds = new Set(allThreadsCache.map(t => t.id));
+      let cleaned = 0;
+      Object.keys(readThreads).forEach(tid => {
+        if (!activeIds.has(tid)) {
+          delete readThreads[tid];
+          cleaned++;
+        }
+      });
+      if (cleaned > 0) {
+        saveReadThreads(currentUser.uid, readThreads);
+        console.log(`🧹 削除済みスレッドの既読記録を ${cleaned} 件クリーンアップしました`);
+      }
     }
 
     function renderRoleBadge(role) {
@@ -1021,7 +1051,7 @@
     }
 
     /* ============================================================
-     * ★ 利用規約の折りたたみ（シンプル版）
+     * ★ 利用規約の折りたたみ
      *  - 常に閉じた状態で開始
      *  - クリックで開閉（▶ / ▼ 切替）
      * ============================================================ */
@@ -1034,11 +1064,9 @@
         return;
       }
 
-      // 常に閉じた状態で開始
       rulesEl.classList.add('collapsed');
       if (iconEl) iconEl.textContent = '▶';
 
-      // クリックで開閉トグル
       toggleBtn.addEventListener('click', function(ev) {
         ev.preventDefault();
         ev.stopPropagation();
@@ -1475,6 +1503,10 @@
       }
 
       results.forEach(({ thread, titleHits, subjectHits, hitPostIndices }) => {
+        // ★ 実在するスレッドのみ表示（念のため）
+        const exists = allThreadsCache.some(t => t.id === thread.id);
+        if (!exists) return;
+
         let date = '日時不明';
         if (thread.createdAt) { try { date = new Date(thread.createdAt).toLocaleString('ja-JP'); } catch (e) { date = '日時不明'; } }
         const subjHtml = subjectBadgeHtml(thread.subject);
@@ -1497,6 +1529,7 @@
           }
         }
 
+        // ★ 新着判定（削除済みスレッドは isThreadNew 内で false を返す）
         const hasNew = isThreadNew(thread);
         const lastRead = readThreads[thread.id] || 0;
         const totalPosts = thread.postCount || 0;
@@ -1539,6 +1572,10 @@
       if (postsUnsubscribe) { postsUnsubscribe(); postsUnsubscribe = null; }
       postsContainer.innerHTML = '<p class="text-gray-500 text-sm">読み込み中...</p>';
       setupSubjectTabs();
+
+      // ★ 削除済みスレッドの既読記録をクリーンアップ
+      cleanupReadThreads();
+
       renderThreadList();
     };
 
@@ -1632,7 +1669,10 @@
         if (snapshot.empty) {
           allThreadsCache = [];
           threadsContainer.innerHTML = '<p class="text-gray-500 text-sm">スレッドがありません。新しく作成してください。</p>';
-          updateSubjectTabCounts(); return;
+          updateSubjectTabCounts();
+          // ★ 空の場合もクリーンアップ
+          cleanupReadThreads();
+          return;
         }
         const threads = [];
         snapshot.forEach((d) => { threads.push({ id: d.id, ...d.data() }); });
@@ -1657,6 +1697,10 @@
         }));
 
         allThreadsCache = threads;
+
+        // ★ 削除済みスレッドの既読記録をクリーンアップ
+        cleanupReadThreads();
+
         renderThreadList();
         setupSubjectTabs();
 
