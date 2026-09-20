@@ -246,7 +246,7 @@
     <button id="rulesToggleBtn"
       class="w-full bg-blue-900 hover:bg-blue-800 text-white text-left px-4 py-3 flex items-center justify-between transition">
       <span class="font-bold text-base flex items-center gap-2">
-        📜 学びの広場 利用ルール
+        学びの広場 利用ルール
       </span>
       <span id="rulesToggleIcon" class="text-xl">▼</span>
     </button>
@@ -260,9 +260,6 @@
             <li>個人情報の公開（自分や他人の住所・電話番号・顔写真など）</li>
           </ul>
         </li>
-        <li><strong class="text-blue-900">投稿内容の責任</strong><br>投稿内容は投稿者自身の責任です。</li>
-        <li><strong class="text-blue-900">記録される情報</strong><br>メールアドレス、ログイン日時、デバイス情報を記録します。管理者・主のみ閲覧可能です。</li>
-        <li><strong class="text-blue-900">免責事項</strong><br>当サイトの利用によって生じたいかなる損害についても、運営は責任を負いません。</li>
         <li><strong class="text-blue-900">ルールの変更</strong><br>本ルールは予告なく変更されることがあります。</li>
       </ol>
       <p class="mt-4 text-xs text-gray-500 text-right">最終更新: 2026年9月</p>
@@ -367,7 +364,7 @@
 
   <div id="nicknameModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 480px;">
-      <h3 class="text-lg font-bold text-gray-800 mb-1">✏️ ニックネーム設定</h3>
+      <h3 class="text-lg font-bold text-gray-800 mb-1">ニックネーム設定</h3>
       <p class="text-xs text-gray-500 mb-4">対象: <span id="nicknameTargetEmail" class="admin-email"></span></p>
       <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mb-3">⚠️ ニックネームは管理者・主のみが閲覧できます。</p>
       <label class="block text-xs text-gray-600 mb-1">ニックネーム（最大20文字）:</label>
@@ -436,17 +433,17 @@
 
     <div id="threadListView">
       <section class="bg-blue-50 border border-blue-200 p-4 rounded mb-6 shadow-sm">
-        <h2 class="text-lg font-bold text-gray-700 mb-2">✏️ 新しい質問・スレッドを作成</h2>
+        <h2 class="text-lg font-bold text-gray-700 mb-2">新しい質問・スレッドを作成</h2>
         <form id="createThreadForm" class="space-y-3">
           <div>
             <label class="block text-xs text-gray-600 mb-1 font-bold">教科を選択 <span class="subject-required-note">（必須）</span>:</label>
             <div class="subject-select-big" id="subjectSelectBig">
-              <button type="button" class="subject-select-btn" data-subject="math">📐 数学</button>
-              <button type="button" class="subject-select-btn" data-subject="science">🔬 理科</button>
-              <button type="button" class="subject-select-btn" data-subject="social">🌏 社会</button>
-              <button type="button" class="subject-select-btn" data-subject="japanese">📖 国語</button>
-              <button type="button" class="subject-select-btn" data-subject="english">🔤 英語</button>
-              <button type="button" class="subject-select-btn" data-subject="other">💭 その他</button>
+              <button type="button" class="subject-select-btn" data-subject="math">数学</button>
+              <button type="button" class="subject-select-btn" data-subject="science">理科</button>
+              <button type="button" class="subject-select-btn" data-subject="social">社会</button>
+              <button type="button" class="subject-select-btn" data-subject="japanese">国語</button>
+              <button type="button" class="subject-select-btn" data-subject="english">英語</button>
+              <button type="button" class="subject-select-btn" data-subject="other">その他</button>
             </div>
             <input type="hidden" id="selectedSubject" value="">
           </div>
