@@ -1021,16 +1021,44 @@
       } catch (err) { alert(err.message); fileInput.value = ''; box.classList.remove('show'); return null; }
     }
 
-    // ★ 利用規約：常に閉じた状態で開始
-    (function initSiteRules() {
+    /* ============================================================
+     * 利用規約の折りたたみ
+     *  - 常に閉じた状態で開始
+     *  - クリックで開閉トグル
+     * ============================================================ */
+    function initSiteRules() {
       const rulesEl = document.getElementById('siteRules');
       const toggleBtn = document.getElementById('rulesToggleBtn');
-      if (!rulesEl || !toggleBtn) return;
+      const iconEl = document.getElementById('rulesToggleIcon');
+      if (!rulesEl || !toggleBtn) {
+        console.warn('siteRules または rulesToggleBtn が見つかりません');
+        return;
+      }
+
+      // 常に閉じた状態で開始
       rulesEl.classList.add('collapsed');
-      toggleBtn.addEventListener('click', () => {
-        rulesEl.classList.toggle('collapsed');
+      if (iconEl) iconEl.style.transform = 'rotate(-90deg)';
+
+      // トグルイベント（念のためフラグで多重登録防止）
+      if (toggleBtn.dataset.bound === '1') return;
+      toggleBtn.dataset.bound = '1';
+
+      toggleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const isCollapsed = rulesEl.classList.toggle('collapsed');
+        if (iconEl) {
+          iconEl.style.transform = isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
+        }
       });
-    })();
+    }
+
+    // DOMContentLoaded を待ってから実行（確実に要素が存在する状態で）
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSiteRules);
+    } else {
+      initSiteRules();
+    }
 
     document.addEventListener('contextmenu', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return true;
