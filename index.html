@@ -3439,5 +3439,29 @@
       console.error('未処理のPromiseエラー:', event.reason);
     });
   </script>
+  <script type="module">
+  // Firebase基本機能の読み込み
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+  // ノエルさんのプロジェクト設定
+  const firebaseConfig = {
+    apiKey: "AIzaSyCPMnJKqDMeOGti0KiH8_IqkTGwWbU_Ze4",
+    authDomain: "dongri7kyouiku.firebaseapp.com",
+    projectId: "dongri7kyouiku",
+    storageBucket: "dongri7kyouiku.firebasestorage.app",
+    messagingSenderId: "958086536327",
+    appId: "1:958086536327:web:16218f75037d3b4c852c22",
+    measurementId: "G-H1XX89ML24"
+  };
+
+  // Firebaseの初期化
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+  console.log("Firebase準備完了！");
+</script>
 </body>
 </html>
