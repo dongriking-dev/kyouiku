@@ -392,7 +392,7 @@
 
   <div id="nicknameModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 480px;">
-      <h3 class="text-lg font-bold text-gray-800 mb-1">✏️ ニックネーム設定</h3>
+      <h3 class="text-lg font-bold text-gray-800 mb-1">ニックネーム設定</h3>
       <p class="text-xs text-gray-500 mb-4">対象: <span id="nicknameTargetEmail" class="admin-email"></span></p>
       <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mb-3">⚠️ ニックネームは管理者・主のみが閲覧できます。</p>
       <label class="block text-xs text-gray-600 mb-1">ニックネーム（最大20文字）:</label>
@@ -461,17 +461,17 @@
 
     <div id="threadListView">
       <section class="bg-blue-50 border border-blue-200 p-4 rounded mb-6 shadow-sm">
-        <h2 class="text-lg font-bold text-gray-700 mb-2">✏️ 新しい質問・スレッドを作成</h2>
+        <h2 class="text-lg font-bold text-gray-700 mb-2">新しい質問・スレッドを作成</h2>
         <form id="createThreadForm" class="space-y-3">
           <div>
             <label class="block text-xs text-gray-600 mb-1 font-bold">教科を選択 <span class="subject-required-note">（必須）</span>:</label>
             <div class="subject-select-big" id="subjectSelectBig">
-              <button type="button" class="subject-select-btn" data-subject="math">📐 数学</button>
-              <button type="button" class="subject-select-btn" data-subject="science">🔬 理科</button>
-              <button type="button" class="subject-select-btn" data-subject="social">🌏 社会</button>
-              <button type="button" class="subject-select-btn" data-subject="japanese">📖 国語</button>
-              <button type="button" class="subject-select-btn" data-subject="english">🔤 英語</button>
-              <button type="button" class="subject-select-btn" data-subject="other">💭 その他</button>
+              <button type="button" class="subject-select-btn" data-subject="math">数学</button>
+              <button type="button" class="subject-select-btn" data-subject="science">理科</button>
+              <button type="button" class="subject-select-btn" data-subject="social">社会</button>
+              <button type="button" class="subject-select-btn" data-subject="japanese">国語</button>
+              <button type="button" class="subject-select-btn" data-subject="english">英語</button>
+              <button type="button" class="subject-select-btn" data-subject="other">その他</button>
             </div>
             <input type="hidden" id="selectedSubject" value="">
           </div>
@@ -490,7 +490,7 @@
       </section>
 
       <main>
-        <h2 class="text-xl font-bold border-b pb-1 mb-4 text-gray-700">📚 スレッド一覧</h2>
+        <h2 class="text-xl font-bold border-b pb-1 mb-4 text-gray-700">スレッド一覧</h2>
 
         <div class="search-box-wrap">
           <span class="search-icon">🔍</span>
@@ -507,12 +507,12 @@
 
         <div class="subject-tabs" id="subjectTabs">
           <button class="subject-tab active" data-subject="all">すべて <span class="tab-count" id="countAll">0</span></button>
-          <button class="subject-tab" data-subject="math">📐 数学 <span class="tab-count" id="countMath">0</span></button>
-          <button class="subject-tab" data-subject="science">🔬 理科 <span class="tab-count" id="countScience">0</span></button>
-          <button class="subject-tab" data-subject="social">🌏 社会 <span class="tab-count" id="countSocial">0</span></button>
-          <button class="subject-tab" data-subject="japanese">📖 国語 <span class="tab-count" id="countJapanese">0</span></button>
-          <button class="subject-tab" data-subject="english">🔤 英語 <span class="tab-count" id="countEnglish">0</span></button>
-          <button class="subject-tab" data-subject="other">💭 その他 <span class="tab-count" id="countOther">0</span></button>
+          <button class="subject-tab" data-subject="math">数学 <span class="tab-count" id="countMath">0</span></button>
+          <button class="subject-tab" data-subject="science">理科 <span class="tab-count" id="countScience">0</span></button>
+          <button class="subject-tab" data-subject="social">社会 <span class="tab-count" id="countSocial">0</span></button>
+          <button class="subject-tab" data-subject="japanese">国語 <span class="tab-count" id="countJapanese">0</span></button>
+          <button class="subject-tab" data-subject="english">英語 <span class="tab-count" id="countEnglish">0</span></button>
+          <button class="subject-tab" data-subject="other">その他 <span class="tab-count" id="countOther">0</span></button>
         </div>
         <div id="threadsContainer" class="space-y-2 threads-scroll pr-1">
           <p class="text-gray-500 text-sm"><span class="loading-spinner"></span> スレッドを読み込み中...</p>
