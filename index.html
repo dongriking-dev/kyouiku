@@ -966,16 +966,20 @@
       setPersistence, browserLocalPersistence
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+    // ============================================================
+    // ★★★ 重要: ここを新しいFirebaseプロジェクトの設定に置き換えてください ★★★
+    // ============================================================
     const firebaseConfig = {
-      apiKey: "AIzaSyBCoiJAnVWIOH9csEPlDyWJgfj6sSlNO2o",
-      authDomain: "chaneler-52b95.firebaseapp.com",
-      projectId: "chaneler-52b95",
-      databaseURL: "https://chaneler-52b95-default-rtdb.firebaseio.com",
-      storageBucket: "chaneler-52b95.firebasestorage.app",
-      messagingSenderId: "538510918184",
-      appId: "1:538510918184:web:58232aa80922ff00b92b1d",
-      measurementId: "G-QF3LDMNQYQ"
+      apiKey: "YOUR_NEW_API_KEY_HERE",
+      authDomain: "YOUR_NEW_PROJECT.firebaseapp.com",
+      projectId: "YOUR_NEW_PROJECT_ID",
+      databaseURL: "https://YOUR_NEW_PROJECT-default-rtdb.firebaseio.com",
+      storageBucket: "YOUR_NEW_PROJECT.firebasestorage.app",
+      messagingSenderId: "YOUR_NEW_SENDER_ID",
+      appId: "YOUR_NEW_APP_ID",
+      measurementId: "YOUR_NEW_MEASUREMENT_ID"
     };
+    // ============================================================
 
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
@@ -986,6 +990,17 @@
     setPersistence(auth, browserLocalPersistence).catch((err) => {
       console.warn('永続化設定失敗:', err);
     });
+
+    // ============================================================
+    // ★★★ データベースパスのプレフィックス（元サイトと完全分離） ★★★
+    // すべてのデータは "manabi/" 配下に保存されます
+    // ============================================================
+    const DB_ROOT = 'manabi';
+    function dbRef(path) {
+      if (path) return ref(db, `${DB_ROOT}/${path}`);
+      return ref(db, DB_ROOT);
+    }
+    // ============================================================
 
     const SUBJECTS = {
       math:     { id: 'math',     label: '数学', icon: '📐', color: '#1d4ed8' },
@@ -1193,7 +1208,7 @@
     }
 
     function badgeStorageKey(email) {
-      return 'badgeVisible_' + (email || 'anonymous');
+      return 'manabi_badgeVisible_' + (email || 'anonymous');
     }
     function loadBadgeVisibility(email) {
       const v = localStorage.getItem(badgeStorageKey(email));
@@ -1204,7 +1219,7 @@
     }
 
     function emailStorageKey(email) {
-      return 'emailVisible_' + (email || 'anonymous');
+      return 'manabi_emailVisible_' + (email || 'anonymous');
     }
     function loadEmailVisibility(email) {
       const v = localStorage.getItem(emailStorageKey(email));
@@ -1215,7 +1230,7 @@
     }
 
     function subjectStorageKey() {
-      return 'subjectFilter';
+      return 'manabi_subjectFilter';
     }
     function loadSubjectFilter() {
       return localStorage.getItem(subjectStorageKey()) || 'all';
@@ -1282,7 +1297,6 @@
     }
 
     function executePending() {
-      // 承認待ち画面：ログイン画面を表示しつつ、承認待ちメッセージを表示
       alert('管理者または主による承認待ちです。承認されたら、またサイトを開いてください。');
       try { signOut(auth); } catch (e) {}
     }
@@ -1419,7 +1433,7 @@
       const rulesEl = document.getElementById('siteRules');
       const toggleBtn = document.getElementById('rulesToggleBtn');
       if (!rulesEl || !toggleBtn) return;
-      const saved = localStorage.getItem('siteRulesOpen');
+      const saved = localStorage.getItem('manabi_siteRulesOpen');
       const isOpen = saved === 'true';
       if (isOpen) {
         rulesEl.classList.remove('collapsed');
@@ -1428,7 +1442,7 @@
       }
       toggleBtn.addEventListener('click', () => {
         const nowCollapsed = rulesEl.classList.toggle('collapsed');
-        localStorage.setItem('siteRulesOpen', nowCollapsed ? 'false' : 'true');
+        localStorage.setItem('manabi_siteRulesOpen', nowCollapsed ? 'false' : 'true');
       });
     })();
 
@@ -1451,7 +1465,7 @@
 
     function initBadgeFeatureListener() {
       if (badgeFeatureUnsubscribe) badgeFeatureUnsubscribe();
-      const featureRef = ref(db, 'badgeFeatures');
+      const featureRef = dbRef('badgeFeatures');
       badgeFeatureUnsubscribe = onValue(featureRef, (snap) => {
         badgeFeaturePermissions = snap.exists() ? snap.val() : {};
         if (currentThreadKey) renderPostsFromCache();
@@ -1465,7 +1479,7 @@
 
     function initNicknamesListener() {
       if (nicknamesUnsubscribe) nicknamesUnsubscribe();
-      const ref0 = ref(db, 'nicknames');
+      const ref0 = dbRef('nicknames');
       nicknamesUnsubscribe = onValue(ref0, (snap) => {
         nicknamesCache = snap.exists() ? snap.val() : {};
         const um = document.getElementById('userModal');
@@ -1544,22 +1558,6 @@
       }
     }
 
-    function initBoardListener() { /* 削除済み - 何もしない */ }
-    function renderBoardList() { /* 削除済み - 何もしない */ }
-    window.showBoardView = function() { /* 削除済み - 何もしない */ };
-
-    document.getElementById('switchAccountBtn')?.addEventListener('click', async () => {
-      intentionalSignOut = true;
-      try { await signOut(auth); } catch (e) { console.error(e); }
-      document.body.style.background = '';
-      showLoginView();
-      hideBootOverlay();
-      setTimeout(() => {
-        intentionalSignOut = false;
-        initialAuthCheckDone = false;
-      }, 500);
-    });
-
     document.getElementById('googleLoginBtn').addEventListener('click', async () => {
       try {
         await signInWithPopup(auth, provider);
@@ -1618,7 +1616,7 @@
 
     function initSiteStatusListener() {
       if (siteStatusUnsubscribe) siteStatusUnsubscribe();
-      const ref0 = ref(db, 'siteStatus');
+      const ref0 = dbRef('siteStatus');
       siteStatusUnsubscribe = onValue(ref0, (snap) => {
         const val = snap.exists() ? snap.val() : { published: true, messageUrl: '' };
         siteStatusCache = {
@@ -1645,7 +1643,7 @@
 
     function initCustomBadgesListener() {
       if (badgesUnsubscribe) badgesUnsubscribe();
-      const badgesRef = ref(db, 'customBadges');
+      const badgesRef = dbRef('customBadges');
       badgesUnsubscribe = onValue(badgesRef, (snap) => {
         customBadgesCache = snap.exists() ? snap.val() : {};
         if (currentThreadKey) renderPostsFromCache();
@@ -1658,7 +1656,7 @@
 
     function initKnownUsersListener() {
       if (knownUsersUnsubscribe) knownUsersUnsubscribe();
-      const ref0 = ref(db, 'knownUsers');
+      const ref0 = dbRef('knownUsers');
       knownUsersUnsubscribe = onValue(ref0, (snap) => {
         knownUsersCache = snap.exists() ? snap.val() : {};
         const um = document.getElementById('userModal');
@@ -1672,7 +1670,7 @@
 
     function initPendingListener() {
       if (pendingUnsubscribe) pendingUnsubscribe();
-      const ref0 = ref(db, 'pendingUsers');
+      const ref0 = dbRef('pendingUsers');
       pendingUnsubscribe = onValue(ref0, (snap) => {
         pendingCache = snap.exists() ? snap.val() : {};
         updatePendingBadge();
@@ -1687,7 +1685,7 @@
 
     function initApprovedListener() {
       if (approvedUnsubscribe) approvedUnsubscribe();
-      const ref0 = ref(db, 'approvedUsers');
+      const ref0 = dbRef('approvedUsers');
       approvedUnsubscribe = onValue(ref0, (snap) => {
         approvedCache = snap.exists() ? snap.val() : {};
         const um = document.getElementById('userModal');
@@ -1715,7 +1713,7 @@
       const now = Date.now();
 
       try {
-        await update(ref(db, `userDevices/${currentUser.uid}`), {
+        await update(dbRef(`userDevices/${currentUser.uid}`), {
           [myFingerprint]: now
         });
       } catch (e) {
@@ -1723,7 +1721,7 @@
       }
 
       try {
-        const userRef = ref(db, `knownUsers/${currentUser.uid}`);
+        const userRef = dbRef(`knownUsers/${currentUser.uid}`);
         const existingSnap = await get(userRef);
         const existing = existingSnap.exists() ? existingSnap.val() : null;
 
@@ -1744,10 +1742,10 @@
     async function requestApproval() {
       if (!currentUser) return;
       try {
-        const approvedSnap = await get(ref(db, `approvedUsers/${currentUser.uid}`));
+        const approvedSnap = await get(dbRef(`approvedUsers/${currentUser.uid}`));
         if (approvedSnap.exists()) return;
 
-        await set(ref(db, `pendingUsers/${currentUser.uid}`), {
+        await set(dbRef(`pendingUsers/${currentUser.uid}`), {
           email: currentUser.email || '',
           displayName: currentUser.displayName || '',
           requestedAt: Date.now(),
@@ -1791,7 +1789,7 @@
       initBadgeFeatureListener();
 
       try {
-        const initSiteSnap = await get(ref(db, 'siteStatus'));
+        const initSiteSnap = await get(dbRef('siteStatus'));
         const initVal = initSiteSnap.exists() ? initSiteSnap.val() : { published: true, messageUrl: '' };
         siteStatusCache = {
           published: initVal.published !== false,
@@ -1804,7 +1802,7 @@
       initApprovedListener();
 
       try {
-        const approvedSnap = await get(ref(db, 'approvedUsers'));
+        const approvedSnap = await get(dbRef('approvedUsers'));
         approvedCache = approvedSnap.exists() ? approvedSnap.val() : {};
       } catch (e) {
         console.warn('承認済みリスト取得スキップ:', e.message);
@@ -1846,7 +1844,7 @@
       setTimeout(updateAdminControlsVisibility, 500);
 
       if (selfApprovalUnsubscribe) selfApprovalUnsubscribe();
-      selfApprovalUnsubscribe = onValue(ref(db, `approvedUsers/${user.uid}`), (snap) => {
+      selfApprovalUnsubscribe = onValue(dbRef(`approvedUsers/${user.uid}`), (snap) => {
         if (!snap.exists() && userRole !== 'admin' && userRole !== 'owner' && userRole !== 'vip') {
           approvedCache = {};
           userApproved = false;
@@ -1879,7 +1877,7 @@
       showBanner('バッジ表示を更新中...', false);
 
       try {
-        const snap = await get(ref(db, 'threads'));
+        const snap = await get(dbRef('threads'));
         if (snap.exists()) {
           const updates = {};
           snap.forEach((threadSnap) => {
@@ -1889,7 +1887,7 @@
               posts.forEach((postSnap) => {
                 const post = postSnap.val();
                 if (post && post.authorUid === currentUser.uid) {
-                  updates[`threads/${tid}/posts/${postSnap.key}/badgeVisible`] = visible;
+                  updates[`${DB_ROOT}/threads/${tid}/posts/${postSnap.key}/badgeVisible`] = visible;
                 }
               });
             }
@@ -2117,7 +2115,7 @@
         document.getElementById('selectedSubject').value = '';
         selectedSubjectForNewThread = '';
 
-        const threadsRef = ref(db, 'threads');
+        const threadsRef = dbRef('threads');
         const newThreadRef = push(threadsRef);
         const threadKey = newThreadRef.key;
 
@@ -2134,7 +2132,7 @@
         const writes = [set(newThreadRef, threadData)];
 
         if (content || fileData) {
-          const postRef = push(ref(db, `threads/${threadKey}/posts`));
+          const postRef = push(dbRef(`threads/${threadKey}/posts`));
           writes.push(set(postRef, {
             author: '名無しさん',
             content: content || '',
@@ -2167,7 +2165,7 @@
     function initThreadsListener() {
       if (threadsUnsubscribe) threadsUnsubscribe();
 
-      const threadsRef = ref(db, 'threads');
+      const threadsRef = dbRef('threads');
       const q = query(threadsRef, orderByChild('createdAt'));
 
       threadsUnsubscribe = onValue(q, (snapshot) => {
@@ -2204,7 +2202,7 @@
       if (postsUnsubscribe) { postsUnsubscribe(); postsUnsubscribe = null; }
       postsContainer.innerHTML = '<p class="text-gray-500 text-sm"><span class="loading-spinner"></span> 読み込み中...</p>';
 
-      const postsRef = ref(db, `threads/${threadKey}/posts`);
+      const postsRef = dbRef(`threads/${threadKey}/posts`);
       const q = query(postsRef, orderByChild('createdAt'));
 
       postsUnsubscribe = onValue(q, (snapshot) => {
@@ -2569,7 +2567,7 @@
           saveBtn.textContent = '保存中...';
 
           try {
-            await set(ref(db, `nicknames/${nicknameEditingUid}`), {
+            await set(dbRef(`nicknames/${nicknameEditingUid}`), {
               nickname: nickname,
               email: nicknameEditingEmail,
               updatedAt: Date.now(),
@@ -2600,7 +2598,7 @@
           delBtn.textContent = '削除中...';
 
           try {
-            await remove(ref(db, `nicknames/${nicknameEditingUid}`));
+            await remove(dbRef(`nicknames/${nicknameEditingUid}`));
             showBanner('ニックネームを削除しました', false);
             closeNicknameModal();
           } catch (err) {
@@ -2672,13 +2670,13 @@
       if (!confirm(`${p.email || 'このユーザー'} を承認しますか？`)) return;
       try {
         const now = Date.now();
-        await set(ref(db, `approvedUsers/${uid}`), {
+        await set(dbRef(`approvedUsers/${uid}`), {
           email: p.email || '',
           displayName: p.displayName || '',
           approvedAt: now,
           approvedBy: currentUser.email
         });
-        await remove(ref(db, `pendingUsers/${uid}`));
+        await remove(dbRef(`pendingUsers/${uid}`));
         showBanner('承認しました', false);
       } catch (err) {
         console.error('承認エラー:', err);
@@ -2701,7 +2699,7 @@
 
       if (!confirm(`${p.email || 'このユーザー'} を拒否しますか？\n\n拒否すると、その人は承認待ちから削除されます。`)) return;
       try {
-        await remove(ref(db, `pendingUsers/${uid}`));
+        await remove(dbRef(`pendingUsers/${uid}`));
         showBanner('拒否しました', false);
       } catch (err) {
         console.error('拒否エラー:', err);
@@ -2758,7 +2756,7 @@
       }
 
       try {
-        await set(ref(db, 'siteStatus'), {
+        await set(dbRef('siteStatus'), {
           published: siteStatusCache.published !== false,
           messageUrl: url,
           updatedAt: Date.now(),
@@ -2790,7 +2788,7 @@
       )) return;
 
       try {
-        await set(ref(db, 'siteStatus'), {
+        await set(dbRef('siteStatus'), {
           published: newState,
           messageUrl: url,
           updatedAt: Date.now(),
@@ -2897,7 +2895,7 @@
         row.querySelector('.btn-del').addEventListener('click', async () => {
           if (!confirm(`バッジ「${b.label}」を削除しますか？`)) return;
           try {
-            await remove(ref(db, `customBadges/${badgeEditingTarget.uid}/${bid}`));
+            await remove(dbRef(`customBadges/${badgeEditingTarget.uid}/${bid}`));
             await updateBadgeFeaturesFromCustomBadges(badgeEditingTarget.uid);
             showBanner('バッジを削除しました', false);
           } catch (err) {
@@ -3007,10 +3005,10 @@
 
       try {
         if (badgeEditingBadgeId) {
-          await update(ref(db, `customBadges/${uid}/${badgeEditingBadgeId}`), data);
+          await update(dbRef(`customBadges/${uid}/${badgeEditingBadgeId}`), data);
           showBanner('バッジを更新しました', false);
         } else {
-          const newRef = push(ref(db, `customBadges/${uid}`));
+          const newRef = push(dbRef(`customBadges/${uid}`));
           await set(newRef, data);
           showBanner('バッジを追加しました', false);
         }
@@ -3026,7 +3024,7 @@
 
     async function updateBadgeFeaturesFromCustomBadges(uid) {
       try {
-        const snap = await get(ref(db, `customBadges/${uid}`));
+        const snap = await get(dbRef(`customBadges/${uid}`));
         const badges = snap.exists() ? snap.val() : {};
         const mergedFeatures = {};
         Object.values(badges).forEach(b => {
@@ -3036,7 +3034,7 @@
             });
           }
         });
-        await set(ref(db, `badgeFeatures/${uid}`), mergedFeatures);
+        await set(dbRef(`badgeFeatures/${uid}`), mergedFeatures);
       } catch (err) {
         console.error('バッジ機能更新エラー:', err);
       }
@@ -3146,7 +3144,7 @@
       let fileData = null;
       if (file) fileData = await fileToBase64Image(file);
 
-      const postsRef = ref(db, `threads/${currentThreadKey}/posts`);
+      const postsRef = dbRef(`threads/${currentThreadKey}/posts`);
       const newPostRef = push(postsRef);
       await set(newPostRef, {
         author: '名無しさん',
@@ -3224,7 +3222,7 @@
         document.getElementById('postForm').reset();
         document.getElementById('postPreviewBox').classList.remove('show');
 
-        const postsRef = ref(db, `threads/${currentThreadKey}/posts`);
+        const postsRef = dbRef(`threads/${currentThreadKey}/posts`);
         const newPostRef = push(postsRef);
         await set(newPostRef, {
           author: '名無しさん',
@@ -3266,7 +3264,7 @@
         const toDelete = collectDescendants(postKey);
         toDelete.push(postKey);
         for (const key of toDelete) {
-          await remove(ref(db, `threads/${threadKey}/posts/${key}`));
+          await remove(dbRef(`threads/${threadKey}/posts/${key}`));
         }
         showBanner('レスを削除しました', false);
       } catch (err) {
@@ -3298,7 +3296,7 @@
 
       const key = currentThreadKey;
       try {
-        await remove(ref(db, `threads/${key}`));
+        await remove(dbRef(`threads/${key}`));
         showBanner('スレッドを削除しました', false);
         showThreadList();
       } catch (err) {
@@ -3312,19 +3310,20 @@
       if (!canBackup()) { alert('バックアップ権限がありません。'); return; }
       try {
         showBanner('バックアップを作成中...', false);
-        const snapThreads = await get(ref(db, 'threads'));
-        const snapBadges = await get(ref(db, 'customBadges'));
-        const snapKnown = await get(ref(db, 'knownUsers'));
-        const snapApproved = await get(ref(db, 'approvedUsers'));
-        const snapPending = await get(ref(db, 'pendingUsers'));
-        const snapSite = await get(ref(db, 'siteStatus'));
-        const snapFeatures = await get(ref(db, 'badgeFeatures'));
-        const snapNicknames = await get(ref(db, 'nicknames'));
+        const snapThreads = await get(dbRef('threads'));
+        const snapBadges = await get(dbRef('customBadges'));
+        const snapKnown = await get(dbRef('knownUsers'));
+        const snapApproved = await get(dbRef('approvedUsers'));
+        const snapPending = await get(dbRef('pendingUsers'));
+        const snapSite = await get(dbRef('siteStatus'));
+        const snapFeatures = await get(dbRef('badgeFeatures'));
+        const snapNicknames = await get(dbRef('nicknames'));
         const payload = {
           _meta: {
             exportedAt: new Date().toISOString(),
             exportedBy: currentUser.email,
-            app: 'manabi-no-hiroba'
+            app: 'manabi-no-hiroba',
+            dbRoot: DB_ROOT
           },
           threads: snapThreads.exists() ? snapThreads.val() : {},
           customBadges: snapBadges.exists() ? snapBadges.val() : {},
@@ -3396,21 +3395,19 @@
           if (parsed.siteStatus && typeof parsed.siteStatus === 'object') siteStatusData = parsed.siteStatus;
           if (parsed.badgeFeatures && typeof parsed.badgeFeatures === 'object') badgeFeaturesData = parsed.badgeFeatures;
           if (parsed.nicknames && typeof parsed.nicknames === 'object') nicknamesData = parsed.nicknames;
-        } else if (parsed && typeof parsed === 'object') {
-          threadsData = parsed;
         } else {
-          throw new Error('不正なバックアップファイル形式です');
+          throw new Error('不正なバックアップファイル形式です（このサイト専用のバックアップではありません）');
         }
 
-        await set(ref(db, 'threads'), threadsData);
-        await set(ref(db, 'customBadges'), badgesData);
-        await set(ref(db, 'knownUsers'), knownUsersData);
-        await set(ref(db, 'approvedUsers'), approvedData);
-        await set(ref(db, 'pendingUsers'), pendingData);
-        await set(ref(db, 'badgeFeatures'), badgeFeaturesData);
-        await set(ref(db, 'nicknames'), nicknamesData);
+        await set(dbRef('threads'), threadsData);
+        await set(dbRef('customBadges'), badgesData);
+        await set(dbRef('knownUsers'), knownUsersData);
+        await set(dbRef('approvedUsers'), approvedData);
+        await set(dbRef('pendingUsers'), pendingData);
+        await set(dbRef('badgeFeatures'), badgeFeaturesData);
+        await set(dbRef('nicknames'), nicknamesData);
         if (Object.keys(siteStatusData).length > 0) {
-          await set(ref(db, 'siteStatus'), siteStatusData);
+          await set(dbRef('siteStatus'), siteStatusData);
         }
 
         showBanner('復元が完了しました', false);
@@ -3439,29 +3436,5 @@
       console.error('未処理のPromiseエラー:', event.reason);
     });
   </script>
-  <script type="module">
-  // Firebase基本機能の読み込み
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-  import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-
-  // ノエルさんのプロジェクト設定
-  const firebaseConfig = {
-    apiKey: "AIzaSyCPMnJKqDMeOGti0KiH8_IqkTGwWbU_Ze4",
-    authDomain: "dongri7kyouiku.firebaseapp.com",
-    projectId: "dongri7kyouiku",
-    storageBucket: "dongri7kyouiku.firebasestorage.app",
-    messagingSenderId: "958086536327",
-    appId: "1:958086536327:web:16218f75037d3b4c852c22",
-    measurementId: "G-H1XX89ML24"
-  };
-
-  // Firebaseの初期化
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
-
-  console.log("Firebase準備完了！");
-</script>
 </body>
 </html>
