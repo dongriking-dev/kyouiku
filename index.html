@@ -1013,18 +1013,16 @@
       } catch (err) { alert(err.message); fileInput.value = ''; box.classList.remove('show'); return null; }
     }
 
-    (function initSiteRules() {
-      const rulesEl = document.getElementById('siteRules');
-      const toggleBtn = document.getElementById('rulesToggleBtn');
-      if (!rulesEl || !toggleBtn) return;
-      const saved = localStorage.getItem('manabi_siteRulesOpen');
-      if (saved === 'true') rulesEl.classList.remove('collapsed');
-      else rulesEl.classList.add('collapsed');
-      toggleBtn.addEventListener('click', () => {
-        const nowCollapsed = rulesEl.classList.toggle('collapsed');
-        localStorage.setItem('manabi_siteRulesOpen', nowCollapsed ? 'false' : 'true');
-      });
-    })();
+(function initSiteRules() {
+  const rulesEl = document.getElementById('siteRules');
+  const toggleBtn = document.getElementById('rulesToggleBtn');
+  if (!rulesEl || !toggleBtn) return;
+  // 常に閉じた状態で開始（localStorage は使わない）
+  rulesEl.classList.add('collapsed');
+  toggleBtn.addEventListener('click', () => {
+    rulesEl.classList.toggle('collapsed');
+  });
+})();
 
     document.addEventListener('contextmenu', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return true;
