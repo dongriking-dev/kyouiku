@@ -744,7 +744,6 @@
       margin-bottom: 16px;
     }
 
-    /* ===== 教科タブ ===== */
     .subject-tabs {
       display: flex; flex-wrap: wrap; gap: 6px;
       margin-bottom: 16px;
@@ -794,7 +793,6 @@
       background: rgba(255,255,255,0.3);
     }
 
-    /* ===== 教科バッジ（スレッド・投稿） ===== */
     .subject-badge {
       display: inline-flex;
       align-items: center;
@@ -1397,7 +1395,7 @@
       return `<span class="subject-badge ${s.id}">${s.icon}${showLabel ? ' ' + s.label : ''}</span>`;
     }
 
-    // ===== 管理者・主（維持） =====
+    // ===== 管理者・主 =====
     const ROLE_ADMIN_EMAIL = "katou.noel114514@gmail.com";
     const ROLE_OWNER_EMAIL = "18107@v.nakijin.ed.jp";
     const ROLE_VIP_EMAILS = [
@@ -1405,99 +1403,6 @@
       "setsu.setsuna1229@gmail.com",
       "roblox.2026.20th@gmail.com"
     ];
-
-    // ===== Discord Webhook =====
-    const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1550795111246336062/c-mghw5IuTGYVVsw-xJ5ahbIs-VhZV5d7TOsbq7HWeI6nP2Rr0U__8DHZueFyDt0CZvj";
-
-    async function sendDiscordApprovalNotification(email, displayName, uid, fingerprint) {
-      if (!DISCORD_WEBHOOK_URL) return;
-      try {
-        const payload = {
-          username: "学びの広場 承認Bot",
-          embeds: [
-            {
-              title: "🔔 新しい承認待ちユーザー",
-              color: 0x1d4ed8,
-              fields: [
-                { name: "📧 メール", value: email || "（不明）", inline: false },
-                { name: "👤 表示名", value: displayName || "（なし）", inline: true },
-                { name: "🆔 UID", value: uid ? `\`${uid}\`` : "（不明）", inline: false },
-                { name: "🖥️ フィンガープリント", value: fingerprint ? `\`${fingerprint}\`` : "（なし）", inline: false },
-                { name: "🕐 申請日時", value: new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }), inline: false }
-              ],
-              footer: { text: "学びの広場 管理パネル" },
-              timestamp: new Date().toISOString()
-            }
-          ]
-        };
-        await fetch(DISCORD_WEBHOOK_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-      } catch (err) {
-        console.warn("Discord承認通知送信失敗:", err.message);
-      }
-    }
-
-    async function sendDiscordAdminActionNotification(action, targetEmail, byEmail) {
-      if (!DISCORD_WEBHOOK_URL) return;
-      try {
-        const color = action === "承認" ? 0x16a34a : 0xdc2626;
-        const emoji = action === "承認" ? "✅" : "🚫";
-        const payload = {
-          username: "学びの広場 承認Bot",
-          embeds: [
-            {
-              title: `${emoji} ユーザー${action}`,
-              color: color,
-              fields: [
-                { name: "📧 対象メール", value: targetEmail || "（不明）", inline: false },
-                { name: "👮 実行者", value: byEmail || "（不明）", inline: false },
-                { name: "🕐 日時", value: new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }), inline: false }
-              ],
-              timestamp: new Date().toISOString()
-            }
-          ]
-        };
-        await fetch(DISCORD_WEBHOOK_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-      } catch (err) {
-        console.warn(`Discord${action}通知送信失敗:`, err.message);
-      }
-    }
-
-    async function sendDiscordAlarmNotification(reason, byEmail) {
-      if (!DISCORD_WEBHOOK_URL) return;
-      try {
-        const payload = {
-          username: "学びの広場 警報Bot",
-          embeds: [
-            {
-              title: "🚨 手動警報が発令されました",
-              color: 0xdc2626,
-              fields: [
-                { name: "📢 発令理由", value: reason || "（理由なし）", inline: false },
-                { name: "👮 発令者", value: byEmail || "（不明）", inline: false },
-                { name: "🕐 発令日時", value: new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }), inline: false }
-              ],
-              footer: { text: "学びの広場 手動警報" },
-              timestamp: new Date().toISOString()
-            }
-          ]
-        };
-        await fetch(DISCORD_WEBHOOK_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-      } catch (err) {
-        console.warn("Discord手動警報通知送信失敗:", err.message);
-      }
-    }
 
     const IMAGE_MAX_WIDTH = 1280;
     const IMAGE_QUALITY = 0.75;
@@ -1553,7 +1458,6 @@
 
     let lockdownEnforcerInterval = null;
 
-    // 教科フィルタ用
     let currentSubjectFilter = 'all';
     let selectedSubjectForNewThread = '';
 
@@ -2333,8 +2237,6 @@
         });
         closeAlarmModal();
         showBanner('🚨 手動警報を発令しました', false);
-
-        sendDiscordAlarmNotification(reason || '緊急対応', currentUser ? currentUser.email : '管理者');
       } catch (err) {
         console.error('警報発令エラー:', err);
         showBanner('警報発令失敗: ' + (err.code || err.message), true);
@@ -2773,24 +2675,12 @@
         const approvedSnap = await get(ref(db, `approvedUsers/${currentUser.uid}`));
         if (approvedSnap.exists()) return;
 
-        const pendingSnap = await get(ref(db, `pendingUsers/${currentUser.uid}`));
-        const alreadyPending = pendingSnap.exists();
-
         await set(ref(db, `pendingUsers/${currentUser.uid}`), {
           email: currentUser.email || '',
           displayName: currentUser.displayName || '',
           requestedAt: Date.now(),
           fingerprint: myFingerprint || ''
         });
-
-        if (!alreadyPending) {
-          await sendDiscordApprovalNotification(
-            currentUser.email || '',
-            currentUser.displayName || '',
-            currentUser.uid,
-            myFingerprint || ''
-          );
-        }
       } catch (e) {
         console.warn('承認申請スキップ:', e.message);
       }
@@ -2926,7 +2816,6 @@
       showMainView();
       setConnection(navigator.onLine);
 
-      // 教科フィルタを復元
       currentSubjectFilter = loadSubjectFilter();
 
       showThreadList();
@@ -3007,7 +2896,6 @@
       updatePreview(document.getElementById('fileInput'), 'postPreviewBox', 'postPreviewImg', 'postPreviewInfo');
     });
 
-    /* ===== 教科選択UI ===== */
     function setupSubjectSelectUI() {
       const container = document.getElementById('subjectSelectBig');
       if (!container) return;
@@ -3023,17 +2911,17 @@
     }
     setupSubjectSelectUI();
 
-    /* ===== 教科タブ ===== */
     function setupSubjectTabs() {
       const tabs = document.getElementById('subjectTabs');
       if (!tabs) return;
       tabs.querySelectorAll('.subject-tab').forEach(tab => {
-        // 初期アクティブを復元
         if (tab.dataset.subject === currentSubjectFilter) {
           tab.classList.add('active');
         } else {
           tab.classList.remove('active');
         }
+        if (tab.dataset.bound === '1') return;
+        tab.dataset.bound = '1';
         tab.addEventListener('click', () => {
           tabs.querySelectorAll('.subject-tab').forEach(t => t.classList.remove('active'));
           tab.classList.add('active');
@@ -3126,7 +3014,6 @@
       document.getElementById('currentThreadTitle').innerText = title;
       document.getElementById('currentThreadDate').innerText = '作成日時: ' + createdAt;
 
-      // 教科バッジを表示
       const subjWrap = document.getElementById('currentThreadSubjectWrap');
       if (subjWrap) {
         subjWrap.innerHTML = subjectBadgeHtml(currentThreadSubject);
@@ -3188,7 +3075,6 @@
 
         document.getElementById('createThreadForm').reset();
         document.getElementById('threadPreviewBox').classList.remove('show');
-        // 教科選択をリセット
         document.querySelectorAll('#subjectSelectBig .subject-select-btn').forEach(b => b.classList.remove('selected'));
         document.getElementById('selectedSubject').value = '';
         selectedSubjectForNewThread = '';
@@ -4108,7 +3994,6 @@
         });
         await remove(ref(db, `pendingUsers/${uid}`));
         showBanner('承認しました', false);
-        await sendDiscordAdminActionNotification('承認', p.email || '', currentUser.email || '');
       } catch (err) {
         console.error('承認エラー:', err);
         showBanner('承認失敗: ' + (err.code || err.message), true);
@@ -4166,7 +4051,6 @@
 
         await remove(ref(db, `pendingUsers/${uid}`));
         showBanner('拒否しました（同じデバイスの他アカウントも対象）', false);
-        await sendDiscordAdminActionNotification('拒否', p.email || '', currentUser.email || '');
       } catch (err) {
         console.error('拒否エラー:', err);
         showBanner('拒否失敗: ' + (err.code || err.message), true);
