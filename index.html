@@ -3436,6 +3436,7 @@
       console.error('未処理のPromiseエラー:', event.reason);
     });
   </script>
+
   <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -3443,16 +3444,16 @@
   // ImgbbのAPIキー
   const IMGBB_API_KEY = "33b55a1768261c58e32d347739630498";
 
-// Firebaseの設定（新しいキーに更新）
+  // Firebaseの設定（先ほど新しく発行されたキー）
   const firebaseConfig = {
     apiKey: "AIzaSyCZYtEhQujGZA9taYHP6QuwQOWQ8lMBV3k",
     authDomain: "dongri7kyouiku.firebaseapp.com",
     projectId: "dongri7kyouiku",
     storageBucket: "dongri7kyouiku.firebasestorage.app",
     messagingSenderId: "958086536327",
-    appId: "1:958086536327:web:ba397d44a934700c852c22",
-    measurementId: "G-JJ4FJJ345C"
+    appId: "1:958086536327:web:ba397d44a934700c852c22"
   };
+
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
@@ -3464,7 +3465,8 @@
     submitBtn.addEventListener("click", async () => {
       const username = document.getElementById("username").value.trim() || "名無し";
       const message = document.getElementById("message").value.trim();
-      const file = document.getElementById("imageInput").files[0];
+      const fileInput = document.getElementById("imageInput");
+      const file = fileInput ? fileInput.files[0] : null;
 
       if (!message && !file) {
         alert("コメントか画像を入力してください！");
@@ -3504,7 +3506,7 @@
         });
 
         document.getElementById("message").value = "";
-        document.getElementById("imageInput").value = "";
+        if (fileInput) fileInput.value = "";
       } catch (e) {
         console.error("投稿エラー:", e);
         alert("投稿に失敗しました。");
@@ -3525,7 +3527,7 @@
         const postElement = document.createElement("div");
         postElement.className = "post";
 
-        let imgHtml = data.imageUrl ? `<br><img src="${data.imageUrl}" alt="投稿画像">` : "";
+        let imgHtml = data.imageUrl ? `<br><img src="${data.imageUrl}" alt="投稿画像" style="max-width: 100%; height: auto; margin-top: 10px;">` : "";
 
         postElement.innerHTML = `
           <strong>${escapeHtml(data.username)}</strong>
@@ -3534,6 +3536,8 @@
         `;
         postsDiv.appendChild(postElement);
       });
+    }, (error) => {
+      console.error("Firestore取得エラー:", error);
     });
   }
 
@@ -3542,5 +3546,6 @@
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
 </script>
+  
 </body>
 </html>
