@@ -267,7 +267,6 @@
     <div class="boot-msg">アカウントを確認しています...</div>
   </div>
 
-  <!-- ===== 利用規約（初期状態：閉じている） ===== -->
   <div id="siteRules" class="collapsed bg-white border-2 border-blue-800 rounded-lg shadow mb-4 overflow-hidden">
     <button id="rulesToggleBtn" type="button"
       class="w-full bg-blue-900 hover:bg-blue-800 text-white text-left px-4 py-3 flex items-center justify-between transition">
@@ -796,27 +795,55 @@
     function loadNewMarkSetting(uid) { const v = localStorage.getItem(newMarkSettingKey(uid)); return v === null ? true : v === 'true'; }
     function saveNewMarkSetting(uid, enabled) { localStorage.setItem(newMarkSettingKey(uid), enabled ? 'true' : 'false'); }
 
+    /* ============================================================
+     * 既読記録（localStorage）
+     * ============================================================ */
     function readThreadsKey(uid) { return 'manabi_readThreads_' + (uid || 'anonymous'); }
+
     function loadReadThreads(uid) {
       try {
         const v = localStorage.getItem(readThreadsKey(uid));
-        return v ? JSON.parse(v) : {};
-      } catch (e) { return {}; }
+        const parsed = v ? JSON.parse(v) : {};
+        // 数値以外を除去
+        const cleaned = {};
+        Object.entries(parsed).forEach(([tid, ts]) => {
+          if (typeof ts === 'number' && !isNaN(ts) && ts > 0) cleaned[tid] = ts;
+        });
+        console.log(`📚 既読記録を ${Object.keys(cleaned).length} 件読み込みました`);
+        return cleaned;
+      } catch (e) {
+        console.warn('既読記録の読み込みに失敗:', e);
+        return {};
+      }
     }
+
     function saveReadThreads(uid, data) {
-      try { localStorage.setItem(readThreadsKey(uid), JSON.stringify(data)); } catch (e) {}
+      try {
+        localStorage.setItem(readThreadsKey(uid), JSON.stringify(data));
+        console.log(`💾 既読記録を ${Object.keys(data).length} 件保存しました`);
+      } catch (e) {
+        console.warn('既読記録の保存に失敗:', e);
+      }
+    }
+
+    /**
+     * スレッドを既読化
+     */
+    function markThreadAsRead(threadId) {
+      if (!currentUser || !threadId) return;
+      // 現在時刻を保存（スレッド作成時刻・最新レス時刻より必ず新しくなる）
+      readThreads[threadId] = Date.now();
+      saveReadThreads(currentUser.uid, readThreads);
+      console.log(`📖 スレッド ${threadId} を既読化しました`);
     }
 
     /**
      * スレッドが新着かどうか判定
-     * - 新着マーク無効時 → false
-     * - 未読の場合 → true
-     * - 既読でも、スレッド作成時刻 or 最新レス時刻が既読時刻より新しい → true
      */
     function isThreadNew(thread) {
       if (!newMarkEnabled) return false;
       if (!thread || !thread.id) return false;
-      // ★ 削除済みスレッドは新着マークを付けない（allThreadsCacheに存在するもののみ）
+      // 実在するスレッドのみ
       const exists = allThreadsCache.some(t => t.id === thread.id);
       if (!exists) return false;
 
@@ -827,14 +854,8 @@
       return false;
     }
 
-    function markThreadAsRead(threadId) {
-      if (!currentUser) return;
-      readThreads[threadId] = Date.now();
-      saveReadThreads(currentUser.uid, readThreads);
-    }
-
     /**
-     * ★ 削除済みスレッドの既読記録をクリーンアップ
+     * 削除済みスレッドの既読記録をクリーンアップ
      */
     function cleanupReadThreads() {
       if (!currentUser) return;
@@ -1051,9 +1072,7 @@
     }
 
     /* ============================================================
-     * ★ 利用規約の折りたたみ
-     *  - 常に閉じた状態で開始
-     *  - クリックで開閉（▶ / ▼ 切替）
+     * 利用規約の折りたたみ
      * ============================================================ */
     (function initSiteRules() {
       const rulesEl = document.getElementById('siteRules');
@@ -1063,7 +1082,6 @@
         console.warn('siteRules または rulesToggleBtn が見つかりません');
         return;
       }
-
       rulesEl.classList.add('collapsed');
       if (iconEl) iconEl.textContent = '▶';
 
@@ -1073,7 +1091,6 @@
         const nowCollapsed = rulesEl.classList.toggle('collapsed');
         if (iconEl) iconEl.textContent = nowCollapsed ? '▶' : '▼';
       });
-
       console.log('✅ 利用規約の折りたたみ初期化完了');
     })();
 
@@ -1315,6 +1332,7 @@
       myFingerprint = generateFingerprint();
       newMarkEnabled = loadNewMarkSetting(user.uid);
       newMarkToggle.checked = newMarkEnabled;
+      // ★ 既読記録を復元
       readThreads = loadReadThreads(user.uid);
 
       initBadgeFeatureListener();
@@ -1503,7 +1521,7 @@
       }
 
       results.forEach(({ thread, titleHits, subjectHits, hitPostIndices }) => {
-        // ★ 実在するスレッドのみ表示（念のため）
+        // 実在するスレッドのみ表示
         const exists = allThreadsCache.some(t => t.id === thread.id);
         if (!exists) return;
 
@@ -1529,7 +1547,6 @@
           }
         }
 
-        // ★ 新着判定（削除済みスレッドは isThreadNew 内で false を返す）
         const hasNew = isThreadNew(thread);
         const lastRead = readThreads[thread.id] || 0;
         const totalPosts = thread.postCount || 0;
@@ -1543,6 +1560,8 @@
         const item = document.createElement('div');
         item.className = 'thread-item bg-white p-3 border border-gray-300 rounded hover:bg-blue-50 cursor-pointer transition flex justify-between items-center shadow-sm'
           + (hasNew ? ' has-new' : '');
+        // ★ data-thread-id で要素を特定可能に
+        item.dataset.threadId = thread.id;
         item.onclick = () => openThread(thread.id, thread.title, date, thread.authorEmail, thread.authorUid, thread.subject);
         item.innerHTML = `
           ${hasNew ? '<span class="new-mark" title="新着"></span>' : ''}
@@ -1573,9 +1592,10 @@
       postsContainer.innerHTML = '<p class="text-gray-500 text-sm">読み込み中...</p>';
       setupSubjectTabs();
 
-      // ★ 削除済みスレッドの既読記録をクリーンアップ
+      // 削除済みスレッドの既読記録をクリーンアップ
       cleanupReadThreads();
 
+      // 一覧を再描画（既読マークを反映）
       renderThreadList();
     };
 
@@ -1586,7 +1606,21 @@
       currentThreadAuthorEmail = authorEmail || '';
       activeReplyParentId = null;
 
+      // ★ 既読化（localStorage に保存）
       markThreadAsRead(threadId);
+
+      // ★ 開いた瞬間に画面上のマークも即座に消す
+      const targetItem = threadsContainer.querySelector(`.thread-item[data-thread-id="${threadId}"]`);
+      if (targetItem) {
+        targetItem.classList.remove('has-new');
+        const mark = targetItem.querySelector('.new-mark');
+        if (mark) mark.remove();
+        const badge = targetItem.querySelector('.unread-badge');
+        if (badge) badge.remove();
+        // 左側の padding も戻す
+        const inner = targetItem.querySelector('div[style*="padding-left"]');
+        if (inner) inner.style.paddingLeft = '0';
+      }
 
       document.getElementById('currentThreadTitle').innerText = title;
       document.getElementById('currentThreadDate').innerText = '作成日時: ' + createdAt;
@@ -1670,7 +1704,6 @@
           allThreadsCache = [];
           threadsContainer.innerHTML = '<p class="text-gray-500 text-sm">スレッドがありません。新しく作成してください。</p>';
           updateSubjectTabCounts();
-          // ★ 空の場合もクリーンアップ
           cleanupReadThreads();
           return;
         }
@@ -1697,10 +1730,7 @@
         }));
 
         allThreadsCache = threads;
-
-        // ★ 削除済みスレッドの既読記録をクリーンアップ
         cleanupReadThreads();
-
         renderThreadList();
         setupSubjectTabs();
 
@@ -1767,6 +1797,9 @@
         }
 
         renderPostsFromCache();
+
+        // ★ スレッド内を見ている間は既読を維持
+        if (threadId) markThreadAsRead(threadId);
       }, (error) => {
         console.error("レス読み込みエラー:", error);
         setConnection(false);
@@ -2505,6 +2538,10 @@
 
       if (!threadSearchIndex[currentThreadKey]) threadSearchIndex[currentThreadKey] = { posts: [] };
       threadSearchIndex[currentThreadKey].posts.push({ content: content || '' });
+
+      // ★ 自分がレスしたスレッドは既読化（自分のレスでマークが付かないように）
+      markThreadAsRead(currentThreadKey);
+
       showBanner('返信を保存しました', false);
     }
 
@@ -2572,6 +2609,10 @@
 
         if (!threadSearchIndex[currentThreadKey]) threadSearchIndex[currentThreadKey] = { posts: [] };
         threadSearchIndex[currentThreadKey].posts.push({ content: content || '' });
+
+        // ★ 自分がレスしたスレッドは既読化
+        markThreadAsRead(currentThreadKey);
+
         showBanner('書き込みを保存しました', false);
         const el = document.getElementById(tempId);
         if (el) el.remove();
@@ -2633,6 +2674,7 @@
         batch.delete(doc(db, COL.threads, threadId));
         await batch.commit();
         delete threadSearchIndex[threadId];
+        // ★ 削除されたスレッドの既読記録も削除
         delete readThreads[threadId];
         if (currentUser) saveReadThreads(currentUser.uid, readThreads);
         showBanner('スレッドを削除しました', false);
