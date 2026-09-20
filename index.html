@@ -3436,5 +3436,108 @@
       console.error('未処理のPromiseエラー:', event.reason);
     });
   </script>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // ImgbbのAPIキー
+  const IMGBB_API_KEY = "33b55a1768261c58e32d347739630498";
+
+  // Firebaseの設定
+  const firebaseConfig = {
+    apiKey: "AIzaSyCPMnJKqDMeOGti0KiH8_IqkTGwWbU_Ze4",
+    authDomain: "dongri7kyouiku.firebaseapp.com",
+    projectId: "dongri7kyouiku",
+    storageBucket: "dongri7kyouiku.firebasestorage.app",
+    messagingSenderId: "958086536327",
+    appId: "1:958086536327:web:16218f75037d3b4c852c22",
+    measurementId: "G-H1XX89ML24"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const submitBtn = document.getElementById("submitBtn");
+  const postsDiv = document.getElementById("posts");
+
+  // 投稿処理
+  submitBtn.addEventListener("click", async () => {
+    const username = document.getElementById("username").value.trim() || "名無し";
+    const message = document.getElementById("message").value.trim();
+    const file = document.getElementById("imageInput").files[0];
+
+    if (!message && !file) {
+      alert("コメントか画像を入力してください！");
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = "送信中...";
+
+    try {
+      let imageUrl = "";
+
+      // 画像があればImgbbにアップロード
+      if (file) {
+        const formData = new FormData();
+        formData.append("image", file);
+
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+          method: "POST",
+          body: formData
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          imageUrl = result.data.url;
+        } else {
+          throw new Error("画像のアップロードに失敗しました");
+        }
+      }
+
+      // Firestoreに保存
+      await addDoc(collection(db, "posts"), {
+        username: username,
+        message: message,
+        imageUrl: imageUrl,
+        createdAt: serverTimestamp()
+      });
+
+      document.getElementById("message").value = "";
+      document.getElementById("imageInput").value = "";
+    } catch (e) {
+      console.error("投稿エラー:", e);
+      alert("投稿に失敗しました。");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerText = "投稿する";
+    }
+  });
+
+  // リアルタイム自動取得処理
+  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+  onSnapshot(q, (snapshot) => {
+    postsDiv.innerHTML = "";
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      const postElement = document.createElement("div");
+      postElement.className = "post";
+
+      let imgHtml = data.imageUrl ? `<br><img src="${data.imageUrl}" alt="投稿画像">` : "";
+
+      postElement.innerHTML = `
+        <strong>${escapeHtml(data.username)}</strong>
+        <p>${escapeHtml(data.message).replace(/\n/g, '<br>')}</p>
+        ${imgHtml}
+      `;
+      postsDiv.appendChild(postElement);
+    });
+  });
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+</script>
 </body>
 </html>
