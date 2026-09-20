@@ -522,16 +522,16 @@
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     // ============================================================
-    // ★★★ ここを新しいFirebaseプロジェクトの設定に置き換えてください ★★★
+    // ★★★ あなたのFirebaseプロジェクト設定 ★★★
     // ============================================================
     const firebaseConfig = {
-      apiKey: "YOUR_NEW_API_KEY_HERE",
-      authDomain: "YOUR_NEW_PROJECT.firebaseapp.com",
-      projectId: "YOUR_NEW_PROJECT_ID",
-      storageBucket: "YOUR_NEW_PROJECT.firebasestorage.app",
-      messagingSenderId: "YOUR_NEW_SENDER_ID",
-      appId: "YOUR_NEW_APP_ID",
-      measurementId: "YOUR_NEW_MEASUREMENT_ID"
+      apiKey: "AIzaSyBAqWSds8_tub6EQTFZDSXv0fzV8_agbOY",
+      authDomain: "dongrikyouiku.firebaseapp.com",
+      projectId: "dongrikyouiku",
+      storageBucket: "dongrikyouiku.firebasestorage.app",
+      messagingSenderId: "823517253864",
+      appId: "1:823517253864:web:281ac2b5ce90bde048795d",
+      measurementId: "G-6R28GJ1DN8"
     };
     // ============================================================
 
@@ -1417,9 +1417,6 @@
       }
     });
 
-    // ============================================================
-    // ★★★ 300人対応: limit(100) で最新100件のみ購読 ★★★
-    // ============================================================
     function initThreadsListener() {
       if (threadsUnsubscribe) threadsUnsubscribe();
       const q = query(collection(db, COL.threads), orderBy('createdAt', 'desc'), limit(THREAD_LIST_LIMIT));
@@ -2308,7 +2305,6 @@
         if (!parsed || typeof parsed !== 'object' || !parsed.threads) {
           throw new Error('不正なバックアップファイル形式です');
         }
-        // 既存スレッド削除
         const oldThreads = await getDocs(collection(db, COL.threads));
         for (const tdoc of oldThreads.docs) {
           const postsSnap = await getDocs(collection(db, COL.threads, tdoc.id, 'posts'));
@@ -2317,7 +2313,6 @@
           batch.delete(tdoc.ref);
           await batch.commit();
         }
-        // スレッド復元
         for (const [tid, tdata] of Object.entries(parsed.threads)) {
           const { posts, ...threadRest } = tdata;
           await setDoc(doc(db, COL.threads, tid), threadRest);
@@ -2327,7 +2322,6 @@
             }
           }
         }
-        // その他コレクション復元
         const restoreCol = async (colName, data) => {
           const old = await getDocs(collection(db, colName));
           const batch = writeBatch(db);
