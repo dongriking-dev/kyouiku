@@ -251,6 +251,13 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.75; }
     }
+
+    /* ===== 利用規約の折りたたみ ===== */
+    #siteRules.collapsed #rulesContent { display: none; }
+    #rulesToggleIcon {
+      display: inline-block;
+      transition: transform 0.2s;
+    }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans p-4 max-w-5xl mx-auto">
@@ -260,13 +267,14 @@
     <div class="boot-msg">アカウントを確認しています...</div>
   </div>
 
+  <!-- ===== 利用規約（初期状態：閉じている） ===== -->
   <div id="siteRules" class="collapsed bg-white border-2 border-blue-800 rounded-lg shadow mb-4 overflow-hidden">
-    <button id="rulesToggleBtn"
+    <button id="rulesToggleBtn" type="button"
       class="w-full bg-blue-900 hover:bg-blue-800 text-white text-left px-4 py-3 flex items-center justify-between transition">
       <span class="font-bold text-base flex items-center gap-2">
         📜 学びの広場 利用ルール
       </span>
-      <span id="rulesToggleIcon" class="text-xl">▼</span>
+      <span id="rulesToggleIcon" class="text-xl">▶</span>
     </button>
     <div id="rulesContent" class="px-4 py-4 text-sm text-gray-800 leading-relaxed">
       <ol class="list-decimal list-inside space-y-2">
@@ -668,9 +676,7 @@
     let selectedSubjectForNewThread = '';
     let currentSearchQuery = '';
 
-    // ============================================================
     // 新着マーク関連
-    // ============================================================
     let newMarkEnabled = true;
     let readThreads = {};
     let banOverlayShown = false;
@@ -801,12 +807,6 @@
       try { localStorage.setItem(readThreadsKey(uid), JSON.stringify(data)); } catch (e) {}
     }
 
-    /**
-     * スレッドが新着かどうか判定
-     * - 新着マーク無効時 → false
-     * - 未読の場合 → true
-     * - 既読でも、スレッド作成時刻 or 最新レス時刻が既読時刻より新しい → true
-     */
     function isThreadNew(thread) {
       if (!newMarkEnabled) return false;
       const lastRead = readThreads[thread.id] || 0;
@@ -888,7 +888,6 @@
     function checkSelfBan() {
       if (!currentUser) return false;
       if (isCurrentUserProtected()) return false;
-
       if (bannedUsersCache && bannedUsersCache[currentUser.uid]) { showBanOverlay(); return true; }
       const emailKey = emailToKey(currentUser.email);
       if (emailKey && bannedUsersCache && bannedUsersCache[emailKey]) { showBanOverlay(); return true; }
@@ -1022,11 +1021,11 @@
     }
 
     /* ============================================================
-     * 利用規約の折りたたみ
+     * ★ 利用規約の折りたたみ（シンプル版）
      *  - 常に閉じた状態で開始
-     *  - クリックで開閉トグル
+     *  - クリックで開閉（▶ / ▼ 切替）
      * ============================================================ */
-    function initSiteRules() {
+    (function initSiteRules() {
       const rulesEl = document.getElementById('siteRules');
       const toggleBtn = document.getElementById('rulesToggleBtn');
       const iconEl = document.getElementById('rulesToggleIcon');
@@ -1037,28 +1036,18 @@
 
       // 常に閉じた状態で開始
       rulesEl.classList.add('collapsed');
-      if (iconEl) iconEl.style.transform = 'rotate(-90deg)';
+      if (iconEl) iconEl.textContent = '▶';
 
-      // トグルイベント（念のためフラグで多重登録防止）
-      if (toggleBtn.dataset.bound === '1') return;
-      toggleBtn.dataset.bound = '1';
-
-      toggleBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const isCollapsed = rulesEl.classList.toggle('collapsed');
-        if (iconEl) {
-          iconEl.style.transform = isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
-        }
+      // クリックで開閉トグル
+      toggleBtn.addEventListener('click', function(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const nowCollapsed = rulesEl.classList.toggle('collapsed');
+        if (iconEl) iconEl.textContent = nowCollapsed ? '▶' : '▼';
       });
-    }
 
-    // DOMContentLoaded を待ってから実行（確実に要素が存在する状態で）
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initSiteRules);
-    } else {
-      initSiteRules();
-    }
+      console.log('✅ 利用規約の折りたたみ初期化完了');
+    })();
 
     document.addEventListener('contextmenu', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return true;
@@ -1508,10 +1497,8 @@
           }
         }
 
-        // ★ 新着判定（スレ作成 or 最新レス）
         const hasNew = isThreadNew(thread);
         const lastRead = readThreads[thread.id] || 0;
-        // 未読レス数を計算（初回レスはスレ作成と同時なので除く）
         const totalPosts = thread.postCount || 0;
         const unreadCount = hasNew
           ? (lastRead ? Math.max(0, totalPosts - 1) : totalPosts)
@@ -1650,9 +1637,7 @@
         const threads = [];
         snapshot.forEach((d) => { threads.push({ id: d.id, ...d.data() }); });
 
-        // ★ 各スレッドの最新レス時刻（lastPostAt）とレス総数（postCount）を取得
         await Promise.all(threads.map(async (t) => {
-          // すでに lastPostAt が Firestore に保存されていればそれを使う
           if (typeof t.lastPostAt === 'number' && typeof t.postCount === 'number') return;
           try {
             const latestSnap = await getDocs(
@@ -1728,7 +1713,6 @@
           posts: posts.map(p => ({ content: p.content || '' }))
         };
 
-        // ★ スレッドの lastPostAt / postCount を更新
         const lastPost = posts[posts.length - 1];
         if (lastPost) {
           const thread = allThreadsCache.find(t => t.id === threadId);
@@ -2466,7 +2450,6 @@
         authorEmail: currentUser.email, authorUid: currentUser.uid, authorRole: userRole || null,
         badgeVisible: myBadgePublic, parentId, file: fileData
       });
-      // ★ スレッドに lastPostAt / postCount を保存（新着判定用）
       try {
         const threadRef = doc(db, COL.threads, currentThreadKey);
         const threadSnap = await getDoc(threadRef);
@@ -2534,7 +2517,6 @@
           authorEmail: currentUser.email, authorUid: currentUser.uid, authorRole: userRole || null,
           badgeVisible: myBadgePublic, parentId: null, file: fileData
         });
-        // ★ スレッドに lastPostAt / postCount を保存
         try {
           const threadRef = doc(db, COL.threads, currentThreadKey);
           const threadSnap = await getDoc(threadRef);
