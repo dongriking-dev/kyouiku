@@ -689,7 +689,7 @@
       <h3 class="text-lg font-bold text-gray-800 mb-1">公式マーク設定</h3>
       <p class="text-xs text-gray-500 mb-3">対象: <span id="officialTargetEmail" class="admin-email"></span></p>
       <p class="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded p-2 mb-3">
-        公式マークを付与すると、投稿者名の横に「✓ 公式」バッジが表示され、なりすまし防止に役立ちます。
+        公式マークを付与すると、投稿者名の横に「✓」バッジが表示され、なりすまし防止に役立ちます。
       </p>
       <label class="flex items-center gap-2 text-sm text-gray-700 mb-3 cursor-pointer">
         <input type="checkbox" id="officialCheckbox" class="w-4 h-4">
@@ -1190,7 +1190,7 @@
       if (!officialMeBadge) return;
       if (currentUser && officialUsersCache[currentUser.uid] && officialUsersCache[currentUser.uid].official) {
         const note = officialUsersCache[currentUser.uid].note || '';
-        officialMeBadge.innerHTML = `<span class="official-badge" title="${escapeHtml(note || '公式アカウント')}">✓ 公式</span>`;
+        officialMeBadge.innerHTML = `<span class="official-badge" title="${escapeHtml(note || '公式アカウント')}">✓</span>`;
       } else {
         officialMeBadge.innerHTML = '';
       }
