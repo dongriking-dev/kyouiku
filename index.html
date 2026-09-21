@@ -134,6 +134,8 @@
     .user-row .btn-nickname:hover { background: #1e3a8a; }
     .user-row .btn-badge { background: #a16207; }
     .user-row .btn-badge:hover { background: #854d0e; }
+    .user-row .btn-official { background: #1d4ed8; }
+    .user-row .btn-official:hover { background: #1e3a8a; }
 
     .user-search-input { width: 100%; border: 1px solid #d1d5db; padding: 8px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; outline: none; }
     .user-search-input:focus { border-color: #0369a1; box-shadow: 0 0 0 2px rgba(3,105,161,0.15); }
@@ -261,7 +263,6 @@
       transition: transform 0.2s;
     }
 
-    /* マイニックネームボタン */
     .my-nickname-btn {
       background: #4f46e5; color: #fff; font-size: 11px; padding: 6px 12px;
       border-radius: 4px; border: none; cursor: pointer; font-weight: 600;
@@ -272,12 +273,32 @@
     .my-nickname-btn.unset { background: #6b7280; }
     .my-nickname-btn.unset:hover { background: #4b5563; }
 
-    /* ニックネーム設定の説明 */
     .nickname-note {
       font-size: 11px; color: #1e40af; background: #dbeafe;
       border: 1px solid #93c5fd; border-radius: 4px;
       padding: 8px 10px; margin-bottom: 12px; line-height: 1.5;
     }
+
+    /* ★ 公式マーク */
+    .official-badge {
+      background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+      color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 9999px;
+      margin-left: 4px; font-weight: 700; display: inline-flex; align-items: center;
+      gap: 3px; box-shadow: 0 1px 3px rgba(29,78,216,0.4); cursor: help;
+      vertical-align: middle;
+    }
+    .official-line {
+      font-size: 11px; color: #1d4ed8; background: #dbeafe;
+      border: 1px solid #93c5fd; border-radius: 4px;
+      padding: 2px 8px; margin-top: 3px; display: inline-block; font-weight: 700;
+    }
+    .official-line .official-note { color: #1e40af; font-weight: 400; }
+    .official-toggle-wrap {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 11px;
+      color: #1e40af; margin-left: 6px; background: #dbeafe; padding: 3px 8px;
+      border-radius: 4px; border: 1px solid #93c5fd; cursor: pointer; user-select: none;
+    }
+    .official-toggle-wrap input { cursor: pointer; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans p-4 max-w-5xl mx-auto">
@@ -299,11 +320,13 @@
       <ol class="list-decimal list-inside space-y-2">
         <li><strong class="text-blue-900">Googleログイン必須</strong><br>当サイトのご利用にはGoogleアカウントでのログインが必要です。</li>
         <li><strong class="text-blue-900">ニックネームについて</strong><br>表示名は自由に設定できます。ニックネームを設定していない場合は「名無しさん」と表示されます。他の利用者への誹謗中傷となる名前は禁止です。</li>
+        <li><strong class="text-blue-900">公式マークについて</strong><br>管理者が認めたユーザーには「✓ 公式」バッジが付与されます。公式マークはなりすまし防止のためのものであり、公式を騙る行為は禁止です。</li>
         <li><strong class="text-blue-900">禁止事項</strong>
           <ul class="list-disc list-inside ml-4 mt-1 space-y-1 text-gray-700">
             <li>他の利用者への誹謗中傷・脅迫・嫌がらせ</li>
             <li>荒らし行為（連投・意味のない投稿の繰り返し）</li>
             <li>個人情報の公開（自分や他人の住所・電話番号・顔写真など）</li>
+            <li>公式マークを騙る行為・なりすまし</li>
           </ul>
         </li>
         <li><strong class="text-blue-900">投稿内容の責任</strong><br>投稿内容は投稿者自身の責任です。</li>
@@ -411,6 +434,10 @@
             <input type="checkbox" id="userShowOnlySelfNicknamed">
             <span>本人設定のみ</span>
           </label>
+          <label class="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
+            <input type="checkbox" id="userShowOnlyOfficial">
+            <span>公式のみ</span>
+          </label>
         </div>
       </div>
       <div id="userListContainer" style="max-height: 55vh; overflow-y: auto;">
@@ -459,6 +486,27 @@
     </div>
   </div>
 
+  <!-- ★ 管理者用：公式マーク設定モーダル -->
+  <div id="officialModal" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 480px;">
+      <h3 class="text-lg font-bold text-gray-800 mb-1">✓ 公式マーク設定</h3>
+      <p class="text-xs text-gray-500 mb-3">対象: <span id="officialTargetEmail" class="admin-email"></span></p>
+      <p class="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded p-2 mb-3">
+        公式マークを付与すると、投稿者名の横に「✓ 公式」バッジが表示され、なりすまし防止に役立ちます。
+      </p>
+      <label class="flex items-center gap-2 text-sm text-gray-700 mb-3 cursor-pointer">
+        <input type="checkbox" id="officialCheckbox" class="w-4 h-4">
+        <span class="font-bold">このユーザーを公式アカウントにする</span>
+      </label>
+      <label class="block text-xs text-gray-600 mb-1">備考（任意・最大40文字）:</label>
+      <input type="text" id="officialNoteInput" maxlength="40" placeholder="例: 運営アカウント / 先生" class="w-full border p-2 rounded text-sm mb-3 focus:ring-2 focus:ring-blue-300 outline-none">
+      <div class="flex justify-end gap-2 flex-wrap">
+        <button id="officialCancelBtn" class="reply-cancel-btn">キャンセル</button>
+        <button id="officialSaveBtn" class="bg-blue-700 hover:bg-blue-800 text-white text-xs py-1.5 px-4 rounded font-bold">保存</button>
+      </div>
+    </div>
+  </div>
+
   <div id="loginView" class="hidden">
     <div class="bg-white border border-gray-300 rounded-lg shadow p-8 max-w-md mx-auto mt-16 text-center">
       <h1 class="text-3xl font-bold text-blue-900 mb-2">どんぐり学びの広場</h1>
@@ -485,6 +533,7 @@
           <span id="connDot" class="inline-block w-2 h-2 rounded-full bg-gray-400"></span>
           <span id="connText">接続中...</span>
           <span id="roleBadgeContainer"></span>
+          <span id="officialMeBadge"></span>
           <label id="newMarkToggleWrap" class="new-toggle-wrap" title="新着マークを表示するかどうか">
             <input type="checkbox" id="newMarkToggle" checked>
             <span>🔔 新着マーク</span>
@@ -658,7 +707,8 @@
       customBadges: 'manabi_customBadges',
       badgeFeatures: 'manabi_badgeFeatures',
       nicknames: 'manabi_nicknames',
-      userDevices: 'manabi_userDevices'
+      userDevices: 'manabi_userDevices',
+      officialUsers: 'manabi_officialUsers'
     };
 
     const THREAD_LIST_LIMIT = 100;
@@ -704,6 +754,7 @@
     let deviceBansUnsubscribe = null;
     let selfBanUnsubscribe = null;
     let nicknamesUnsubscribe = null;
+    let officialUnsubscribe = null;
 
     let activeReplyParentId = null;
     let allPostsCache = [];
@@ -718,6 +769,7 @@
     let bannedDevicesCache = {};
     let myFingerprint = null;
     let nicknamesCache = {};
+    let officialUsersCache = {};
 
     let badgeEditingTarget = null;
     let badgeEditingBadgeId = null;
@@ -747,6 +799,7 @@
     const connText = document.getElementById('connText');
     const statusBanner = document.getElementById('statusBanner');
     const roleBadgeContainer = document.getElementById('roleBadgeContainer');
+    const officialMeBadge = document.getElementById('officialMeBadge');
     const userEmailSpan = document.getElementById('userEmail');
     const adminControls = document.getElementById('adminControls');
     const badgeToggleWrap = document.getElementById('badgeToggleWrap');
@@ -770,6 +823,7 @@
     function canViewUserList() { return userRole === 'admin' || userRole === 'owner'; }
     function canBan() { if (userRole === 'admin' || userRole === 'owner') return true; return canDo('canBan'); }
     function canSetNickname() { return userRole === 'admin' || userRole === 'owner'; }
+    function canSetOfficial() { return userRole === 'admin' || userRole === 'owner'; }
 
     function hasBadgeFeature(uid, feature) {
       if (!uid || !feature) return false;
@@ -899,6 +953,16 @@
       if (role === 'admin') roleBadgeContainer.innerHTML = '<span class="admin-badge">管理者</span>';
       else if (role === 'owner') roleBadgeContainer.innerHTML = '<span class="owner-badge">主</span>';
       else if (role === 'vip') roleBadgeContainer.innerHTML = '<span class="vip-badge">VIP</span>';
+    }
+
+    function updateMyOfficialBadge() {
+      if (!officialMeBadge) return;
+      if (currentUser && officialUsersCache[currentUser.uid] && officialUsersCache[currentUser.uid].official) {
+        const note = officialUsersCache[currentUser.uid].note || '';
+        officialMeBadge.innerHTML = `<span class="official-badge" title="${escapeHtml(note || '公式アカウント')}">✓ 公式</span>`;
+      } else {
+        officialMeBadge.innerHTML = '';
+      }
     }
 
     function setConnection(online) {
@@ -1090,9 +1154,6 @@
       } catch (err) { alert(err.message); fileInput.value = ''; box.classList.remove('show'); return null; }
     }
 
-    /* ============================================================
-     * 利用規約の折りたたみ
-     * ============================================================ */
     (function initSiteRules() {
       const rulesEl = document.getElementById('siteRules');
       const toggleBtn = document.getElementById('rulesToggleBtn');
@@ -1178,6 +1239,18 @@
         if (currentThreadKey) renderPostsFromCache();
         updateMyNicknameBtn();
       }, (err) => console.error('ニックネーム監視エラー:', err));
+    }
+
+    function initOfficialUsersListener() {
+      if (officialUnsubscribe) officialUnsubscribe();
+      officialUnsubscribe = onSnapshot(collection(db, COL.officialUsers), (snap) => {
+        officialUsersCache = {};
+        snap.forEach(d => { officialUsersCache[d.id] = d.data(); });
+        const um = document.getElementById('userModal');
+        if (um && !um.classList.contains('hidden')) renderUserList();
+        if (currentThreadKey) renderPostsFromCache();
+        updateMyOfficialBadge();
+      }, (err) => console.error('公式マーク監視エラー:', err));
     }
 
     function initBannedUsersListener() {
@@ -1284,6 +1357,7 @@
       if (selfBanUnsubscribe) { selfBanUnsubscribe(); selfBanUnsubscribe = null; }
       if (badgeFeatureUnsubscribe) { badgeFeatureUnsubscribe(); badgeFeatureUnsubscribe = null; }
       if (nicknamesUnsubscribe) { nicknamesUnsubscribe(); nicknamesUnsubscribe = null; }
+      if (officialUnsubscribe) { officialUnsubscribe(); officialUnsubscribe = null; }
       try { await signOut(auth); } catch (e) { console.error(e); }
       document.body.style.background = '';
       showLoginView(); hideBootOverlay();
@@ -1370,12 +1444,14 @@
       initBannedUsersListener();
       initDeviceBansListener();
       initNicknamesListener();
+      initOfficialUsersListener();
 
       setTimeout(() => { if (checkSelfBan()) return; }, 800);
 
       updateMyBadgeToggleVisibility();
       updateEmailToggleVisibility();
       updateMyNicknameBtn();
+      updateMyOfficialBadge();
       renderRoleBadge(userRole);
 
       userEmailSpan.classList.add('hidden');
@@ -1432,7 +1508,6 @@
       const nickname = (document.getElementById('myNicknameInput').value || '').trim();
       if (!nickname) { alert('ニックネームを入力してください。\n（削除したい場合は「削除」ボタンを使用してください）'); return; }
       if (nickname.length > 20) { alert('ニックネームは20文字以内で入力してください。'); return; }
-      // 簡易NGワードチェック
       const ngWords = ['死ね', '殺す', '消えろ', 'うざい', 'きもい', 'カス', 'クズ'];
       if (ngWords.some(w => nickname.includes(w))) {
         alert('不適切な表現が含まれています。別のニックネームを設定してください。');
@@ -1954,9 +2029,14 @@
       return html;
     }
 
-    /**
-     * ★ 投稿の表示名を解決（ニックネーム優先、なければ「名無しさん」）
-     */
+    function buildOfficialBadge(post) {
+      if (!post || !post.authorUid) return '';
+      const info = officialUsersCache[post.authorUid];
+      if (!info || !info.official) return '';
+      const note = info.note ? ` title="${escapeHtml(info.note)}"` : ' title="公式アカウント"';
+      return `<span class="official-badge"${note}>✓ 公式</span>`;
+    }
+
     function resolveDisplayName(post) {
       if (!post) return '名無しさん';
       if (post.authorUid && nicknamesCache[post.authorUid] && nicknamesCache[post.authorUid].nickname) {
@@ -1976,6 +2056,7 @@
       if (currentThreadOwnerUid && post.authorUid === currentThreadOwnerUid) opBadge = `<span class="op-badge">スレ主</span>`;
       const roleBadgeHtml = buildPostRoleBadge(post);
       const customBadgeHtml = buildPostCustomBadge(post);
+      const officialBadgeHtml = buildOfficialBadge(post);
 
       const isBannedPost = isPostBanned(post);
       const bannedMark = isBannedPost ? `<span class="banned-mark">BAN中</span>` : '';
@@ -1996,6 +2077,12 @@
 
       let badgeManageBtn = '';
       if (canManageBadge()) badgeManageBtn = `<button class="badge-manage-btn" data-badge-uid="${post.authorUid}" data-badge-email="${escapeHtml(post.authorEmail || '')}">バッジ管理</button>`;
+      let officialBtn = '';
+      if (canSetOfficial() && post.authorUid) {
+        const isOfficial = officialUsersCache[post.authorUid] && officialUsersCache[post.authorUid].official;
+        const label = isOfficial ? '✓ 公式解除' : '✓ 公式付与';
+        officialBtn = `<button class="official-manage-btn" data-official-uid="${post.authorUid}" data-official-email="${escapeHtml(post.authorEmail || '')}">${label}</button>`;
+      }
       let banBtn = '';
       if (canBan() && post.authorUid && !isProtected) {
         if (isBannedPost) {
@@ -2013,11 +2100,12 @@
         <div class="font-bold text-gray-700 mb-1 flex flex-wrap items-baseline gap-x-1 items-center">
           <span class="post-number">${number}</span><span>：</span>
           <span class="post-author">${escapeHtml(displayName)}</span>
-          ${opBadge}${roleBadgeHtml}${customBadgeHtml}${bannedMark}<span>：</span>
+          ${officialBadgeHtml}${opBadge}${roleBadgeHtml}${customBadgeHtml}${bannedMark}<span>：</span>
           <span class="text-gray-500 text-xs font-normal">${date}</span>
           ${adminInfo}
           <span class="ml-auto flex gap-1">
             ${badgeManageBtn}
+            ${officialBtn}
             ${banBtn}
             <button class="reply-btn" data-reply-key="${post.id}">返信</button>
             ${canDelete() || canDo('canDeletePost') ? `<button class="delete-btn" data-post-key="${post.id}">削除</button>` : ''}
@@ -2035,6 +2123,8 @@
       }
       const bbtn = postDiv.querySelector('.badge-manage-btn');
       if (bbtn) bbtn.addEventListener('click', () => openBadgeModal(bbtn.dataset.badgeUid, bbtn.dataset.badgeEmail));
+      const obtn = postDiv.querySelector('.official-manage-btn');
+      if (obtn) obtn.addEventListener('click', () => window.openOfficialModal(obtn.dataset.officialUid, obtn.dataset.officialEmail));
       const bnbtn = postDiv.querySelector('.ban-btn');
       if (bnbtn) {
         bnbtn.addEventListener('click', () => {
@@ -2212,6 +2302,7 @@
     const userCountLabel = document.getElementById('userCountLabel');
     const userShowOnlyNicknamed = document.getElementById('userShowOnlyNicknamed');
     const userShowOnlySelfNicknamed = document.getElementById('userShowOnlySelfNicknamed');
+    const userShowOnlyOfficial = document.getElementById('userShowOnlyOfficial');
 
     window.openUserModal = function() {
       if (!canViewUserList()) { alert('ユーザー一覧の閲覧権限がありません。'); return; }
@@ -2224,12 +2315,14 @@
     userSearchInput.addEventListener('input', renderUserList);
     if (userShowOnlyNicknamed) userShowOnlyNicknamed.addEventListener('change', renderUserList);
     if (userShowOnlySelfNicknamed) userShowOnlySelfNicknamed.addEventListener('change', renderUserList);
+    if (userShowOnlyOfficial) userShowOnlyOfficial.addEventListener('change', renderUserList);
 
     function renderUserList() {
       userListContainer.innerHTML = '';
       const keyword = (userSearchInput.value || '').trim().toLowerCase();
       const onlyNicknamed = userShowOnlyNicknamed ? userShowOnlyNicknamed.checked : false;
       const onlySelfNicknamed = userShowOnlySelfNicknamed ? userShowOnlySelfNicknamed.checked : false;
+      const onlyOfficial = userShowOnlyOfficial ? userShowOnlyOfficial.checked : false;
 
       const list = Object.entries(knownUsersCache || {}).map(([uid, u]) => ({
         uid, email: (u && u.email) || '', displayName: (u && u.displayName) || '',
@@ -2246,6 +2339,7 @@
       }
       if (onlyNicknamed) filtered = filtered.filter(u => { const n = nicknamesCache[u.uid]; return n && n.nickname && n.nickname.length > 0; });
       if (onlySelfNicknamed) filtered = filtered.filter(u => { const n = nicknamesCache[u.uid]; return n && n.nickname && n.selfSet === true; });
+      if (onlyOfficial) filtered = filtered.filter(u => officialUsersCache[u.uid] && officialUsersCache[u.uid].official === true);
       filtered.sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
       userCountLabel.textContent = filtered.length;
       if (filtered.length === 0) { userListContainer.innerHTML = '<p class="text-xs text-gray-400">該当するユーザーがいません。</p>'; return; }
@@ -2280,12 +2374,19 @@
           nicknameHtml = `<div class="nickname-line">🏷️ ニックネーム: <span class="nickname-empty">（未設定）</span></div>`;
         }
 
+        const officialData = officialUsersCache[u.uid];
+        const isOfficial = !!(officialData && officialData.official);
+        const officialHtml = isOfficial
+          ? `<div class="official-line">✓ 公式アカウント${officialData.note ? ` <span class="official-note">（${escapeHtml(officialData.note)}）</span>` : ''}</div>`
+          : '';
+
         const row = document.createElement('div');
         row.className = 'user-row';
         row.innerHTML = `
           <div class="info">
             <div class="email-line">${escapeHtml(u.email || '（メール不明）')}</div>
             ${nicknameHtml}
+            ${officialHtml}
             <div class="meta-line">UID: ${escapeHtml(u.uid)}</div>
             <div class="meta-line">初回: ${escapeHtml(firstSeenDate)} ／ 最終: ${escapeHtml(lastSeenDate)}</div>
             <div class="meta-line">${roleTag}</div>
@@ -2293,6 +2394,7 @@
           <div class="action-btns">
             <button class="btn-mini btn-copy" data-copy="${escapeHtml(u.email)}">📋 コピー</button>
             ${canSetNickname() ? `<button class="btn-mini btn-nickname" data-nick-uid="${escapeHtml(u.uid)}" data-nick-email="${escapeHtml(u.email)}">🏷️ ニックネーム</button>` : ''}
+            ${canSetOfficial() ? `<button class="btn-mini btn-official" data-official-uid="${escapeHtml(u.uid)}" data-official-email="${escapeHtml(u.email)}">${isOfficial ? '✓ 公式解除' : '✓ 公式'}</button>` : ''}
             ${canManageBadge() ? `<button class="btn-mini btn-badge" data-badge-uid="${escapeHtml(u.uid)}" data-badge-email="${escapeHtml(u.email)}">🏷️ バッジ</button>` : ''}
             ${canBan() && !isProtected ? (
               isBanned
@@ -2305,6 +2407,8 @@
         });
         const nickBtn = row.querySelector('.btn-nickname');
         if (nickBtn) nickBtn.addEventListener('click', () => window.openNicknameModal(nickBtn.dataset.nickUid, nickBtn.dataset.nickEmail));
+        const officialBtn = row.querySelector('.btn-official');
+        if (officialBtn) officialBtn.addEventListener('click', () => window.openOfficialModal(officialBtn.dataset.officialUid, officialBtn.dataset.officialEmail));
         const badgeBtn = row.querySelector('.btn-badge');
         if (badgeBtn) badgeBtn.addEventListener('click', () => openBadgeModal(badgeBtn.dataset.badgeUid, badgeBtn.dataset.badgeEmail));
         const banBtn = row.querySelector('.btn-ban');
@@ -2390,6 +2494,75 @@
             alert('削除に失敗しました。\n' + (err.message || ''));
           } finally {
             delBtn.disabled = false; delBtn.textContent = originalText;
+          }
+        });
+      }
+    })();
+
+    /* ============================================================
+     * 管理者用：公式マーク設定モーダル
+     * ============================================================ */
+    let officialEditingUid = null;
+    let officialEditingEmail = '';
+
+    window.openOfficialModal = function(uid, email) {
+      if (!canSetOfficial()) { alert('公式マーク設定権限がありません。'); return; }
+      if (!uid) { alert('UIDが取得できませんでした。'); return; }
+      officialEditingUid = uid;
+      officialEditingEmail = email || '';
+      const targetEl = document.getElementById('officialTargetEmail');
+      if (targetEl) targetEl.textContent = email || '（メール不明）';
+      const existing = officialUsersCache[uid];
+      document.getElementById('officialCheckbox').checked = !!(existing && existing.official);
+      document.getElementById('officialNoteInput').value = (existing && existing.note) || '';
+      document.getElementById('officialModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('officialNoteInput').focus(), 100);
+    };
+
+    function closeOfficialModal() {
+      officialEditingUid = null;
+      officialEditingEmail = '';
+      document.getElementById('officialModal').classList.add('hidden');
+    }
+
+    (function initOfficialModalEvents() {
+      const modal = document.getElementById('officialModal');
+      const cancelBtn = document.getElementById('officialCancelBtn');
+      const saveBtn = document.getElementById('officialSaveBtn');
+      if (cancelBtn) cancelBtn.addEventListener('click', closeOfficialModal);
+      if (modal) modal.addEventListener('click', (e) => { if (e.target.id === 'officialModal') closeOfficialModal(); });
+      if (saveBtn) {
+        saveBtn.addEventListener('click', async () => {
+          if (!canSetOfficial()) { alert('公式マーク設定権限がありません。'); return; }
+          if (!currentUser) { alert('ログインが必要です。'); return; }
+          if (!officialEditingUid) return;
+          const official = document.getElementById('officialCheckbox').checked;
+          const note = document.getElementById('officialNoteInput').value.trim();
+          saveBtn.disabled = true;
+          const orig = saveBtn.textContent;
+          saveBtn.textContent = '保存中...';
+          try {
+            if (official) {
+              await setDoc(doc(db, COL.officialUsers, officialEditingUid), {
+                official: true,
+                note: note,
+                email: officialEditingEmail,
+                grantedAt: Date.now(),
+                grantedBy: currentUser.email
+              });
+              showBanner('公式マークを付与しました', false);
+            } else {
+              await deleteDoc(doc(db, COL.officialUsers, officialEditingUid));
+              showBanner('公式マークを解除しました', false);
+            }
+            closeOfficialModal();
+          } catch (err) {
+            console.error('公式マーク保存エラー:', err);
+            showBanner('保存失敗: ' + (err.code || err.message), true);
+            alert('保存に失敗しました。\n' + (err.message || ''));
+          } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = orig;
           }
         });
       }
@@ -2695,12 +2868,16 @@
           if (b && b.label && b.color) optimisticCustomBadge += `<span class="custom-badge" style="background:${escapeHtml(b.color)};">${escapeHtml(b.label)}</span>`;
         });
       }
+      let optimisticOfficialBadge = '';
+      if (officialUsersCache[currentUser.uid] && officialUsersCache[currentUser.uid].official) {
+        optimisticOfficialBadge = `<span class="official-badge">✓ 公式</span>`;
+      }
       const myDisplayName = nicknamesCache[currentUser.uid]?.nickname || '名無しさん';
       tempPost.innerHTML = `
         <div class="font-bold text-gray-700 mb-1 flex flex-wrap items-baseline gap-x-1">
           <span class="post-number">${optimisticIndex}</span><span>：</span>
           <span class="post-author">${escapeHtml(myDisplayName)}</span>
-          ${opBadge}${optimisticRoleBadge}${optimisticCustomBadge}<span>：</span>
+          ${optimisticOfficialBadge}${opBadge}${optimisticRoleBadge}${optimisticCustomBadge}<span>：</span>
           <span class="text-gray-500 text-xs font-normal">送信中...</span>
         </div>
         ${content ? `<div class="text-gray-900 whitespace-pre-wrap mb-2 break-words">${formatContent(content)}</div>` : ''}
@@ -2826,11 +3003,12 @@
         const customBadges = await grab(COL.customBadges);
         const badgeFeatures = await grab(COL.badgeFeatures);
         const nicknames = await grab(COL.nicknames);
+        const officialUsers = await grab(COL.officialUsers);
 
         const payload = {
-          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 4 },
+          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 5 },
           threads: threadsData, customBadges, knownUsers, bannedUsers,
-          badgeFeatures, nicknames
+          badgeFeatures, nicknames, officialUsers
         };
         const json = JSON.stringify(payload, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
@@ -2897,6 +3075,7 @@
         await restoreCol(COL.customBadges, parsed.customBadges);
         await restoreCol(COL.badgeFeatures, parsed.badgeFeatures);
         await restoreCol(COL.nicknames, parsed.nicknames);
+        await restoreCol(COL.officialUsers, parsed.officialUsers);
         showBanner('復元が完了しました', false);
         alert('復元が完了しました。');
         showThreadList();
@@ -2917,6 +3096,7 @@
       if (selfBanUnsubscribe) selfBanUnsubscribe();
       if (badgeFeatureUnsubscribe) badgeFeatureUnsubscribe();
       if (nicknamesUnsubscribe) nicknamesUnsubscribe();
+      if (officialUnsubscribe) officialUnsubscribe();
     });
     window.addEventListener('unhandledrejection', (event) => {
       console.error('未処理のPromiseエラー:', event.reason);
