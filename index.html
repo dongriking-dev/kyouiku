@@ -110,7 +110,11 @@
     .user-row .email-line { font-family: monospace; font-size: 12px; color: #1e40af; word-break: break-all; font-weight: 600; }
     .user-row .nickname-line { font-size: 12px; margin-top: 2px; color: #1d4ed8; font-weight: 700; word-break: break-all; }
     .user-row .nickname-line .nickname-value { background: #dbeafe; color: #1e3a8a; padding: 1px 6px; border-radius: 4px; display: inline-block; }
+    .user-row .nickname-line .nickname-value.self { background: #dcfce7; color: #14532d; }
     .user-row .nickname-line .nickname-empty { color: #9ca3af; font-weight: 400; }
+    .user-row .nickname-source { font-size: 9px; padding: 1px 5px; border-radius: 3px; margin-left: 4px; }
+    .user-row .nickname-source.self { background: #16a34a; color: #fff; }
+    .user-row .nickname-source.admin { background: #a16207; color: #fff; }
     .user-row .meta-line { font-size: 10px; color: #6b7280; margin-top: 2px; word-break: break-all; }
     .user-row .role-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; color: #fff; font-weight: 700; }
     .user-row .role-tag.admin { background: #7c2d12; }
@@ -118,7 +122,7 @@
     .user-row .role-tag.vip   { background: #7c3aed; }
     .user-row .role-tag.none  { background: #6b7280; }
     .user-row .role-tag.banned { background: #991b1b; }
-    .user-row .action-btns { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; max-width: 220px; }
+    .user-row .action-btns { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; max-width: 260px; }
     .user-row .btn-mini { font-size: 10px; padding: 3px 8px; border-radius: 4px; border: none; cursor: pointer; color: #fff; white-space: nowrap; }
     .user-row .btn-ban { background: #111827; }
     .user-row .btn-ban:hover { background: #374151; }
@@ -128,6 +132,8 @@
     .user-row .btn-copy:hover { background: #4b5563; }
     .user-row .btn-nickname { background: #1d4ed8; }
     .user-row .btn-nickname:hover { background: #1e3a8a; }
+    .user-row .btn-badge { background: #a16207; }
+    .user-row .btn-badge:hover { background: #854d0e; }
 
     .user-search-input { width: 100%; border: 1px solid #d1d5db; padding: 8px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; outline: none; }
     .user-search-input:focus { border-color: #0369a1; box-shadow: 0 0 0 2px rgba(3,105,161,0.15); }
@@ -179,7 +185,6 @@
     .subject-select-btn.selected[data-subject="english"] { background: #7c3aed; }
     .subject-select-btn.selected[data-subject="other"] { background: #6b7280; }
 
-    /* ===== 検索ボックス ===== */
     .search-box-wrap { position: relative; margin-bottom: 16px; }
     .search-input { width: 100%; padding: 12px 44px 12px 44px; border: 2px solid #d1d5db; border-radius: 9999px; font-size: 14px; outline: none; background: #fff; transition: all 0.15s; }
     .search-input:focus { border-color: #1d4ed8; box-shadow: 0 0 0 4px rgba(29,78,216,0.12); }
@@ -195,7 +200,6 @@
     .post-hit-info { font-size: 10px; background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 4px; }
     .post-card.search-hit { border-left: 4px solid #f59e0b; box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2); }
 
-    /* ===== 新着マーク ===== */
     .thread-item { position: relative; }
     .new-mark {
       position: absolute;
@@ -234,7 +238,6 @@
     }
     .new-toggle-wrap input { cursor: pointer; }
 
-    /* ===== 未読バッジ（レス新着件数） ===== */
     .unread-badge {
       display: inline-block;
       background: #ef4444;
@@ -252,11 +255,28 @@
       50% { opacity: 0.75; }
     }
 
-    /* ===== 利用規約の折りたたみ ===== */
     #siteRules.collapsed #rulesContent { display: none; }
     #rulesToggleIcon {
       display: inline-block;
       transition: transform 0.2s;
+    }
+
+    /* マイニックネームボタン */
+    .my-nickname-btn {
+      background: #4f46e5; color: #fff; font-size: 11px; padding: 6px 12px;
+      border-radius: 4px; border: none; cursor: pointer; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 4px;
+      max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .my-nickname-btn:hover { background: #4338ca; }
+    .my-nickname-btn.unset { background: #6b7280; }
+    .my-nickname-btn.unset:hover { background: #4b5563; }
+
+    /* ニックネーム設定の説明 */
+    .nickname-note {
+      font-size: 11px; color: #1e40af; background: #dbeafe;
+      border: 1px solid #93c5fd; border-radius: 4px;
+      padding: 8px 10px; margin-bottom: 12px; line-height: 1.5;
     }
   </style>
 </head>
@@ -277,7 +297,8 @@
     </button>
     <div id="rulesContent" class="px-4 py-4 text-sm text-gray-800 leading-relaxed">
       <ol class="list-decimal list-inside space-y-2">
-        <li><strong class="text-blue-900">Googleログイン必須</strong><br>当サイトのご利用にはGoogleアカウントでのログインが必要です。投稿は匿名で表示されます。</li>
+        <li><strong class="text-blue-900">Googleログイン必須</strong><br>当サイトのご利用にはGoogleアカウントでのログインが必要です。</li>
+        <li><strong class="text-blue-900">ニックネームについて</strong><br>表示名は自由に設定できます。ニックネームを設定していない場合は「名無しさん」と表示されます。他の利用者への誹謗中傷となる名前は禁止です。</li>
         <li><strong class="text-blue-900">禁止事項</strong>
           <ul class="list-disc list-inside ml-4 mt-1 space-y-1 text-gray-700">
             <li>他の利用者への誹謗中傷・脅迫・嫌がらせ</li>
@@ -296,6 +317,9 @@
 
   <div id="statusBanner" class="bg-red-600 text-white"></div>
 
+  <!-- ============================================================
+       バッジ管理モーダル
+       ============================================================ -->
   <div id="badgeModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 620px;">
       <h3 class="text-lg font-bold text-gray-800 mb-1">🏷️ バッジ管理（機能設定可能）</h3>
@@ -341,6 +365,7 @@
     </div>
   </div>
 
+  <!-- BAN管理モーダル -->
   <div id="banModal" class="modal-backdrop hidden">
     <div class="modal-content">
       <h3 class="text-lg font-bold text-gray-800 mb-1">🚫 BANユーザー管理</h3>
@@ -369,17 +394,24 @@
     </div>
   </div>
 
+  <!-- ユーザー一覧モーダル -->
   <div id="userModal" class="modal-backdrop hidden">
-    <div class="modal-content" style="max-width: 720px;">
+    <div class="modal-content" style="max-width: 780px;">
       <h3 class="text-lg font-bold text-gray-800 mb-1">👥 サイトを開いたユーザー一覧</h3>
       <p class="text-xs text-gray-500 mb-3">ログインしたことがある全ユーザーの一覧です（新しい順）。</p>
       <input type="text" id="userSearchInput" class="user-search-input" placeholder="🔍 メールアドレスまたはニックネームで検索...">
       <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
         <p class="text-xs text-gray-600">合計: <span id="userCountLabel" class="font-bold">0</span> 人</p>
-        <label class="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
-          <input type="checkbox" id="userShowOnlyNicknamed">
-          <span>ニックネーム設定済みのみ</span>
-        </label>
+        <div class="flex items-center gap-3 flex-wrap">
+          <label class="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
+            <input type="checkbox" id="userShowOnlyNicknamed">
+            <span>ニックネーム設定済みのみ</span>
+          </label>
+          <label class="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
+            <input type="checkbox" id="userShowOnlySelfNicknamed">
+            <span>本人設定のみ</span>
+          </label>
+        </div>
       </div>
       <div id="userListContainer" style="max-height: 55vh; overflow-y: auto;">
         <p class="text-xs text-gray-400">（読み込み中...）</p>
@@ -390,17 +422,39 @@
     </div>
   </div>
 
+  <!-- 管理者用：他人のニックネーム設定モーダル -->
   <div id="nicknameModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 480px;">
-      <h3 class="text-lg font-bold text-gray-800 mb-1">ニックネーム設定</h3>
+      <h3 class="text-lg font-bold text-gray-800 mb-1">ニックネーム設定（管理者）</h3>
       <p class="text-xs text-gray-500 mb-4">対象: <span id="nicknameTargetEmail" class="admin-email"></span></p>
-      <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mb-3">⚠️ ニックネームは管理者・主のみが閲覧できます。</p>
+      <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mb-3">⚠️ 管理者が設定するニックネームです。本人が自分で設定したニックネームは上書きされます。</p>
       <label class="block text-xs text-gray-600 mb-1">ニックネーム（最大20文字）:</label>
       <input type="text" id="nicknameInput" maxlength="20" placeholder="例: 常連さん / 要注意人物" class="w-full border p-2 rounded text-sm mb-3 focus:ring-2 focus:ring-blue-300 outline-none">
       <div class="flex justify-end gap-2 flex-wrap">
         <button id="nicknameCancelBtn" class="reply-cancel-btn">キャンセル</button>
         <button id="nicknameDeleteBtn" class="delete-btn">削除</button>
         <button id="nicknameSaveBtn" class="bg-blue-700 hover:bg-blue-800 text-white text-xs py-1.5 px-4 rounded font-bold">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 自分のニックネーム設定モーダル -->
+  <div id="myNicknameModal" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 480px;">
+      <h3 class="text-lg font-bold text-gray-800 mb-1">🏷️ 自分のニックネーム設定</h3>
+      <p class="text-xs text-gray-500 mb-3">投稿時に表示される名前です。設定しない場合は「名無しさん」と表示されます。</p>
+      <div class="nickname-note">
+        💡 ニックネームは最大20文字です。<br>
+        誹謗中傷や不適切な名前は管理者により削除される場合があります。<br>
+        メールアドレスは引き続き管理者のみ閲覧可能です。
+      </div>
+      <label class="block text-xs text-gray-600 mb-1">ニックネーム:</label>
+      <input type="text" id="myNicknameInput" maxlength="20" placeholder="例: どんぐり太郎" class="w-full border p-2 rounded text-sm mb-1 focus:ring-2 focus:ring-blue-300 outline-none">
+      <p class="text-xs text-gray-400 mb-3">現在: <span id="myNicknameCurrent">（未設定）</span></p>
+      <div class="flex justify-end gap-2 flex-wrap">
+        <button id="myNicknameCancelBtn" class="reply-cancel-btn">キャンセル</button>
+        <button id="myNicknameDeleteBtn" class="delete-btn">削除</button>
+        <button id="myNicknameSaveBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-1.5 px-4 rounded font-bold">保存</button>
       </div>
     </div>
   </div>
@@ -419,7 +473,7 @@
         </svg>
         Googleでログイン
       </button>
-      <p class="text-xs text-gray-400 mt-4">※ 投稿は匿名で表示されます</p>
+      <p class="text-xs text-gray-400 mt-4">※ 表示名は自由に設定できます</p>
     </div>
   </div>
 
@@ -446,6 +500,9 @@
         </p>
       </div>
       <div class="flex items-center gap-2 flex-wrap">
+        <button id="myNicknameBtn" class="my-nickname-btn unset hidden" title="自分のニックネームを設定">
+          🏷️ 名無しさん
+        </button>
         <div id="adminControls" class="hidden flex gap-2 flex-wrap">
           <button id="backupBtn" class="backup-btn hidden" onclick="doBackup()">💾 バックアップ</button>
           <button id="restoreBtn" class="restore-btn hidden" onclick="document.getElementById('restoreInput').click()">📥 復元</button>
@@ -571,7 +628,7 @@
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     // ============================================================
-    // ★★★ あなたのFirebaseプロジェクト設定 ★★★
+    // ★★★ Firebase プロジェクト設定 ★★★
     // ============================================================
     const firebaseConfig = {
       apiKey: "AIzaSyBAqWSds8_tub6EQTFZDSXv0fzV8_agbOY",
@@ -675,7 +732,6 @@
     let selectedSubjectForNewThread = '';
     let currentSearchQuery = '';
 
-    // 新着マーク関連
     let newMarkEnabled = true;
     let readThreads = {};
     let banOverlayShown = false;
@@ -703,6 +759,7 @@
     const searchInput = document.getElementById('searchInput');
     const searchClearBtn = document.getElementById('searchClearBtn');
     const searchResultInfo = document.getElementById('searchResultInfo');
+    const myNicknameBtn = document.getElementById('myNicknameBtn');
     let bannerTimer = null;
 
     function canDelete() { return userRole === 'admin' || userRole === 'owner' || userRole === 'vip'; }
@@ -795,82 +852,46 @@
     function loadNewMarkSetting(uid) { const v = localStorage.getItem(newMarkSettingKey(uid)); return v === null ? true : v === 'true'; }
     function saveNewMarkSetting(uid, enabled) { localStorage.setItem(newMarkSettingKey(uid), enabled ? 'true' : 'false'); }
 
-    /* ============================================================
-     * 既読記録（localStorage）
-     * ============================================================ */
     function readThreadsKey(uid) { return 'manabi_readThreads_' + (uid || 'anonymous'); }
-
     function loadReadThreads(uid) {
       try {
         const v = localStorage.getItem(readThreadsKey(uid));
         const parsed = v ? JSON.parse(v) : {};
-        // 数値以外を除去
         const cleaned = {};
         Object.entries(parsed).forEach(([tid, ts]) => {
           if (typeof ts === 'number' && !isNaN(ts) && ts > 0) cleaned[tid] = ts;
         });
-        console.log(`📚 既読記録を ${Object.keys(cleaned).length} 件読み込みました`);
         return cleaned;
-      } catch (e) {
-        console.warn('既読記録の読み込みに失敗:', e);
-        return {};
-      }
+      } catch (e) { return {}; }
     }
-
     function saveReadThreads(uid, data) {
-      try {
-        localStorage.setItem(readThreadsKey(uid), JSON.stringify(data));
-        console.log(`💾 既読記録を ${Object.keys(data).length} 件保存しました`);
-      } catch (e) {
-        console.warn('既読記録の保存に失敗:', e);
-      }
+      try { localStorage.setItem(readThreadsKey(uid), JSON.stringify(data)); }
+      catch (e) { console.warn('既読記録の保存に失敗:', e); }
     }
-
-    /**
-     * スレッドを既読化
-     */
     function markThreadAsRead(threadId) {
       if (!currentUser || !threadId) return;
-      // 現在時刻を保存（スレッド作成時刻・最新レス時刻より必ず新しくなる）
       readThreads[threadId] = Date.now();
       saveReadThreads(currentUser.uid, readThreads);
-      console.log(`📖 スレッド ${threadId} を既読化しました`);
     }
-
-    /**
-     * スレッドが新着かどうか判定
-     */
     function isThreadNew(thread) {
       if (!newMarkEnabled) return false;
       if (!thread || !thread.id) return false;
-      // 実在するスレッドのみ
       const exists = allThreadsCache.some(t => t.id === thread.id);
       if (!exists) return false;
-
       const lastRead = readThreads[thread.id] || 0;
       if (!lastRead) return true;
       if ((thread.createdAt || 0) > lastRead) return true;
       if ((thread.lastPostAt || 0) > lastRead) return true;
       return false;
     }
-
-    /**
-     * 削除済みスレッドの既読記録をクリーンアップ
-     */
     function cleanupReadThreads() {
       if (!currentUser) return;
       const activeIds = new Set(allThreadsCache.map(t => t.id));
       let cleaned = 0;
       Object.keys(readThreads).forEach(tid => {
-        if (!activeIds.has(tid)) {
-          delete readThreads[tid];
-          cleaned++;
-        }
+        if (!activeIds.has(tid)) { delete readThreads[tid]; cleaned++; }
       });
-      if (cleaned > 0) {
-        saveReadThreads(currentUser.uid, readThreads);
-        console.log(`🧹 削除済みスレッドの既読記録を ${cleaned} 件クリーンアップしました`);
-      }
+      if (cleaned > 0) saveReadThreads(currentUser.uid, readThreads);
     }
 
     function renderRoleBadge(role) {
@@ -984,9 +1005,7 @@
         let titleText = thread.title || '';
         let subjectText = getSubjectInfo(thread.subject).label || '';
         let postsText = '';
-        if (idx) {
-          postsText = (idx.posts || []).map(p => p.content || '').join('\n');
-        }
+        if (idx) postsText = (idx.posts || []).map(p => p.content || '').join('\n');
         const combined = `${titleText}\n${subjectText}\n${postsText}`;
         if (matchesAllTokens(combined, tokens)) {
           const titleHits = countTokenHits(titleText, tokens);
@@ -1078,20 +1097,15 @@
       const rulesEl = document.getElementById('siteRules');
       const toggleBtn = document.getElementById('rulesToggleBtn');
       const iconEl = document.getElementById('rulesToggleIcon');
-      if (!rulesEl || !toggleBtn) {
-        console.warn('siteRules または rulesToggleBtn が見つかりません');
-        return;
-      }
+      if (!rulesEl || !toggleBtn) return;
       rulesEl.classList.add('collapsed');
       if (iconEl) iconEl.textContent = '▶';
-
       toggleBtn.addEventListener('click', function(ev) {
         ev.preventDefault();
         ev.stopPropagation();
         const nowCollapsed = rulesEl.classList.toggle('collapsed');
         if (iconEl) iconEl.textContent = nowCollapsed ? '▶' : '▼';
       });
-      console.log('✅ 利用規約の折りたたみ初期化完了');
     })();
 
     document.addEventListener('contextmenu', (e) => {
@@ -1161,6 +1175,8 @@
         snap.forEach(d => { nicknamesCache[d.id] = d.data(); });
         const um = document.getElementById('userModal');
         if (um && !um.classList.contains('hidden')) renderUserList();
+        if (currentThreadKey) renderPostsFromCache();
+        updateMyNicknameBtn();
       }, (err) => console.error('ニックネーム監視エラー:', err));
     }
 
@@ -1198,6 +1214,22 @@
       if (!currentUser) { emailToggleWrap.classList.add('hidden'); return; }
       if (canToggleEmailVisibility()) { emailToggleWrap.classList.remove('hidden'); emailToggle.checked = myEmailVisible; }
       else emailToggleWrap.classList.add('hidden');
+    }
+
+    function updateMyNicknameBtn() {
+      if (!currentUser) { myNicknameBtn.classList.add('hidden'); return; }
+      myNicknameBtn.classList.remove('hidden');
+      const n = nicknamesCache[currentUser.uid];
+      const nickname = n && n.nickname ? n.nickname : '';
+      if (nickname) {
+        myNicknameBtn.textContent = `🏷️ ${nickname}`;
+        myNicknameBtn.classList.remove('unset');
+        myNicknameBtn.title = `現在のニックネーム: ${nickname}（クリックで変更）`;
+      } else {
+        myNicknameBtn.textContent = '🏷️ ニックネーム未設定';
+        myNicknameBtn.classList.add('unset');
+        myNicknameBtn.title = 'クリックしてニックネームを設定';
+      }
     }
 
     function updateAdminControlsVisibility() {
@@ -1332,19 +1364,18 @@
       myFingerprint = generateFingerprint();
       newMarkEnabled = loadNewMarkSetting(user.uid);
       newMarkToggle.checked = newMarkEnabled;
-      // ★ 既読記録を復元
       readThreads = loadReadThreads(user.uid);
 
       initBadgeFeatureListener();
       initBannedUsersListener();
       initDeviceBansListener();
+      initNicknamesListener();
 
-      setTimeout(() => {
-        if (checkSelfBan()) return;
-      }, 800);
+      setTimeout(() => { if (checkSelfBan()) return; }, 800);
 
       updateMyBadgeToggleVisibility();
       updateEmailToggleVisibility();
+      updateMyNicknameBtn();
       renderRoleBadge(userRole);
 
       userEmailSpan.classList.add('hidden');
@@ -1375,10 +1406,85 @@
       initThreadsListener();
       initCustomBadgesListener();
       initKnownUsersListener();
-      initNicknamesListener();
       registerMyFingerprint();
     });
 
+    /* ============================================================
+     * 自分のニックネーム設定
+     * ============================================================ */
+    const myNicknameModal = document.getElementById('myNicknameModal');
+
+    myNicknameBtn.addEventListener('click', () => {
+      if (!currentUser) { alert('ログインが必要です。'); return; }
+      const existing = nicknamesCache[currentUser.uid];
+      const nickname = (existing && existing.nickname) || '';
+      document.getElementById('myNicknameInput').value = nickname;
+      document.getElementById('myNicknameCurrent').textContent = nickname || '（未設定）';
+      myNicknameModal.classList.remove('hidden');
+      setTimeout(() => document.getElementById('myNicknameInput').focus(), 100);
+    });
+    function closeMyNicknameModal() { myNicknameModal.classList.add('hidden'); }
+    document.getElementById('myNicknameCancelBtn').addEventListener('click', closeMyNicknameModal);
+    myNicknameModal.addEventListener('click', (e) => { if (e.target.id === 'myNicknameModal') closeMyNicknameModal(); });
+
+    document.getElementById('myNicknameSaveBtn').addEventListener('click', async () => {
+      if (!currentUser) { alert('ログインが必要です。'); return; }
+      const nickname = (document.getElementById('myNicknameInput').value || '').trim();
+      if (!nickname) { alert('ニックネームを入力してください。\n（削除したい場合は「削除」ボタンを使用してください）'); return; }
+      if (nickname.length > 20) { alert('ニックネームは20文字以内で入力してください。'); return; }
+      // 簡易NGワードチェック
+      const ngWords = ['死ね', '殺す', '消えろ', 'うざい', 'きもい', 'カス', 'クズ'];
+      if (ngWords.some(w => nickname.includes(w))) {
+        alert('不適切な表現が含まれています。別のニックネームを設定してください。');
+        return;
+      }
+      const btn = document.getElementById('myNicknameSaveBtn');
+      btn.disabled = true;
+      const orig = btn.textContent;
+      btn.textContent = '保存中...';
+      try {
+        await setDoc(doc(db, COL.nicknames, currentUser.uid), {
+          nickname, email: currentUser.email,
+          updatedAt: Date.now(),
+          updatedBy: currentUser.email,
+          selfSet: true
+        });
+        showBanner('ニックネームを保存しました', false);
+        closeMyNicknameModal();
+      } catch (err) {
+        console.error('ニックネーム保存エラー:', err);
+        showBanner('保存失敗: ' + (err.code || err.message), true);
+        alert('保存に失敗しました。\n' + (err.message || ''));
+      } finally {
+        btn.disabled = false; btn.textContent = orig;
+      }
+    });
+
+    document.getElementById('myNicknameDeleteBtn').addEventListener('click', async () => {
+      if (!currentUser) { alert('ログインが必要です。'); return; }
+      const existing = nicknamesCache[currentUser.uid];
+      if (!existing || !existing.nickname) { alert('ニックネームが設定されていません。'); return; }
+      if (!confirm('ニックネームを削除しますか？\n（投稿には「名無しさん」と表示されます）')) return;
+      const btn = document.getElementById('myNicknameDeleteBtn');
+      btn.disabled = true;
+      const orig = btn.textContent;
+      btn.textContent = '削除中...';
+      try {
+        await deleteDoc(doc(db, COL.nicknames, currentUser.uid));
+        showBanner('ニックネームを削除しました', false);
+        closeMyNicknameModal();
+      } catch (err) {
+        console.error('ニックネーム削除エラー:', err);
+        showBanner('削除失敗: ' + (err.code || err.message), true);
+        alert('削除に失敗しました。\n' + (err.message || ''));
+      } finally {
+        btn.disabled = false; btn.textContent = orig;
+      }
+    });
+
+    /* ============================================================
+     * バッジ表示トグル・メール表示トグル
+     * ============================================================ */
     badgeToggle.addEventListener('change', async () => {
       if (!currentUser) return;
       const visible = badgeToggle.checked;
@@ -1492,11 +1598,8 @@
 
       const tokens = tokenizeQuery(currentSearchQuery);
 
-      if (tokens.length > 0) {
-        searchResultInfo.classList.add('show');
-      } else {
-        searchResultInfo.classList.remove('show');
-      }
+      if (tokens.length > 0) searchResultInfo.classList.add('show');
+      else searchResultInfo.classList.remove('show');
 
       let results = [];
       if (tokens.length > 0) {
@@ -1521,7 +1624,6 @@
       }
 
       results.forEach(({ thread, titleHits, subjectHits, hitPostIndices }) => {
-        // 実在するスレッドのみ表示
         const exists = allThreadsCache.some(t => t.id === thread.id);
         if (!exists) return;
 
@@ -1550,9 +1652,7 @@
         const hasNew = isThreadNew(thread);
         const lastRead = readThreads[thread.id] || 0;
         const totalPosts = thread.postCount || 0;
-        const unreadCount = hasNew
-          ? (lastRead ? Math.max(0, totalPosts - 1) : totalPosts)
-          : 0;
+        const unreadCount = hasNew ? (lastRead ? Math.max(0, totalPosts - 1) : totalPosts) : 0;
         const unreadBadge = (hasNew && unreadCount > 1)
           ? `<span class="unread-badge">新着 ${unreadCount}件</span>`
           : '';
@@ -1560,7 +1660,6 @@
         const item = document.createElement('div');
         item.className = 'thread-item bg-white p-3 border border-gray-300 rounded hover:bg-blue-50 cursor-pointer transition flex justify-between items-center shadow-sm'
           + (hasNew ? ' has-new' : '');
-        // ★ data-thread-id で要素を特定可能に
         item.dataset.threadId = thread.id;
         item.onclick = () => openThread(thread.id, thread.title, date, thread.authorEmail, thread.authorUid, thread.subject);
         item.innerHTML = `
@@ -1591,11 +1690,7 @@
       if (postsUnsubscribe) { postsUnsubscribe(); postsUnsubscribe = null; }
       postsContainer.innerHTML = '<p class="text-gray-500 text-sm">読み込み中...</p>';
       setupSubjectTabs();
-
-      // 削除済みスレッドの既読記録をクリーンアップ
       cleanupReadThreads();
-
-      // 一覧を再描画（既読マークを反映）
       renderThreadList();
     };
 
@@ -1606,10 +1701,8 @@
       currentThreadAuthorEmail = authorEmail || '';
       activeReplyParentId = null;
 
-      // ★ 既読化（localStorage に保存）
       markThreadAsRead(threadId);
 
-      // ★ 開いた瞬間に画面上のマークも即座に消す
       const targetItem = threadsContainer.querySelector(`.thread-item[data-thread-id="${threadId}"]`);
       if (targetItem) {
         targetItem.classList.remove('has-new');
@@ -1617,7 +1710,6 @@
         if (mark) mark.remove();
         const badge = targetItem.querySelector('.unread-badge');
         if (badge) badge.remove();
-        // 左側の padding も戻す
         const inner = targetItem.querySelector('div[style*="padding-left"]');
         if (inner) inner.style.paddingLeft = '0';
       }
@@ -1716,11 +1808,8 @@
             const latestSnap = await getDocs(
               query(collection(db, COL.threads, t.id, 'posts'), orderBy('createdAt', 'desc'), limit(1))
             );
-            if (!latestSnap.empty) {
-              t.lastPostAt = latestSnap.docs[0].data().createdAt || t.createdAt || 0;
-            } else {
-              t.lastPostAt = t.createdAt || 0;
-            }
+            if (!latestSnap.empty) t.lastPostAt = latestSnap.docs[0].data().createdAt || t.createdAt || 0;
+            else t.lastPostAt = t.createdAt || 0;
             const allPostsSnap = await getDocs(collection(db, COL.threads, t.id, 'posts'));
             t.postCount = allPostsSnap.size;
           } catch (e) {
@@ -1758,7 +1847,6 @@
           });
           newIndex[tid] = { posts };
         } catch (err) {
-          console.warn(`検索インデックス構築失敗 (${tid}):`, err.message);
           newIndex[tid] = { posts: [] };
         }
       });
@@ -1797,8 +1885,6 @@
         }
 
         renderPostsFromCache();
-
-        // ★ スレッド内を見ている間は既読を維持
         if (threadId) markThreadAsRead(threadId);
       }, (error) => {
         console.error("レス読み込みエラー:", error);
@@ -1868,6 +1954,17 @@
       return html;
     }
 
+    /**
+     * ★ 投稿の表示名を解決（ニックネーム優先、なければ「名無しさん」）
+     */
+    function resolveDisplayName(post) {
+      if (!post) return '名無しさん';
+      if (post.authorUid && nicknamesCache[post.authorUid] && nicknamesCache[post.authorUid].nickname) {
+        return nicknamesCache[post.authorUid].nickname;
+      }
+      return post.author || '名無しさん';
+    }
+
     function renderPostTree(post, childrenMap, searchTokens = []) {
       const wrap = document.createElement('div');
       wrap.className = 'post-tree';
@@ -1908,12 +2005,14 @@
         }
       }
 
+      const displayName = resolveDisplayName(post);
+
       const postDiv = document.createElement('div');
       postDiv.className = 'post-card' + (isBannedPost ? ' banned-post' : '') + (isSearchHit ? ' search-hit' : '');
       postDiv.innerHTML = `
         <div class="font-bold text-gray-700 mb-1 flex flex-wrap items-baseline gap-x-1 items-center">
           <span class="post-number">${number}</span><span>：</span>
-          <span class="post-author">${escapeHtml(post.author || '名無しさん')}</span>
+          <span class="post-author">${escapeHtml(displayName)}</span>
           ${opBadge}${roleBadgeHtml}${customBadgeHtml}${bannedMark}<span>：</span>
           <span class="text-gray-500 text-xs font-normal">${date}</span>
           ${adminInfo}
@@ -2104,11 +2203,15 @@
       }
     });
 
+    /* ============================================================
+     * ユーザー一覧モーダル
+     * ============================================================ */
     const userModal = document.getElementById('userModal');
     const userListContainer = document.getElementById('userListContainer');
     const userSearchInput = document.getElementById('userSearchInput');
     const userCountLabel = document.getElementById('userCountLabel');
     const userShowOnlyNicknamed = document.getElementById('userShowOnlyNicknamed');
+    const userShowOnlySelfNicknamed = document.getElementById('userShowOnlySelfNicknamed');
 
     window.openUserModal = function() {
       if (!canViewUserList()) { alert('ユーザー一覧の閲覧権限がありません。'); return; }
@@ -2120,11 +2223,13 @@
     userModal.addEventListener('click', (e) => { if (e.target.id === 'userModal') closeUserModal(); });
     userSearchInput.addEventListener('input', renderUserList);
     if (userShowOnlyNicknamed) userShowOnlyNicknamed.addEventListener('change', renderUserList);
+    if (userShowOnlySelfNicknamed) userShowOnlySelfNicknamed.addEventListener('change', renderUserList);
 
     function renderUserList() {
       userListContainer.innerHTML = '';
       const keyword = (userSearchInput.value || '').trim().toLowerCase();
       const onlyNicknamed = userShowOnlyNicknamed ? userShowOnlyNicknamed.checked : false;
+      const onlySelfNicknamed = userShowOnlySelfNicknamed ? userShowOnlySelfNicknamed.checked : false;
 
       const list = Object.entries(knownUsersCache || {}).map(([uid, u]) => ({
         uid, email: (u && u.email) || '', displayName: (u && u.displayName) || '',
@@ -2140,6 +2245,7 @@
         });
       }
       if (onlyNicknamed) filtered = filtered.filter(u => { const n = nicknamesCache[u.uid]; return n && n.nickname && n.nickname.length > 0; });
+      if (onlySelfNicknamed) filtered = filtered.filter(u => { const n = nicknamesCache[u.uid]; return n && n.nickname && n.selfSet === true; });
       filtered.sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
       userCountLabel.textContent = filtered.length;
       if (filtered.length === 0) { userListContainer.innerHTML = '<p class="text-xs text-gray-400">該当するユーザーがいません。</p>'; return; }
@@ -2163,10 +2269,15 @@
         const nicknameData = nicknamesCache[u.uid];
         const nickname = nicknameData && nicknameData.nickname ? nicknameData.nickname : '';
         let nicknameHtml = '';
-        if (canSetNickname()) {
-          nicknameHtml = nickname
-            ? `<div class="nickname-line">🏷️ ニックネーム: <span class="nickname-value">${escapeHtml(nickname)}</span></div>`
-            : `<div class="nickname-line">🏷️ ニックネーム: <span class="nickname-empty">（未設定）</span></div>`;
+        if (nickname) {
+          const isSelf = nicknameData.selfSet === true;
+          const cls = isSelf ? 'nickname-value self' : 'nickname-value';
+          const src = isSelf
+            ? '<span class="nickname-source self">本人設定</span>'
+            : '<span class="nickname-source admin">管理者設定</span>';
+          nicknameHtml = `<div class="nickname-line">🏷️ ニックネーム: <span class="${cls}">${escapeHtml(nickname)}</span>${src}</div>`;
+        } else {
+          nicknameHtml = `<div class="nickname-line">🏷️ ニックネーム: <span class="nickname-empty">（未設定）</span></div>`;
         }
 
         const row = document.createElement('div');
@@ -2182,6 +2293,7 @@
           <div class="action-btns">
             <button class="btn-mini btn-copy" data-copy="${escapeHtml(u.email)}">📋 コピー</button>
             ${canSetNickname() ? `<button class="btn-mini btn-nickname" data-nick-uid="${escapeHtml(u.uid)}" data-nick-email="${escapeHtml(u.email)}">🏷️ ニックネーム</button>` : ''}
+            ${canManageBadge() ? `<button class="btn-mini btn-badge" data-badge-uid="${escapeHtml(u.uid)}" data-badge-email="${escapeHtml(u.email)}">🏷️ バッジ</button>` : ''}
             ${canBan() && !isProtected ? (
               isBanned
                 ? `<button class="btn-mini btn-unban" data-unban-uid="${escapeHtml(u.uid)}" data-unban-email="${escapeHtml(u.email)}">解除</button>`
@@ -2193,6 +2305,8 @@
         });
         const nickBtn = row.querySelector('.btn-nickname');
         if (nickBtn) nickBtn.addEventListener('click', () => window.openNicknameModal(nickBtn.dataset.nickUid, nickBtn.dataset.nickEmail));
+        const badgeBtn = row.querySelector('.btn-badge');
+        if (badgeBtn) badgeBtn.addEventListener('click', () => openBadgeModal(badgeBtn.dataset.badgeUid, badgeBtn.dataset.badgeEmail));
         const banBtn = row.querySelector('.btn-ban');
         if (banBtn) banBtn.addEventListener('click', () => handleBanAction('ban', banBtn.dataset.banUid, banBtn.dataset.banEmail));
         const unbanBtn = row.querySelector('.btn-unban');
@@ -2201,6 +2315,9 @@
       });
     }
 
+    /* ============================================================
+     * 管理者用：他人のニックネーム設定モーダル
+     * ============================================================ */
     let nicknameEditingUid = null;
     let nicknameEditingEmail = '';
     window.openNicknameModal = function(uid, email) {
@@ -2241,7 +2358,7 @@
           saveBtn.textContent = '保存中...';
           try {
             await setDoc(doc(db, COL.nicknames, nicknameEditingUid), {
-              nickname, email: nicknameEditingEmail, updatedAt: Date.now(), updatedBy: currentUser.email
+              nickname, email: nicknameEditingEmail, updatedAt: Date.now(), updatedBy: currentUser.email, selfSet: false
             });
             showBanner('ニックネームを保存しました', false);
             closeNicknameModal();
@@ -2278,6 +2395,9 @@
       }
     })();
 
+    /* ============================================================
+     * バッジ管理モーダル
+     * ============================================================ */
     const COLOR_PRESETS = ['#7c2d12', '#dc2626', '#ea580c', '#d97706', '#ca8a04', '#16a34a', '#0d9488', '#0284c7', '#1e40af', '#7c3aed', '#c026d3', '#db2777', '#475569', '#111827'];
     function buildColorRow() {
       const row = document.getElementById('badgeColorRow');
@@ -2306,6 +2426,7 @@
     }
     function openBadgeModal(uid, email) {
       if (!canManageBadge()) { alert('バッジ管理権限がありません。'); return; }
+      if (!uid) { alert('UIDが取得できませんでした。'); return; }
       badgeEditingTarget = { uid, email };
       document.getElementById('badgeTargetEmail').textContent = email || '（メール不明）';
       renderBadgeList();
@@ -2539,9 +2660,7 @@
       if (!threadSearchIndex[currentThreadKey]) threadSearchIndex[currentThreadKey] = { posts: [] };
       threadSearchIndex[currentThreadKey].posts.push({ content: content || '' });
 
-      // ★ 自分がレスしたスレッドは既読化（自分のレスでマークが付かないように）
       markThreadAsRead(currentThreadKey);
-
       showBanner('返信を保存しました', false);
     }
 
@@ -2576,10 +2695,11 @@
           if (b && b.label && b.color) optimisticCustomBadge += `<span class="custom-badge" style="background:${escapeHtml(b.color)};">${escapeHtml(b.label)}</span>`;
         });
       }
+      const myDisplayName = nicknamesCache[currentUser.uid]?.nickname || '名無しさん';
       tempPost.innerHTML = `
         <div class="font-bold text-gray-700 mb-1 flex flex-wrap items-baseline gap-x-1">
           <span class="post-number">${optimisticIndex}</span><span>：</span>
-          <span class="post-author">名無しさん</span>
+          <span class="post-author">${escapeHtml(myDisplayName)}</span>
           ${opBadge}${optimisticRoleBadge}${optimisticCustomBadge}<span>：</span>
           <span class="text-gray-500 text-xs font-normal">送信中...</span>
         </div>
@@ -2610,9 +2730,7 @@
         if (!threadSearchIndex[currentThreadKey]) threadSearchIndex[currentThreadKey] = { posts: [] };
         threadSearchIndex[currentThreadKey].posts.push({ content: content || '' });
 
-        // ★ 自分がレスしたスレッドは既読化
         markThreadAsRead(currentThreadKey);
-
         showBanner('書き込みを保存しました', false);
         const el = document.getElementById(tempId);
         if (el) el.remove();
@@ -2674,7 +2792,6 @@
         batch.delete(doc(db, COL.threads, threadId));
         await batch.commit();
         delete threadSearchIndex[threadId];
-        // ★ 削除されたスレッドの既読記録も削除
         delete readThreads[threadId];
         if (currentUser) saveReadThreads(currentUser.uid, readThreads);
         showBanner('スレッドを削除しました', false);
@@ -2711,7 +2828,7 @@
         const nicknames = await grab(COL.nicknames);
 
         const payload = {
-          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 3 },
+          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 4 },
           threads: threadsData, customBadges, knownUsers, bannedUsers,
           badgeFeatures, nicknames
         };
