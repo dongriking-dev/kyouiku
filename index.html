@@ -2863,7 +2863,7 @@
       const info = officialUsersCache[post.authorUid];
       if (!info || !info.official) return '';
       const note = info.note ? ` title="${escapeHtml(info.note)}"` : ' title="公式アカウント"';
-      return `<span class="official-badge"${note}>✓ 公式</span>`;
+      return `<span class="official-badge"${note}>✓</span>`;
     }
 
     function resolveDisplayName(post) {
@@ -3883,7 +3883,7 @@
       }
       let optimisticOfficialBadge = '';
       if (officialUsersCache[currentUser.uid] && officialUsersCache[currentUser.uid].official) {
-        optimisticOfficialBadge = `<span class="official-badge">✓ 公式</span>`;
+        optimisticOfficialBadge = `<span class="official-badge">✓</span>`;
       }
       const myDisplayName = nicknamesCache[currentUser.uid]?.nickname || '名無しさん';
       tempPost.innerHTML = `
