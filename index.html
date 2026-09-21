@@ -300,13 +300,59 @@
     .official-toggle-wrap input { cursor: pointer; }
 
     /* ============================================================
-       ★ WYSIWYGエディタ風の装飾ツールバー
+       ★ 装飾のオン/オフ切替
        ============================================================ */
     .rich-toolbar {
       display: flex; flex-wrap: wrap; gap: 6px; padding: 8px;
       background: #f9fafb; border: 1px solid #e5e7eb;
       border-radius: 6px 6px 0 0; align-items: center;
     }
+    .rich-toolbar.collapsed { display: none; }
+
+    /* 装飾ヘッダー：開閉トグル付き */
+    .rich-toolbar-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 10px; background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      font-size: 12px;
+    }
+    .rich-toolbar-header.standalone {
+      border-bottom: 1px solid #bfdbfe;
+      border-radius: 6px;
+    }
+    .rich-toolbar-header-label {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: #1e40af; font-weight: 700; cursor: pointer;
+      user-select: none;
+    }
+    .rich-toolbar-header-label .mode-icon {
+      font-size: 13px;
+    }
+    .rich-toolbar-toggle {
+      background: #fff; border: 1px solid #93c5fd; color: #1e40af;
+      font-size: 11px; padding: 4px 10px; border-radius: 6px;
+      cursor: pointer; font-weight: 700; display: inline-flex;
+      align-items: center; gap: 4px; transition: all 0.15s;
+    }
+    .rich-toolbar-toggle:hover { background: #dbeafe; }
+    .rich-toolbar-toggle .arrow { display: inline-block; transition: transform 0.2s; }
+    .rich-toolbar-toggle.open .arrow { transform: rotate(90deg); }
+
+    /* ツールバー本体（ヘッダーの下） */
+    .rich-toolbar-body {
+      display: flex; flex-wrap: wrap; gap: 6px; padding: 8px;
+      background: #f9fafb; border-left: 1px solid #e5e7eb;
+      border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;
+      align-items: center;
+    }
+    .rich-toolbar-body.hidden { display: none; }
+    /* 開いたとき：下に角丸なし */
+    .rich-toolbar-body + .rich-editor {
+      border-top: none;
+    }
+
     .rich-toolbar-group {
       display: inline-flex; align-items: center; gap: 4px;
       padding: 2px 6px; background: #fff; border-radius: 6px;
@@ -349,45 +395,29 @@
     .rich-toolbar-btn.clear { color: #dc2626; }
     .rich-toolbar-btn.clear:hover { background: #fef2f2; border-color: #fca5a5; }
 
-    /* 装飾済みスパンの見た目（表示用） */
-    .post-card .text-gray-900 span[style*="background"],
-    .post-card .text-gray-900 span[style*="color"] {
-      border-radius: 2px;
-      padding: 0 2px;
-    }
-
-    /* リッチテキスト表示コンテナ */
     .rich-content {
       white-space: pre-wrap;
       word-break: break-word;
       line-height: 1.7;
     }
 
-    /* リッチエディタ用プレビュー */
-    .rich-preview-box {
-      margin-top: 6px; padding: 8px 10px; background: #f8fafc;
-      border: 1px dashed #cbd5e1; border-radius: 6px;
-      font-size: 13px; min-height: 40px; display: none;
-      white-space: pre-wrap; word-break: break-word; line-height: 1.7;
+    /* 装飾なしモードのエディタ */
+    .plain-editor {
+      width: 100%; border: 1px solid #d1d5db;
+      border-radius: 6px; padding: 10px;
+      font-size: 14px; outline: none; background: #fff;
+      font-family: inherit; resize: vertical;
+      min-height: 80px; line-height: 1.7;
     }
-    .rich-preview-box.show { display: block; }
-    .rich-preview-box .rich-preview-label {
-      font-size: 10px; color: #94a3b8; font-weight: 700;
-      margin-bottom: 4px; display: block;
+    .plain-editor:focus {
+      border-color: #1d4ed8;
+      box-shadow: 0 0 0 2px rgba(29,78,216,0.15);
     }
 
-    /* ヘルプ */
-    .rich-help-box {
-      font-size: 11px; color: #4b5563; background: #eff6ff;
-      border: 1px solid #bfdbfe; border-radius: 6px;
-      padding: 8px 10px; margin-top: 6px; line-height: 1.6;
-    }
-    .rich-help-box strong { color: #1e40af; }
-
-    /* contenteditable エディタ */
+    /* リッチエディタ（装飾モード） */
     .rich-editor {
       width: 100%; min-height: 80px; border: 1px solid #d1d5db;
-      border-top: none; border-radius: 0 0 6px 6px; padding: 10px;
+      border-radius: 0 0 6px 6px; padding: 10px;
       font-size: 14px; outline: none; background: #fff;
       white-space: pre-wrap; word-break: break-word; line-height: 1.7;
       overflow-y: auto; max-height: 320px;
@@ -402,10 +432,18 @@
       pointer-events: none;
     }
 
-    /* 返信ボックス内のリッチエディタ */
-    .inline-reply-box .rich-editor {
+    .inline-reply-box .rich-editor,
+    .inline-reply-box .plain-editor {
       min-height: 60px; font-size: 13px;
     }
+
+    /* モードバッジ */
+    .editor-mode-badge {
+      font-size: 10px; padding: 2px 8px; border-radius: 9999px;
+      font-weight: 700; margin-left: 6px;
+    }
+    .editor-mode-badge.rich { background: #dbeafe; color: #1e40af; }
+    .editor-mode-badge.plain { background: #e5e7eb; color: #4b5563; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans p-4 max-w-5xl mx-auto">
@@ -428,7 +466,7 @@
         <li><strong class="text-blue-900">Googleログイン必須</strong><br>当サイトのご利用にはGoogleアカウントでのログインが必要です。</li>
         <li><strong class="text-blue-900">ニックネームについて</strong><br>表示名は自由に設定できます。ニックネームを設定していない場合は「名無しさん」と表示されます。他の利用者への誹謗中傷となる名前は禁止です。</li>
         <li><strong class="text-blue-900">公式マークについて</strong><br>管理者が認めたユーザーには「✓ 公式」バッジが付与されます。公式マークはなりすまし防止のためのものであり、公式を騙る行為は禁止です。</li>
-        <li><strong class="text-blue-900">文字装飾機能について</strong><br>投稿時に文字の色変更や蛍光ペン（ハイライト）が使えます。テキストを選択して色ボタンを押すだけの簡単操作です。強調したい部分にご利用ください。過度な装飾や読者の目を引くための悪用は禁止です。</li>
+        <li><strong class="text-blue-900">文字装飾機能について</strong><br>投稿時に文字の色変更や蛍光ペン（ハイライト）が使えます。装飾を使わずシンプルに書きたい場合は「✏️ 装飾なしモード」に切り替えられます。強調したい部分にご利用ください。過度な装飾や読者の目を引くための悪用は禁止です。</li>
         <li><strong class="text-blue-900">禁止事項</strong>
           <ul class="list-disc list-inside ml-4 mt-1 space-y-1 text-gray-700">
             <li>他の利用者への誹謗中傷・脅迫・嫌がらせ</li>
@@ -691,9 +729,6 @@
           <div>
             <label class="block text-xs text-gray-600 mb-1">最初の書き込み内容（質問内容など・任意）:</label>
             <div id="firstPostEditorWrap"></div>
-            <div class="rich-help-box">
-              💡 <strong>使い方</strong>: 色を付けたい文字を選択 → 色ボタンを押すだけ。自由な色は 🎨 から選べます。タグ文字は一切入りません。
-            </div>
           </div>
           <div>
             <label class="block text-xs text-gray-600 mb-1">画像を添付（自動リサイズ・最大200KB、任意）:</label>
@@ -848,6 +883,9 @@
     const IMAGE_QUALITY = 0.75;
     const IMAGE_MAX_BASE64_SIZE = 200 * 1024;
 
+    // ★ 装飾モード設定の保存キー
+    const EDITOR_MODE_KEY = 'manabi_editorMode'; // 'rich' or 'plain'
+
     let currentUser = null;
     let userRole = null;
     let currentThreadKey = null;
@@ -896,6 +934,10 @@
     let readThreads = {};
     let banOverlayShown = false;
 
+    // ★ 各エディタのモード状態
+    let firstPostMode = 'rich';  // 'rich' or 'plain'
+    let postMode = 'rich';
+
     const loginView = document.getElementById('loginView');
     const mainView = document.getElementById('mainView');
     const threadListView = document.getElementById('threadListView');
@@ -922,6 +964,15 @@
     const searchResultInfo = document.getElementById('searchResultInfo');
     const myNicknameBtn = document.getElementById('myNicknameBtn');
     let bannerTimer = null;
+
+    // ★ モード設定の読込・保存
+    function loadEditorModePreference() {
+      const m = localStorage.getItem(EDITOR_MODE_KEY);
+      return (m === 'plain' || m === 'rich') ? m : 'rich';
+    }
+    function saveEditorModePreference(mode) {
+      localStorage.setItem(EDITOR_MODE_KEY, mode);
+    }
 
     function canDelete() { return userRole === 'admin' || userRole === 'owner' || userRole === 'vip'; }
     function canBackup() { if (userRole === 'admin' || userRole === 'owner') return true; return canDo('canBackup'); }
@@ -1093,22 +1144,15 @@
     window.addEventListener('offline', () => setConnection(false));
 
     /* ============================================================
-     * ★ リッチテキスト処理（WYSIWYG方式）
+     * リッチテキスト処理
      * ============================================================ */
-
-    // 許可するHTMLタグ・属性（ホワイトリスト）
     const ALLOWED_STYLE_PROPS = ['color', 'background-color', 'background'];
 
-    /**
-     * ユーザーが入力したHTML（contenteditable由来）をサニタイズ
-     * 許可されたのは <span style="color:.../background-color:...">のみ</span>
-     */
     function sanitizeRichHtml(html) {
       if (!html) return '';
       const temp = document.createElement('div');
       temp.innerHTML = html;
 
-      // 危険なタグ・属性を除去し、許可するものだけ残す
       function walk(node) {
         if (node.nodeType === Node.TEXT_NODE) return;
         if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -1117,13 +1161,11 @@
         }
         const tag = node.tagName.toLowerCase();
 
-        // script/style/iframe等の危険タグは子も含めて除去
         if (['script', 'style', 'iframe', 'object', 'embed', 'link', 'meta'].includes(tag)) {
           node.remove();
           return;
         }
 
-        // 許可タグ以外は「タグを外して中身だけ残す」
         if (!['span', 'br', 'div', 'p'].includes(tag)) {
           const parent = node.parentNode;
           while (node.firstChild) parent.insertBefore(node.firstChild, node);
@@ -1131,16 +1173,13 @@
           return;
         }
 
-        // 属性を処理
         const attrs = Array.from(node.attributes);
         attrs.forEach(attr => {
           const name = attr.name.toLowerCase();
-          // style以外の属性はすべて除去（onclick等の危険属性対策）
           if (name !== 'style') {
             node.removeAttribute(attr.name);
             return;
           }
-          // styleプロパティを解析して許可したものだけ残す
           const styleText = attr.value;
           const safeStyles = [];
           styleText.split(';').forEach(part => {
@@ -1148,9 +1187,7 @@
             if (!propRaw || !valRaw) return;
             const prop = propRaw.toLowerCase();
             if (!ALLOWED_STYLE_PROPS.includes(prop)) return;
-            // 値のサニタイズ：色コード等のみ許可（URL等は弾く）
             if (!/^[#a-zA-Z0-9(),.%\s\-]+$/.test(valRaw)) return;
-            // javascript: 等の危険な値を弾く
             if (/javascript|expression|url\s*\(/i.test(valRaw)) return;
             safeStyles.push(`${prop}: ${valRaw}`);
           });
@@ -1161,37 +1198,24 @@
           }
         });
 
-        // 子を再帰処理
         Array.from(node.childNodes).forEach(walk);
       }
 
       Array.from(temp.childNodes).forEach(walk);
 
-      // divやpを改行に置換（innerTextの改行を維持するため）
       let result = temp.innerHTML;
-      // divやpの開始タグを改行に
       result = result.replace(/<div[^>]*>/gi, '\n').replace(/<\/div>/gi, '');
       result = result.replace(/<p[^>]*>/gi, '\n').replace(/<\/p>/gi, '');
-      // 連続する改行を整理
       result = result.replace(/\n{3,}/g, '\n\n');
       return result.trim();
     }
 
-    /**
-     * 保存されたHTMLを安全に表示用に変換
-     * （Firestoreから読み込んだデータをinnerHTMLに挿入する前にサニタイズ）
-     */
     function renderRichContent(html) {
       if (!html) return '';
-      // 既にサニタイズ済みだが、念のため再サニタイズ
       const sanitized = sanitizeRichHtml(html);
-      // URL自動リンク化（<span>タグを壊さないようにテキストノードのみ対象）
       return autoLinkInHtml(sanitized);
     }
 
-    /**
-     * HTMLを壊さずにURLをリンク化
-     */
     function autoLinkInHtml(html) {
       if (!html) return '';
       const temp = document.createElement('div');
@@ -1231,9 +1255,6 @@
       return temp.innerHTML;
     }
 
-    /**
-     * リッチHTMLからプレーンテキストを抽出（検索インデックス用）
-     */
     function stripRichHtml(html) {
       if (!html) return '';
       const temp = document.createElement('div');
@@ -1242,7 +1263,6 @@
     }
 
     function formatContent(str) {
-      // 旧形式のテキストが来た場合（移行用）：改行を<br>に
       if (!str) return '';
       return escapeHtml(str).replace(/\n/g, '<br>');
     }
@@ -1255,7 +1275,7 @@
     function hideBootOverlay() { bootOverlay.classList.add('hidden'); }
 
     /* ============================================================
-     * ★ リッチエディタの構築
+     * ★ リッチエディタ生成（装飾モード切替付き）
      * ============================================================ */
     const PRESET_TEXT_COLORS = [
       { color: '#dc2626', title: '赤' },
@@ -1282,20 +1302,35 @@
     ];
 
     /**
-     * リッチエディタを生成
-     * @param {HTMLElement} wrapper - エディタを挿入する親要素
-     * @param {string} placeholder - プレースホルダ
-     * @param {string} initialHtml - 初期HTML（編集時用）
-     * @returns {HTMLElement} - contenteditable要素
+     * リッチエディタ（装飾モード切替可能）を生成
      */
-    function createRichEditor(wrapper, placeholder = '', initialHtml = '') {
+    function createRichEditor(wrapper, placeholder = '', initialMode = 'rich') {
       wrapper.innerHTML = '';
+      wrapper.dataset.mode = initialMode;
 
-      // ツールバー
-      const toolbar = document.createElement('div');
-      toolbar.className = 'rich-toolbar';
+      // ─── モード切替ヘッダー ───
+      const header = document.createElement('div');
+      header.className = 'rich-toolbar-header';
+      // ヘッダー内：左側ラベル + 右側切替ボタン
+      const headerLabel = document.createElement('span');
+      headerLabel.className = 'rich-toolbar-header-label';
+      headerLabel.innerHTML = `<span class="mode-icon">🎨</span> <span class="mode-text">装飾モード</span>`;
+      header.appendChild(headerLabel);
 
-      // 文字色ボタングループ
+      const toggleBtn = document.createElement('button');
+      toggleBtn.type = 'button';
+      toggleBtn.className = 'rich-toolbar-toggle';
+      toggleBtn.innerHTML = `<span class="arrow">▶</span> <span class="toggle-text">装飾パレットを開く</span>`;
+      header.appendChild(toggleBtn);
+
+      wrapper.appendChild(header);
+
+      // ─── ツールバー本体（開閉可能） ───
+      const toolbarBody = document.createElement('div');
+      toolbarBody.className = 'rich-toolbar-body hidden';
+      toolbarBody.dataset.paletteOpen = 'false';
+
+      // 文字色グループ
       const textGroup = document.createElement('div');
       textGroup.className = 'rich-toolbar-group';
       const tLabel = document.createElement('span');
@@ -1316,7 +1351,6 @@
         textGroup.appendChild(btn);
       });
 
-      // 自由な色
       const customTextWrap = document.createElement('div');
       customTextWrap.className = 'rich-color-picker-wrap';
       customTextWrap.style.marginLeft = '4px';
@@ -1334,9 +1368,9 @@
       customTextWrap.appendChild(customTextInput);
       textGroup.appendChild(customTextWrap);
 
-      toolbar.appendChild(textGroup);
+      toolbarBody.appendChild(textGroup);
 
-      // 蛍光ペンボタングループ
+      // 蛍光ペングループ
       const hlGroup = document.createElement('div');
       hlGroup.className = 'rich-toolbar-group';
       const hlLabel = document.createElement('span');
@@ -1357,7 +1391,6 @@
         hlGroup.appendChild(btn);
       });
 
-      // 自由な蛍光色
       const customHlWrap = document.createElement('div');
       customHlWrap.className = 'rich-color-picker-wrap';
       customHlWrap.style.marginLeft = '4px';
@@ -1375,9 +1408,9 @@
       customHlWrap.appendChild(customHlInput);
       hlGroup.appendChild(customHlWrap);
 
-      toolbar.appendChild(hlGroup);
+      toolbarBody.appendChild(hlGroup);
 
-      // クリアボタン
+      // クリア
       const clearGroup = document.createElement('div');
       clearGroup.className = 'rich-toolbar-group';
       const clearBtn = document.createElement('button');
@@ -1390,20 +1423,26 @@
         removeFormatting(wrapper);
       });
       clearGroup.appendChild(clearBtn);
-      toolbar.appendChild(clearGroup);
+      toolbarBody.appendChild(clearGroup);
 
-      wrapper.appendChild(toolbar);
+      wrapper.appendChild(toolbarBody);
 
-      // エディタ本体
-      const editor = document.createElement('div');
-      editor.className = 'rich-editor';
-      editor.contentEditable = 'true';
-      editor.setAttribute('data-placeholder', placeholder);
-      if (initialHtml) editor.innerHTML = initialHtml;
-      wrapper.appendChild(editor);
+      // ─── リッチエディタ本体 ───
+      const richEditor = document.createElement('div');
+      richEditor.className = 'rich-editor';
+      richEditor.contentEditable = 'true';
+      richEditor.setAttribute('data-placeholder', placeholder);
+      wrapper.appendChild(richEditor);
 
-      // ペースト時にリッチHTMLをサニタイズ
-      editor.addEventListener('paste', (e) => {
+      // ─── プレーンエディタ本体（装飾なし） ───
+      const plainEditor = document.createElement('textarea');
+      plainEditor.className = 'plain-editor';
+      plainEditor.placeholder = placeholder;
+      plainEditor.rows = 4;
+      wrapper.appendChild(plainEditor);
+
+      // ペースト処理
+      richEditor.addEventListener('paste', (e) => {
         e.preventDefault();
         const html = (e.clipboardData || window.clipboardData).getData('text/html');
         const text = (e.clipboardData || window.clipboardData).getData('text/plain');
@@ -1415,13 +1454,169 @@
         }
       });
 
-      return editor;
+      // モード切替処理
+      toggleBtn.addEventListener('click', () => {
+        // パレット開閉
+        const isOpen = toolbarBody.dataset.paletteOpen === 'true';
+        if (isOpen) {
+          toolbarBody.classList.add('hidden');
+          toolbarBody.dataset.paletteOpen = 'false';
+          toggleBtn.classList.remove('open');
+          toggleBtn.querySelector('.toggle-text').textContent = '装飾パレットを開く';
+        } else {
+          toolbarBody.classList.remove('hidden');
+          toolbarBody.dataset.paletteOpen = 'true';
+          toggleBtn.classList.add('open');
+          toggleBtn.querySelector('.toggle-text').textContent = '装飾パレットを閉じる';
+        }
+      });
+
+      // ─── モード適用 ───
+      applyEditorMode(wrapper, initialMode);
+
+      return {
+        getMode: () => wrapper.dataset.mode,
+        setMode: (m) => applyEditorMode(wrapper, m)
+      };
     }
 
     /**
-     * エディタ内で文字色を適用
+     * モード（rich/plain）をラッパーに適用
      */
+    function applyEditorMode(wrapper, mode) {
+      const header = wrapper.querySelector('.rich-toolbar-header');
+      const toolbarBody = wrapper.querySelector('.rich-toolbar-body');
+      const richEditor = wrapper.querySelector('.rich-editor');
+      const plainEditor = wrapper.querySelector('.plain-editor');
+      const headerLabel = wrapper.querySelector('.rich-toolbar-header-label');
+      const toggleBtn = wrapper.querySelector('.rich-toolbar-toggle');
+      const toggleText = toggleBtn.querySelector('.toggle-text');
+
+      wrapper.dataset.mode = mode;
+
+      if (mode === 'rich') {
+        // 装飾モード：ヘッダー + ツールバー + リッチエディタ
+        header.classList.remove('standalone');
+        headerLabel.innerHTML = `<span class="mode-icon">🎨</span> <span class="mode-text">装飾モード</span>`;
+        headerLabel.style.color = '#1e40af';
+
+        // モード切替ボタン（ヘッダー内）
+        toggleBtn.style.display = '';
+        // パレットが開いていれば「装飾パレットを閉じる」、閉じていれば「装飾パレットを開く」
+        if (toolbarBody.dataset.paletteOpen === 'true') {
+          toolbarBody.classList.remove('hidden');
+          toggleBtn.classList.add('open');
+          toggleText.textContent = '装飾パレットを閉じる';
+        } else {
+          toolbarBody.classList.add('hidden');
+          toggleBtn.classList.remove('open');
+          toggleText.textContent = '装飾パレットを開く';
+        }
+
+        richEditor.style.display = '';
+        plainEditor.style.display = 'none';
+      } else {
+        // 装飾なしモード：ヘッダーだけ表示（パレットもリッチエディタも隠す）
+        header.classList.add('standalone');
+        headerLabel.innerHTML = `<span class="mode-icon">✏️</span> <span class="mode-text">装飾なしモード（シンプル入力）</span>`;
+        headerLabel.style.color = '#4b5563';
+
+        toolbarBody.classList.add('hidden');
+        toolbarBody.dataset.paletteOpen = 'false';
+        toggleBtn.classList.remove('open');
+
+        // モード切替ボタンは「装飾モードに戻す」に
+        toggleBtn.style.display = '';
+        toggleBtn.querySelector('.toggle-text').textContent = '🎨 装飾モードに戻す';
+        toggleBtn.classList.remove('open');
+
+        richEditor.style.display = 'none';
+        plainEditor.style.display = '';
+      }
+    }
+
+    /**
+     * モード切替ボタンのクリックハンドラ（再度定義）
+     * ※ createRichEditor 内で付けたハンドラを、モードに応じて動作を切り替える
+     */
+    function bindModeToggle(wrapper, modeController) {
+      // 既に createRichEditor 内で toggleBtn にハンドラがついているので何もしない
+    }
+
+    /**
+     * エディタのモードを切り替える（ユーザー操作）
+     */
+    function switchEditorMode(wrapper, newMode) {
+      const currentMode = wrapper.dataset.mode;
+      if (currentMode === newMode) return;
+
+      const richEditor = wrapper.querySelector('.rich-editor');
+      const plainEditor = wrapper.querySelector('.plain-editor');
+
+      // 現在の内容を引き継ぐ
+      let currentHtml = '';
+      let currentText = '';
+      if (currentMode === 'rich') {
+        currentHtml = sanitizeRichHtml(richEditor.innerHTML);
+        currentText = (richEditor.textContent || '').replace(/\u200b/g, '');
+      } else {
+        currentText = plainEditor.value || '';
+      }
+
+      if (newMode === 'rich') {
+        // プレーン → リッチ：テキストを改行→<br>に変換して挿入
+        const escaped = escapeHtml(currentText).replace(/\n/g, '<br>');
+        richEditor.innerHTML = escaped;
+      } else {
+        // リッチ → プレーン：テキストのみ抽出
+        plainEditor.value = currentText;
+      }
+
+      applyEditorMode(wrapper, newMode);
+    }
+
+    /* ============================================================
+     * エディタ値取得・設定（モード対応）
+     * ============================================================ */
+    function getEditorHtml(wrapper) {
+      const mode = wrapper.dataset.mode || 'rich';
+      if (mode === 'rich') {
+        const editor = wrapper.querySelector('.rich-editor');
+        if (!editor) return '';
+        return sanitizeRichHtml(editor.innerHTML);
+      } else {
+        // プレーンモード：HTMLとして保存するため、エスケープ + 改行→<br>
+        const ta = wrapper.querySelector('.plain-editor');
+        if (!ta) return '';
+        const text = ta.value || '';
+        if (!text.trim()) return '';
+        return escapeHtml(text).replace(/\n/g, '<br>');
+      }
+    }
+    function getEditorText(wrapper) {
+      const mode = wrapper.dataset.mode || 'rich';
+      if (mode === 'rich') {
+        const editor = wrapper.querySelector('.rich-editor');
+        if (!editor) return '';
+        return (editor.textContent || '').replace(/\u200b/g, '').trim();
+      } else {
+        const ta = wrapper.querySelector('.plain-editor');
+        if (!ta) return '';
+        return (ta.value || '').trim();
+      }
+    }
+    function clearEditor(wrapper) {
+      const richEditor = wrapper.querySelector('.rich-editor');
+      const plainEditor = wrapper.querySelector('.plain-editor');
+      if (richEditor) richEditor.innerHTML = '';
+      if (plainEditor) plainEditor.value = '';
+    }
+
+    /* ============================================================
+     * 装飾操作（リッチモード時のみ動作）
+     * ============================================================ */
     function applyTextColor(wrapper, color) {
+      if (wrapper.dataset.mode !== 'rich') return;
       const editor = wrapper.querySelector('.rich-editor');
       if (!editor) return;
       editor.focus();
@@ -1431,28 +1626,23 @@
       const range = selection.getRangeAt(0);
 
       if (range.collapsed) {
-        // 選択なし → カーソル位置に色付きspanを挿入し、カーソルを中に入れる
         const span = document.createElement('span');
         span.style.color = color;
-        span.appendChild(document.createTextNode('\u200b')); // ゼロ幅スペース
+        span.appendChild(document.createTextNode('\u200b'));
         range.insertNode(span);
-        // カーソルをspan内に移動
         const newRange = document.createRange();
         newRange.selectNodeContents(span);
         newRange.collapse(false);
         selection.removeAllRanges();
         selection.addRange(newRange);
       } else {
-        // 選択範囲をspanで囲む（document.execCommandが一番簡単で確実）
         document.execCommand('styleWithCSS', false, true);
         document.execCommand('foreColor', false, color);
       }
     }
 
-    /**
-     * エディタ内で蛍光ペンを適用
-     */
     function applyHighlight(wrapper, color) {
+      if (wrapper.dataset.mode !== 'rich') return;
       const editor = wrapper.querySelector('.rich-editor');
       if (!editor) return;
       editor.focus();
@@ -1472,31 +1662,24 @@
         selection.removeAllRanges();
         selection.addRange(newRange);
       } else {
-        // 選択範囲をspanで囲む
         try {
           const span = document.createElement('span');
           span.style.backgroundColor = color;
-          // extractContents → 選択内容を取り出す
           const contents = range.extractContents();
           span.appendChild(contents);
           range.insertNode(span);
-          // 選択を維持
           selection.removeAllRanges();
           const newRange = document.createRange();
           newRange.selectNodeContents(span);
           selection.addRange(newRange);
         } catch (e) {
-          console.warn('ハイライト適用失敗:', e);
-          // フォールバック
           document.execCommand('hiliteColor', false, color);
         }
       }
     }
 
-    /**
-     * 選択範囲の装飾を解除
-     */
     function removeFormatting(wrapper) {
+      if (wrapper.dataset.mode !== 'rich') return;
       const editor = wrapper.querySelector('.rich-editor');
       if (!editor) return;
       editor.focus();
@@ -1506,14 +1689,12 @@
       const range = selection.getRangeAt(0);
 
       if (range.collapsed) {
-        // カーソル位置の親要素の装飾を解除
         let node = range.startContainer;
         while (node && node !== editor) {
           if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'SPAN') {
             node.style.color = '';
             node.style.backgroundColor = '';
             if (!node.style.cssText) {
-              // 空になったspanは展開
               const parent = node.parentNode;
               while (node.firstChild) parent.insertBefore(node.firstChild, node);
               parent.removeChild(node);
@@ -1523,7 +1704,6 @@
           node = node.parentNode;
         }
       } else {
-        // 選択範囲内のspanから装飾を除去
         const contents = range.extractContents();
         const walker = document.createTreeWalker(contents, NodeFilter.SHOW_ELEMENT);
         const spansToUnwrap = [];
@@ -1544,39 +1724,104 @@
       }
     }
 
-    // メイン投稿エディタと、スレッド作成エディタを作成
-    const firstPostEditor = createRichEditor(
+    /* ============================================================
+     * 各エディタの初期化
+     * ============================================================ */
+    // メイン投稿エディタ
+    const firstPostEditorCtl = createRichEditor(
       document.getElementById('firstPostEditorWrap'),
-      '最初の書き込み内容（質問内容など・任意）'
+      '最初の書き込み内容（質問内容など・任意）',
+      loadEditorModePreference()
     );
-    const postEditor = createRichEditor(
+    // スレッド投稿エディタ
+    const postEditorCtl = createRichEditor(
       document.getElementById('postEditorWrap'),
-      'コメントを入力してください。URLは自動でリンク化されます。'
+      'コメントを入力してください。URLは自動でリンク化されます。',
+      loadEditorModePreference()
     );
 
-    /* ============================================================
-     * リッチエディタの値取得・クリア
-     * ============================================================ */
-    function getEditorHtml(wrapper) {
-      const editor = wrapper.querySelector('.rich-editor');
-      if (!editor) return '';
-      return sanitizeRichHtml(editor.innerHTML);
+    // モード切替ボタンのロジック（ヘッダー内のトグルを2種類の動作に）
+    // ※ createRichEditor 内では「パレット開閉」として動作するが、
+    //   装飾なしモードのときは「装飾モードに戻す」動作にする必要があるため、
+    //   ここでイベントを再設定する。
+    (function rebindModeToggles() {
+      [
+        document.getElementById('firstPostEditorWrap'),
+        document.getElementById('postEditorWrap')
+      ].forEach(wrapper => {
+        const toggleBtn = wrapper.querySelector('.rich-toolbar-toggle');
+        if (!toggleBtn) return;
+        // 既存ハンドラを削除するため、クローンで置き換え
+        const newBtn = toggleBtn.cloneNode(true);
+        toggleBtn.parentNode.replaceChild(newBtn, toggleBtn);
+
+        newBtn.addEventListener('click', () => {
+          const mode = wrapper.dataset.mode;
+          if (mode === 'plain') {
+            // 装飾なし → 装飾モードに戻す
+            switchEditorMode(wrapper, 'rich');
+            // モードを保存
+            saveEditorModePreference('rich');
+            showBanner('装飾モードに切り替えました', false);
+          } else {
+            // 装飾モード → パレット開閉 or 装飾なしへ
+            const toolbarBody = wrapper.querySelector('.rich-toolbar-body');
+            const isOpen = toolbarBody.dataset.paletteOpen === 'true';
+            if (isOpen) {
+              // パレットを閉じる
+              toolbarBody.classList.add('hidden');
+              toolbarBody.dataset.paletteOpen = 'false';
+              newBtn.classList.remove('open');
+              newBtn.querySelector('.toggle-text').textContent = '装飾パレットを開く';
+            } else {
+              // パレットが閉じている → 開くか、装飾なしモードに切り替えるか？
+              // シンプルに：パレットを開く
+              toolbarBody.classList.remove('hidden');
+              toolbarBody.dataset.paletteOpen = 'true';
+              newBtn.classList.add('open');
+              newBtn.querySelector('.toggle-text').textContent = '装飾パレットを閉じる';
+            }
+          }
+        });
+
+        // 装飾モード切替用の追加ボタン（ヘッダー内に「装飾なしへ」ボタン）
+        const header = wrapper.querySelector('.rich-toolbar-header');
+        if (header) {
+          const modeSwitchBtn = document.createElement('button');
+          modeSwitchBtn.type = 'button';
+          modeSwitchBtn.className = 'rich-toolbar-toggle';
+          modeSwitchBtn.style.marginLeft = '4px';
+          modeSwitchBtn.innerHTML = '✏️ 装飾なしにする';
+          modeSwitchBtn.addEventListener('click', () => {
+            switchEditorMode(wrapper, 'plain');
+            saveEditorModePreference('plain');
+            showBanner('装飾なしモードに切り替えました', false);
+          });
+          // ヘッダー右側にボタン追加
+          header.appendChild(modeSwitchBtn);
+
+          // 保存されたモードに応じてモードボタンの表示を調整
+          wrapper._updateModeSwitchBtn = () => {
+            const m = wrapper.dataset.mode;
+            if (m === 'plain') {
+              modeSwitchBtn.style.display = 'none'; // ヘッダー内の「装飾モードに戻す」は toggleBtn が担当
+            } else {
+              modeSwitchBtn.style.display = '';
+            }
+          };
+        }
+      });
+    })();
+
+    // 初期モードに応じて切替ボタンの表示調整
+    function refreshModeButtons() {
+      ['firstPostEditorWrap', 'postEditorWrap'].forEach(id => {
+        const wrapper = document.getElementById(id);
+        if (!wrapper) return;
+        if (wrapper._updateModeSwitchBtn) wrapper._updateModeSwitchBtn();
+      });
     }
-    function getEditorText(wrapper) {
-      const editor = wrapper.querySelector('.rich-editor');
-      if (!editor) return '';
-      return (editor.textContent || '').replace(/\u200b/g, '').trim();
-    }
-    function clearEditor(wrapper) {
-      const editor = wrapper.querySelector('.rich-editor');
-      if (!editor) return;
-      editor.innerHTML = '';
-    }
-    function setEditorHtml(wrapper, html) {
-      const editor = wrapper.querySelector('.rich-editor');
-      if (!editor) return;
-      editor.innerHTML = html || '';
-    }
+    refreshModeButtons();
 
     function showBanOverlay() {
       if (banOverlayShown) return;
@@ -2387,8 +2632,9 @@
       if (!currentUser) { alert('ログインが必要です。'); return; }
       const subject = document.getElementById('selectedSubject').value;
       const title = document.getElementById('threadTitle').value.trim();
-      const contentHtml = getEditorHtml(document.getElementById('firstPostEditorWrap'));
-      const contentText = getEditorText(document.getElementById('firstPostEditorWrap'));
+      const firstPostWrap = document.getElementById('firstPostEditorWrap');
+      const contentHtml = getEditorHtml(firstPostWrap);
+      const contentText = getEditorText(firstPostWrap);
       const fileInput = document.getElementById('threadFileInput');
       const file = fileInput.files[0];
       const btn = document.getElementById('createThreadBtn');
@@ -2407,7 +2653,7 @@
         if (file) fileData = await fileToBase64Image(file);
         document.getElementById('createThreadForm').reset();
         document.getElementById('threadPreviewBox').classList.remove('show');
-        clearEditor(document.getElementById('firstPostEditorWrap'));
+        clearEditor(firstPostWrap);
         document.querySelectorAll('#subjectSelectBig .subject-select-btn').forEach(b => b.classList.remove('selected'));
         document.getElementById('selectedSubject').value = '';
         selectedSubjectForNewThread = '';
@@ -2500,7 +2746,6 @@
           const posts = [];
           postsSnap.forEach(d => {
             const data = d.data();
-            // 新形式はcontentText、旧形式はcontentをstripRichHtml
             const text = data.contentText || stripRichHtml(data.content || '');
             posts.push({ content: text });
           });
@@ -2660,17 +2905,11 @@
       const plainContent = post.contentText || stripRichHtml(post.content || '');
       const isSearchHit = searchTokens.length > 0 && matchesAllTokens(plainContent, searchTokens);
 
-      // 表示用HTML（新形式はcontentそのままサニタイズ、旧形式は改行→<br>）
       let contentHtml = '';
       if (post.content) {
-        // 新形式（HTML）か旧形式（プレーンテキスト）を判定
-        // 旧形式は\nが含まれており、<span>などのタグがない可能性が高い
-        // 新形式のcontentはサニタイズ済みのHTML（span等）
         if (/<span|<br|<a\s/i.test(post.content)) {
-          // HTML形式
           contentHtml = renderRichContent(post.content);
         } else {
-          // プレーンテキスト形式（旧データ）
           contentHtml = formatContent(post.content);
         }
       }
@@ -3372,9 +3611,12 @@
         </div>`;
       targetCard.insertAdjacentElement('afterend', box);
 
-      // 返信ボックス内にリッチエディタを作成
       const replyEditorWrap = box.querySelector('.reply-editor-wrap');
-      const replyEditor = createRichEditor(replyEditorWrap, '返信を入力');
+      const replyMode = loadEditorModePreference();
+      createRichEditor(replyEditorWrap, '返信を入力', replyMode);
+
+      // 返信エディタ用のモード切替を別途結線（シンプルにするため、内部でclone→再バインド）
+      setupReplyModeToggle(replyEditorWrap);
 
       const fileInp = box.querySelector('.reply-file');
       const cancelBtn = box.querySelector('.reply-cancel-btn');
@@ -3411,8 +3653,66 @@
           sendBtn.textContent = '返信する';
         }
       });
-      replyEditor.focus();
+      // フォーカス
+      setTimeout(() => {
+        const mode = replyEditorWrap.dataset.mode;
+        const target = mode === 'rich'
+          ? replyEditorWrap.querySelector('.rich-editor')
+          : replyEditorWrap.querySelector('.plain-editor');
+        if (target) target.focus();
+      }, 50);
     }
+
+    /**
+     * 返信ボックス内のモード切替をセットアップ
+     */
+    function setupReplyModeToggle(wrapper) {
+      const toggleBtn = wrapper.querySelector('.rich-toolbar-toggle');
+      const header = wrapper.querySelector('.rich-toolbar-header');
+      if (!toggleBtn || !header) return;
+
+      const newBtn = toggleBtn.cloneNode(true);
+      toggleBtn.parentNode.replaceChild(newBtn, toggleBtn);
+
+      newBtn.addEventListener('click', () => {
+        const mode = wrapper.dataset.mode;
+        if (mode === 'plain') {
+          switchEditorMode(wrapper, 'rich');
+          showBanner('装飾モードに切り替えました', false);
+        } else {
+          const toolbarBody = wrapper.querySelector('.rich-toolbar-body');
+          const isOpen = toolbarBody.dataset.paletteOpen === 'true';
+          if (isOpen) {
+            toolbarBody.classList.add('hidden');
+            toolbarBody.dataset.paletteOpen = 'false';
+            newBtn.classList.remove('open');
+            newBtn.querySelector('.toggle-text').textContent = '装飾パレットを開く';
+          } else {
+            toolbarBody.classList.remove('hidden');
+            toolbarBody.dataset.paletteOpen = 'true';
+            newBtn.classList.add('open');
+            newBtn.querySelector('.toggle-text').textContent = '装飾パレットを閉じる';
+          }
+        }
+      });
+
+      // 「装飾なしにする」ボタンを追加
+      const modeSwitchBtn = document.createElement('button');
+      modeSwitchBtn.type = 'button';
+      modeSwitchBtn.className = 'rich-toolbar-toggle';
+      modeSwitchBtn.style.marginLeft = '4px';
+      modeSwitchBtn.innerHTML = '✏️ 装飾なしにする';
+      modeSwitchBtn.addEventListener('click', () => {
+        switchEditorMode(wrapper, 'plain');
+        showBanner('装飾なしモードに切り替えました', false);
+      });
+      header.appendChild(modeSwitchBtn);
+
+      // モード初期化
+      const m = wrapper.dataset.mode;
+      if (m === 'plain') modeSwitchBtn.style.display = 'none';
+    }
+
     function closeReplyBox() { activeReplyParentId = null; document.querySelectorAll('.inline-reply-box').forEach(el => el.remove()); }
 
     async function submitReply(parentId, contentHtml, contentText, file) {
@@ -3447,8 +3747,9 @@
       e.preventDefault();
       if (!currentUser) { alert('ログインが必要です。'); return; }
       if (!currentThreadKey) { alert('スレッドが選択されていません。'); return; }
-      const contentHtml = getEditorHtml(document.getElementById('postEditorWrap'));
-      const contentText = getEditorText(document.getElementById('postEditorWrap'));
+      const postWrap = document.getElementById('postEditorWrap');
+      const contentHtml = getEditorHtml(postWrap);
+      const contentText = getEditorText(postWrap);
       const fileInput = document.getElementById('fileInput');
       const file = fileInput.files[0];
       const submitBtn = document.getElementById('submitBtn');
@@ -3496,7 +3797,7 @@
         if (file) fileData = await fileToBase64Image(file);
         document.getElementById('postForm').reset();
         document.getElementById('postPreviewBox').classList.remove('show');
-        clearEditor(document.getElementById('postEditorWrap'));
+        clearEditor(postWrap);
         const now = Date.now();
         await addDoc(collection(db, COL.threads, currentThreadKey, 'posts'), {
           author: '名無しさん', content: contentHtml || '', contentText: contentText || '',
@@ -3615,7 +3916,7 @@
         const officialUsers = await grab(COL.officialUsers);
 
         const payload = {
-          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 6 },
+          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 7 },
           threads: threadsData, customBadges, knownUsers, bannedUsers,
           badgeFeatures, nicknames, officialUsers
         };
