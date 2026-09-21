@@ -44,8 +44,12 @@
     .delete-btn:disabled { background: #9ca3af; cursor: not-allowed; }
     .reply-btn { background: #2563eb; color: #fff; font-size: 11px; padding: 3px 10px; border-radius: 4px; cursor: pointer; border: none; }
     .reply-btn:hover { background: #1d4ed8; }
+    .edit-btn { background: #0891b2; color: #fff; font-size: 11px; padding: 3px 10px; border-radius: 4px; cursor: pointer; border: none; }
+    .edit-btn:hover { background: #0e7490; }
     .badge-manage-btn { background: #a16207; color: #fff; font-size: 11px; padding: 3px 10px; border-radius: 4px; cursor: pointer; border: none; }
     .badge-manage-btn:hover { background: #854d0e; }
+    .official-manage-btn { background: #1d4ed8; color: #fff; font-size: 11px; padding: 3px 10px; border-radius: 4px; cursor: pointer; border: none; }
+    .official-manage-btn:hover { background: #1e3a8a; }
     .reply-cancel-btn { background: #6b7280; color: #fff; font-size: 11px; padding: 3px 10px; border-radius: 4px; cursor: pointer; border: none; }
     .reply-cancel-btn:hover { background: #4b5563; }
     .backup-btn { background: #059669; color: #fff; font-size: 11px; padding: 6px 12px; border-radius: 4px; cursor: pointer; border: none; font-weight: 600; }
@@ -299,9 +303,7 @@
     }
     .official-toggle-wrap input { cursor: pointer; }
 
-    /* ============================================================
-       ★ WYSIWYGエディタ風の装飾ツールバー
-       ============================================================ */
+    /* リッチテキストツールバー */
     .rich-toolbar {
       display: flex; flex-wrap: wrap; gap: 6px; padding: 8px;
       background: #f9fafb; border: 1px solid #e5e7eb;
@@ -323,8 +325,6 @@
       position: relative;
     }
     .rich-color-btn:hover { transform: scale(1.15); box-shadow: 0 0 0 2px #1d4ed8; }
-    .rich-color-btn.selected { box-shadow: 0 0 0 2px #111827; }
-
     .rich-color-picker-wrap {
       display: inline-flex; align-items: center; gap: 4px;
       padding: 2px 6px; background: #fff; border-radius: 6px;
@@ -337,7 +337,6 @@
     .rich-color-picker-wrap label {
       font-size: 10px; color: #374151; font-weight: 700; cursor: pointer;
     }
-
     .rich-toolbar-btn {
       background: #fff; color: #374151; font-size: 11px;
       padding: 5px 10px; border-radius: 6px; border: 1px solid #d1d5db;
@@ -349,42 +348,11 @@
     .rich-toolbar-btn.clear { color: #dc2626; }
     .rich-toolbar-btn.clear:hover { background: #fef2f2; border-color: #fca5a5; }
 
-    /* 装飾済みスパンの見た目（表示用） */
-    .post-card .text-gray-900 span[style*="background"],
-    .post-card .text-gray-900 span[style*="color"] {
-      border-radius: 2px;
-      padding: 0 2px;
-    }
-
-    /* リッチテキスト表示コンテナ */
     .rich-content {
       white-space: pre-wrap;
       word-break: break-word;
       line-height: 1.7;
     }
-
-    /* リッチエディタ用プレビュー */
-    .rich-preview-box {
-      margin-top: 6px; padding: 8px 10px; background: #f8fafc;
-      border: 1px dashed #cbd5e1; border-radius: 6px;
-      font-size: 13px; min-height: 40px; display: none;
-      white-space: pre-wrap; word-break: break-word; line-height: 1.7;
-    }
-    .rich-preview-box.show { display: block; }
-    .rich-preview-box .rich-preview-label {
-      font-size: 10px; color: #94a3b8; font-weight: 700;
-      margin-bottom: 4px; display: block;
-    }
-
-    /* ヘルプ */
-    .rich-help-box {
-      font-size: 11px; color: #4b5563; background: #eff6ff;
-      border: 1px solid #bfdbfe; border-radius: 6px;
-      padding: 8px 10px; margin-top: 6px; line-height: 1.6;
-    }
-    .rich-help-box strong { color: #1e40af; }
-
-    /* contenteditable エディタ */
     .rich-editor {
       width: 100%; min-height: 80px; border: 1px solid #d1d5db;
       border-top: none; border-radius: 0 0 6px 6px; padding: 10px;
@@ -401,11 +369,128 @@
       color: #9ca3af;
       pointer-events: none;
     }
-
-    /* 返信ボックス内のリッチエディタ */
     .inline-reply-box .rich-editor {
       min-height: 60px; font-size: 13px;
     }
+    .rich-help-box {
+      font-size: 11px; color: #4b5563; background: #eff6ff;
+      border: 1px solid #bfdbfe; border-radius: 6px;
+      padding: 8px 10px; margin-top: 6px; line-height: 1.6;
+    }
+    .rich-help-box strong { color: #1e40af; }
+
+    /* ============================================================
+       ★ いいねボタン
+       ============================================================ */
+    .like-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #fff; border: 1px solid #fecaca;
+      color: #dc2626; font-size: 11px; font-weight: 700;
+      padding: 3px 10px; border-radius: 9999px; cursor: pointer;
+      transition: all 0.15s; user-select: none;
+    }
+    .like-btn:hover { background: #fef2f2; border-color: #fca5a5; transform: scale(1.05); }
+    .like-btn.liked {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: #fff; border-color: transparent;
+      box-shadow: 0 2px 6px rgba(220,38,38,0.35);
+    }
+    .like-btn.liked:hover { transform: scale(1.08); box-shadow: 0 3px 10px rgba(220,38,38,0.5); }
+    .like-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .like-btn .like-heart { font-size: 13px; line-height: 1; }
+    .like-btn .like-count { font-size: 11px; }
+
+    /* スレッドヘッダーのいいね */
+    .thread-like-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #fff; border: 2px solid #fecaca;
+      color: #dc2626; font-size: 13px; font-weight: 700;
+      padding: 6px 14px; border-radius: 9999px; cursor: pointer;
+      transition: all 0.15s; user-select: none;
+    }
+    .thread-like-btn:hover { background: #fef2f2; transform: scale(1.03); }
+    .thread-like-btn.liked {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: #fff; border-color: transparent;
+      box-shadow: 0 3px 10px rgba(220,38,38,0.4);
+    }
+    .thread-like-btn .like-heart { font-size: 16px; line-height: 1; }
+
+    /* スレッド一覧のいいね数表示 */
+    .thread-like-count-inline {
+      display: inline-flex; align-items: center; gap: 3px;
+      background: #fef2f2; color: #dc2626; font-size: 10px;
+      font-weight: 700; padding: 2px 8px; border-radius: 9999px;
+      margin-left: 6px;
+    }
+
+    /* ============================================================
+       ★ スレッド内検索
+       ============================================================ */
+    .in-thread-search-wrap {
+      position: relative; margin-bottom: 12px;
+    }
+    .in-thread-search-input {
+      width: 100%; padding: 10px 40px 10px 40px;
+      border: 2px solid #d1d5db; border-radius: 9999px;
+      font-size: 13px; outline: none; background: #fff;
+      transition: all 0.15s;
+    }
+    .in-thread-search-input:focus {
+      border-color: #0891b2;
+      box-shadow: 0 0 0 4px rgba(8,145,178,0.12);
+    }
+    .in-thread-search-icon {
+      position: absolute; left: 14px; top: 50%;
+      transform: translateY(-50%); color: #9ca3af;
+      font-size: 14px; pointer-events: none;
+    }
+    .in-thread-search-clear {
+      position: absolute; right: 10px; top: 50%;
+      transform: translateY(-50%); background: #e5e7eb;
+      border: none; border-radius: 9999px;
+      width: 22px; height: 22px; cursor: pointer;
+      color: #4b5563; font-size: 12px; display: none;
+      align-items: center; justify-content: center; line-height: 1;
+    }
+    .in-thread-search-clear.show { display: flex; }
+    .in-thread-search-clear:hover { background: #d1d5db; }
+    .in-thread-search-info {
+      background: #ecfeff; border: 1px solid #a5f3fc;
+      border-radius: 6px; padding: 6px 12px; font-size: 11px;
+      color: #155e75; margin-bottom: 10px; display: none;
+    }
+    .in-thread-search-info.show { display: block; }
+
+    /* ============================================================
+       ★ 編集済みマーク
+       ============================================================ */
+    .edited-mark {
+      display: inline-flex; align-items: center; gap: 3px;
+      background: #f3f4f6; color: #6b7280;
+      font-size: 10px; font-weight: 600;
+      padding: 1px 7px; border-radius: 4px;
+      margin-left: 6px; cursor: help;
+      border: 1px solid #e5e7eb;
+    }
+
+    /* 編集モードの枠 */
+    .inline-edit-box {
+      margin-top: 8px; padding: 10px;
+      background: #ecfeff; border: 1px dashed #0891b2;
+      border-radius: 6px;
+    }
+    .inline-edit-box .edit-actions {
+      display: flex; justify-content: flex-end;
+      gap: 8px; margin-top: 8px;
+    }
+    .edit-save-btn {
+      background: #0891b2; color: #fff; font-size: 11px;
+      padding: 5px 14px; border-radius: 4px;
+      border: none; cursor: pointer; font-weight: 700;
+    }
+    .edit-save-btn:hover { background: #0e7490; }
+    .edit-save-btn:disabled { background: #9ca3af; cursor: not-allowed; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans p-4 max-w-5xl mx-auto">
@@ -428,7 +513,8 @@
         <li><strong class="text-blue-900">Googleログイン必須</strong><br>当サイトのご利用にはGoogleアカウントでのログインが必要です。</li>
         <li><strong class="text-blue-900">ニックネームについて</strong><br>表示名は自由に設定できます。ニックネームを設定していない場合は「名無しさん」と表示されます。他の利用者への誹謗中傷となる名前は禁止です。</li>
         <li><strong class="text-blue-900">公式マークについて</strong><br>管理者が認めたユーザーには「✓ 公式」バッジが付与されます。公式マークはなりすまし防止のためのものであり、公式を騙る行為は禁止です。</li>
-        <li><strong class="text-blue-900">文字装飾機能について</strong><br>投稿時に文字の色変更や蛍光ペン（ハイライト）が使えます。テキストを選択して色ボタンを押すだけの簡単操作です。強調したい部分にご利用ください。過度な装飾や読者の目を引くための悪用は禁止です。</li>
+        <li><strong class="text-blue-900">文字装飾機能について</strong><br>投稿時に文字の色変更や蛍光ペン（ハイライト）が使えます。テキストを選択して色ボタンを押すだけの簡単操作です。</li>
+        <li><strong class="text-blue-900">いいね・編集機能について</strong><br>スレッドやレスに「❤️ いいね」を付けられます。自分のレスは投稿後いつでも編集できます（編集済みマークが表示されます）。</li>
         <li><strong class="text-blue-900">禁止事項</strong>
           <ul class="list-disc list-inside ml-4 mt-1 space-y-1 text-gray-700">
             <li>他の利用者への誹謗中傷・脅迫・嫌がらせ</li>
@@ -692,7 +778,7 @@
             <label class="block text-xs text-gray-600 mb-1">最初の書き込み内容（質問内容など・任意）:</label>
             <div id="firstPostEditorWrap"></div>
             <div class="rich-help-box">
-              💡 <strong>使い方</strong>: 色を付けたい文字を選択 → 色ボタンを押すだけ。自由な色は 🎨 から選べます。タグ文字は一切入りません。
+              💡 <strong>使い方</strong>: 色を付けたい文字を選択 → 色ボタンを押すだけ。自由な色は 🎨 から選べます。
             </div>
           </div>
           <div>
@@ -745,9 +831,24 @@
           <h2 id="currentThreadTitle" class="text-2xl font-bold text-blue-900 mb-1 break-words"></h2>
           <p id="currentThreadDate" class="text-xs text-gray-500"></p>
           <p id="currentThreadAuthor" class="text-xs text-gray-500 mt-1"></p>
+          <div class="mt-3">
+            <button id="threadLikeBtn" class="thread-like-btn" data-thread-id="">
+              <span class="like-heart">❤️</span>
+              <span class="like-count">0</span>
+            </button>
+          </div>
         </div>
         <button id="deleteThreadBtn" class="delete-btn hidden" onclick="deleteCurrentThread()">スレッドを削除</button>
       </div>
+
+      <!-- ★ スレッド内検索 -->
+      <div class="in-thread-search-wrap">
+        <span class="in-thread-search-icon">🔍</span>
+        <input type="text" id="inThreadSearchInput" class="in-thread-search-input"
+          placeholder="このスレッド内を検索（レスを絞り込み）...">
+        <button id="inThreadSearchClear" class="in-thread-search-clear" title="クリア">✕</button>
+      </div>
+      <div id="inThreadSearchInfo" class="in-thread-search-info"></div>
 
       <section class="bg-blue-50 border border-blue-200 p-4 rounded mb-6 shadow-sm">
         <h3 class="text-md font-bold text-gray-700 mb-2">このスレッドに書き込む</h3>
@@ -816,7 +917,9 @@
       badgeFeatures: 'manabi_badgeFeatures',
       nicknames: 'manabi_nicknames',
       userDevices: 'manabi_userDevices',
-      officialUsers: 'manabi_officialUsers'
+      officialUsers: 'manabi_officialUsers',
+      threadLikes: 'manabi_threadLikes',
+      postLikes: 'manabi_postLikes'
     };
 
     const THREAD_LIST_LIMIT = 100;
@@ -864,10 +967,24 @@
     let nicknamesUnsubscribe = null;
     let officialUnsubscribe = null;
 
+    // ★ いいねのリスナー（スレッド単位で切り替え）
+    let threadLikesUnsubscribe = null;
+    let postLikesUnsubscribe = null;
+
     let activeReplyParentId = null;
+    let activeEditPostId = null;
     let allPostsCache = [];
     let allThreadsCache = [];
     let postNumberMap = new Map();
+
+    // ★ スレッド内検索クエリ
+    let inThreadSearchQuery = '';
+
+    // ★ いいねのキャッシュ
+    // threadLikesCache: { [threadId]: { [uid]: timestamp } }
+    let threadLikesCache = {};
+    // postLikesCache: { [postId]: { [uid]: timestamp } }
+    let postLikesCache = {};
 
     let threadSearchIndex = {};
 
@@ -921,6 +1038,10 @@
     const searchClearBtn = document.getElementById('searchClearBtn');
     const searchResultInfo = document.getElementById('searchResultInfo');
     const myNicknameBtn = document.getElementById('myNicknameBtn');
+    const inThreadSearchInput = document.getElementById('inThreadSearchInput');
+    const inThreadSearchClear = document.getElementById('inThreadSearchClear');
+    const inThreadSearchInfo = document.getElementById('inThreadSearchInfo');
+    const threadLikeBtn = document.getElementById('threadLikeBtn');
     let bannerTimer = null;
 
     function canDelete() { return userRole === 'admin' || userRole === 'owner' || userRole === 'vip'; }
@@ -1093,22 +1214,15 @@
     window.addEventListener('offline', () => setConnection(false));
 
     /* ============================================================
-     * ★ リッチテキスト処理（WYSIWYG方式）
+     * リッチテキスト処理
      * ============================================================ */
-
-    // 許可するHTMLタグ・属性（ホワイトリスト）
     const ALLOWED_STYLE_PROPS = ['color', 'background-color', 'background'];
 
-    /**
-     * ユーザーが入力したHTML（contenteditable由来）をサニタイズ
-     * 許可されたのは <span style="color:.../background-color:...">のみ</span>
-     */
     function sanitizeRichHtml(html) {
       if (!html) return '';
       const temp = document.createElement('div');
       temp.innerHTML = html;
 
-      // 危険なタグ・属性を除去し、許可するものだけ残す
       function walk(node) {
         if (node.nodeType === Node.TEXT_NODE) return;
         if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -1116,31 +1230,23 @@
           return;
         }
         const tag = node.tagName.toLowerCase();
-
-        // script/style/iframe等の危険タグは子も含めて除去
         if (['script', 'style', 'iframe', 'object', 'embed', 'link', 'meta'].includes(tag)) {
           node.remove();
           return;
         }
-
-        // 許可タグ以外は「タグを外して中身だけ残す」
         if (!['span', 'br', 'div', 'p'].includes(tag)) {
           const parent = node.parentNode;
           while (node.firstChild) parent.insertBefore(node.firstChild, node);
           parent.removeChild(node);
           return;
         }
-
-        // 属性を処理
         const attrs = Array.from(node.attributes);
         attrs.forEach(attr => {
           const name = attr.name.toLowerCase();
-          // style以外の属性はすべて除去（onclick等の危険属性対策）
           if (name !== 'style') {
             node.removeAttribute(attr.name);
             return;
           }
-          // styleプロパティを解析して許可したものだけ残す
           const styleText = attr.value;
           const safeStyles = [];
           styleText.split(';').forEach(part => {
@@ -1148,9 +1254,7 @@
             if (!propRaw || !valRaw) return;
             const prop = propRaw.toLowerCase();
             if (!ALLOWED_STYLE_PROPS.includes(prop)) return;
-            // 値のサニタイズ：色コード等のみ許可（URL等は弾く）
             if (!/^[#a-zA-Z0-9(),.%\s\-]+$/.test(valRaw)) return;
-            // javascript: 等の危険な値を弾く
             if (/javascript|expression|url\s*\(/i.test(valRaw)) return;
             safeStyles.push(`${prop}: ${valRaw}`);
           });
@@ -1160,38 +1264,23 @@
             node.removeAttribute('style');
           }
         });
-
-        // 子を再帰処理
         Array.from(node.childNodes).forEach(walk);
       }
 
       Array.from(temp.childNodes).forEach(walk);
-
-      // divやpを改行に置換（innerTextの改行を維持するため）
       let result = temp.innerHTML;
-      // divやpの開始タグを改行に
       result = result.replace(/<div[^>]*>/gi, '\n').replace(/<\/div>/gi, '');
       result = result.replace(/<p[^>]*>/gi, '\n').replace(/<\/p>/gi, '');
-      // 連続する改行を整理
       result = result.replace(/\n{3,}/g, '\n\n');
       return result.trim();
     }
 
-    /**
-     * 保存されたHTMLを安全に表示用に変換
-     * （Firestoreから読み込んだデータをinnerHTMLに挿入する前にサニタイズ）
-     */
     function renderRichContent(html) {
       if (!html) return '';
-      // 既にサニタイズ済みだが、念のため再サニタイズ
       const sanitized = sanitizeRichHtml(html);
-      // URL自動リンク化（<span>タグを壊さないようにテキストノードのみ対象）
       return autoLinkInHtml(sanitized);
     }
 
-    /**
-     * HTMLを壊さずにURLをリンク化
-     */
     function autoLinkInHtml(html) {
       if (!html) return '';
       const temp = document.createElement('div');
@@ -1231,9 +1320,6 @@
       return temp.innerHTML;
     }
 
-    /**
-     * リッチHTMLからプレーンテキストを抽出（検索インデックス用）
-     */
     function stripRichHtml(html) {
       if (!html) return '';
       const temp = document.createElement('div');
@@ -1242,7 +1328,6 @@
     }
 
     function formatContent(str) {
-      // 旧形式のテキストが来た場合（移行用）：改行を<br>に
       if (!str) return '';
       return escapeHtml(str).replace(/\n/g, '<br>');
     }
@@ -1255,7 +1340,7 @@
     function hideBootOverlay() { bootOverlay.classList.add('hidden'); }
 
     /* ============================================================
-     * ★ リッチエディタの構築
+     * リッチエディタ
      * ============================================================ */
     const PRESET_TEXT_COLORS = [
       { color: '#dc2626', title: '赤' },
@@ -1281,21 +1366,12 @@
       { color: '#ccfbf1', title: 'ミント' }
     ];
 
-    /**
-     * リッチエディタを生成
-     * @param {HTMLElement} wrapper - エディタを挿入する親要素
-     * @param {string} placeholder - プレースホルダ
-     * @param {string} initialHtml - 初期HTML（編集時用）
-     * @returns {HTMLElement} - contenteditable要素
-     */
     function createRichEditor(wrapper, placeholder = '', initialHtml = '') {
       wrapper.innerHTML = '';
 
-      // ツールバー
       const toolbar = document.createElement('div');
       toolbar.className = 'rich-toolbar';
 
-      // 文字色ボタングループ
       const textGroup = document.createElement('div');
       textGroup.className = 'rich-toolbar-group';
       const tLabel = document.createElement('span');
@@ -1316,7 +1392,6 @@
         textGroup.appendChild(btn);
       });
 
-      // 自由な色
       const customTextWrap = document.createElement('div');
       customTextWrap.className = 'rich-color-picker-wrap';
       customTextWrap.style.marginLeft = '4px';
@@ -1336,7 +1411,6 @@
 
       toolbar.appendChild(textGroup);
 
-      // 蛍光ペンボタングループ
       const hlGroup = document.createElement('div');
       hlGroup.className = 'rich-toolbar-group';
       const hlLabel = document.createElement('span');
@@ -1357,7 +1431,6 @@
         hlGroup.appendChild(btn);
       });
 
-      // 自由な蛍光色
       const customHlWrap = document.createElement('div');
       customHlWrap.className = 'rich-color-picker-wrap';
       customHlWrap.style.marginLeft = '4px';
@@ -1377,7 +1450,6 @@
 
       toolbar.appendChild(hlGroup);
 
-      // クリアボタン
       const clearGroup = document.createElement('div');
       clearGroup.className = 'rich-toolbar-group';
       const clearBtn = document.createElement('button');
@@ -1394,7 +1466,6 @@
 
       wrapper.appendChild(toolbar);
 
-      // エディタ本体
       const editor = document.createElement('div');
       editor.className = 'rich-editor';
       editor.contentEditable = 'true';
@@ -1402,7 +1473,6 @@
       if (initialHtml) editor.innerHTML = initialHtml;
       wrapper.appendChild(editor);
 
-      // ペースト時にリッチHTMLをサニタイズ
       editor.addEventListener('paste', (e) => {
         e.preventDefault();
         const html = (e.clipboardData || window.clipboardData).getData('text/html');
@@ -1418,9 +1488,6 @@
       return editor;
     }
 
-    /**
-     * エディタ内で文字色を適用
-     */
     function applyTextColor(wrapper, color) {
       const editor = wrapper.querySelector('.rich-editor');
       if (!editor) return;
@@ -1431,27 +1498,21 @@
       const range = selection.getRangeAt(0);
 
       if (range.collapsed) {
-        // 選択なし → カーソル位置に色付きspanを挿入し、カーソルを中に入れる
         const span = document.createElement('span');
         span.style.color = color;
-        span.appendChild(document.createTextNode('\u200b')); // ゼロ幅スペース
+        span.appendChild(document.createTextNode('\u200b'));
         range.insertNode(span);
-        // カーソルをspan内に移動
         const newRange = document.createRange();
         newRange.selectNodeContents(span);
         newRange.collapse(false);
         selection.removeAllRanges();
         selection.addRange(newRange);
       } else {
-        // 選択範囲をspanで囲む（document.execCommandが一番簡単で確実）
         document.execCommand('styleWithCSS', false, true);
         document.execCommand('foreColor', false, color);
       }
     }
 
-    /**
-     * エディタ内で蛍光ペンを適用
-     */
     function applyHighlight(wrapper, color) {
       const editor = wrapper.querySelector('.rich-editor');
       if (!editor) return;
@@ -1472,30 +1533,23 @@
         selection.removeAllRanges();
         selection.addRange(newRange);
       } else {
-        // 選択範囲をspanで囲む
         try {
           const span = document.createElement('span');
           span.style.backgroundColor = color;
-          // extractContents → 選択内容を取り出す
           const contents = range.extractContents();
           span.appendChild(contents);
           range.insertNode(span);
-          // 選択を維持
           selection.removeAllRanges();
           const newRange = document.createRange();
           newRange.selectNodeContents(span);
           selection.addRange(newRange);
         } catch (e) {
           console.warn('ハイライト適用失敗:', e);
-          // フォールバック
           document.execCommand('hiliteColor', false, color);
         }
       }
     }
 
-    /**
-     * 選択範囲の装飾を解除
-     */
     function removeFormatting(wrapper) {
       const editor = wrapper.querySelector('.rich-editor');
       if (!editor) return;
@@ -1506,14 +1560,12 @@
       const range = selection.getRangeAt(0);
 
       if (range.collapsed) {
-        // カーソル位置の親要素の装飾を解除
         let node = range.startContainer;
         while (node && node !== editor) {
           if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'SPAN') {
             node.style.color = '';
             node.style.backgroundColor = '';
             if (!node.style.cssText) {
-              // 空になったspanは展開
               const parent = node.parentNode;
               while (node.firstChild) parent.insertBefore(node.firstChild, node);
               parent.removeChild(node);
@@ -1523,7 +1575,6 @@
           node = node.parentNode;
         }
       } else {
-        // 選択範囲内のspanから装飾を除去
         const contents = range.extractContents();
         const walker = document.createTreeWalker(contents, NodeFilter.SHOW_ELEMENT);
         const spansToUnwrap = [];
@@ -1544,7 +1595,6 @@
       }
     }
 
-    // メイン投稿エディタと、スレッド作成エディタを作成
     const firstPostEditor = createRichEditor(
       document.getElementById('firstPostEditorWrap'),
       '最初の書き込み内容（質問内容など・任意）'
@@ -1554,9 +1604,6 @@
       'コメントを入力してください。URLは自動でリンク化されます。'
     );
 
-    /* ============================================================
-     * リッチエディタの値取得・クリア
-     * ============================================================ */
     function getEditorHtml(wrapper) {
       const editor = wrapper.querySelector('.rich-editor');
       if (!editor) return '';
@@ -1788,6 +1835,49 @@
       else searchClearBtn.classList.remove('show');
     }
 
+    /* ============================================================
+     * ★ スレッド内検索イベント
+     * ============================================================ */
+    (function initInThreadSearchEvents() {
+      let debounce = null;
+      inThreadSearchInput.addEventListener('input', () => {
+        clearTimeout(debounce);
+        debounce = setTimeout(() => {
+          inThreadSearchQuery = inThreadSearchInput.value;
+          updateInThreadSearchClear();
+          renderPostsFromCache();
+        }, 150);
+      });
+      inThreadSearchClear.addEventListener('click', () => {
+        inThreadSearchInput.value = '';
+        inThreadSearchQuery = '';
+        updateInThreadSearchClear();
+        renderPostsFromCache();
+        inThreadSearchInput.focus();
+      });
+      inThreadSearchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          inThreadSearchInput.value = '';
+          inThreadSearchQuery = '';
+          updateInThreadSearchClear();
+          renderPostsFromCache();
+        }
+      });
+    })();
+
+    function updateInThreadSearchClear() {
+      if (inThreadSearchInput.value.trim()) inThreadSearchClear.classList.add('show');
+      else inThreadSearchClear.classList.remove('show');
+    }
+
+    function resetInThreadSearch() {
+      inThreadSearchInput.value = '';
+      inThreadSearchQuery = '';
+      updateInThreadSearchClear();
+      inThreadSearchInfo.classList.remove('show');
+      inThreadSearchInfo.innerHTML = '';
+    }
+
     newMarkToggle.addEventListener('change', () => {
       newMarkEnabled = newMarkToggle.checked;
       if (currentUser) saveNewMarkSetting(currentUser.uid, newMarkEnabled);
@@ -1849,6 +1939,112 @@
         snap.forEach(d => { bannedDevicesCache[d.id] = d.data(); });
         checkSelfBan();
       }, (err) => console.error('デバイスBAN監視エラー:', err));
+    }
+
+    /* ============================================================
+     * ★ いいねリスナー
+     * ============================================================ */
+    function initThreadLikesListener() {
+      if (threadLikesUnsubscribe) { threadLikesUnsubscribe(); threadLikesUnsubscribe = null; }
+      threadLikesUnsubscribe = onSnapshot(collection(db, COL.threadLikes), (snap) => {
+        threadLikesCache = {};
+        snap.forEach(d => { threadLikesCache[d.id] = d.data() || {}; });
+        // スレッド一覧のいいね数を更新
+        if (!threadDetailView.classList.contains('hidden') === false) {
+          renderThreadList();
+        } else {
+          renderThreadList();
+        }
+        // スレッド詳細のいいねボタンも更新
+        updateThreadLikeButton();
+      }, (err) => console.error('スレッドいいね監視エラー:', err));
+    }
+
+    function initPostLikesListener(threadId) {
+      if (postLikesUnsubscribe) { postLikesUnsubscribe(); postLikesUnsubscribe = null; }
+      if (!threadId) return;
+      // サブコレクションではなく、threadIdでフィルタするため、全体を監視する代わりに
+      // posts コレクションと同じくthreads/{threadId}/postLikesを使う
+      postLikesUnsubscribe = onSnapshot(collection(db, COL.threads, threadId, 'postLikes'), (snap) => {
+        postLikesCache = {};
+        snap.forEach(d => { postLikesCache[d.id] = d.data() || {}; });
+        if (currentThreadKey === threadId) renderPostsFromCache();
+      }, (err) => console.error('レスいいね監視エラー:', err));
+    }
+
+    function updateThreadLikeButton() {
+      if (!currentThreadKey || !threadLikeBtn) return;
+      const likes = threadLikesCache[currentThreadKey] || {};
+      const count = Object.keys(likes).length;
+      const liked = !!(currentUser && likes[currentUser.uid]);
+      threadLikeBtn.dataset.threadId = currentThreadKey;
+      threadLikeBtn.classList.toggle('liked', liked);
+      threadLikeBtn.innerHTML = `<span class="like-heart">${liked ? '❤️' : '🤍'}</span><span class="like-count">${count}</span>`;
+      threadLikeBtn.title = liked ? 'いいねを取り消す' : 'いいねする';
+    }
+
+    /* ============================================================
+     * ★ スレッドいいねボタンのイベント
+     * ============================================================ */
+    threadLikeBtn.addEventListener('click', async () => {
+      if (!currentUser) { alert('ログインが必要です。'); return; }
+      const threadId = threadLikeBtn.dataset.threadId;
+      if (!threadId) return;
+      if (threadLikeBtn.disabled) return;
+      threadLikeBtn.disabled = true;
+      try {
+        await toggleThreadLike(threadId);
+      } catch (err) {
+        console.error('いいねエラー:', err);
+        showBanner('いいねに失敗: ' + (err.code || err.message), true);
+      } finally {
+        threadLikeBtn.disabled = false;
+      }
+    });
+
+    async function toggleThreadLike(threadId) {
+      if (!currentUser || !threadId) return;
+      const likesRef = doc(db, COL.threadLikes, threadId);
+      const snap = await getDoc(likesRef);
+      const data = snap.exists() ? (snap.data() || {}) : {};
+      if (data[currentUser.uid]) {
+        // 取り消し
+        delete data[currentUser.uid];
+        if (Object.keys(data).length === 0) {
+          await deleteDoc(likesRef);
+        } else {
+          await setDoc(likesRef, data);
+        }
+        showBanner('いいねを取り消しました', false);
+      } else {
+        data[currentUser.uid] = Date.now();
+        await setDoc(likesRef, data);
+        showBanner('いいねしました ❤️', false);
+      }
+    }
+
+    /* ============================================================
+     * ★ レスいいねトグル
+     * ============================================================ */
+    async function togglePostLike(threadId, postId) {
+      if (!currentUser) { alert('ログインが必要です。'); return; }
+      if (!threadId || !postId) return;
+      const likesRef = doc(db, COL.threads, threadId, 'postLikes', postId);
+      const snap = await getDoc(likesRef);
+      const data = snap.exists() ? (snap.data() || {}) : {};
+      if (data[currentUser.uid]) {
+        delete data[currentUser.uid];
+        if (Object.keys(data).length === 0) {
+          await deleteDoc(likesRef);
+        } else {
+          await setDoc(likesRef, data);
+        }
+        showBanner('いいねを取り消しました', false);
+      } else {
+        data[currentUser.uid] = Date.now();
+        await setDoc(likesRef, data);
+        showBanner('いいねしました ❤️', false);
+      }
     }
 
     function updateMyBadgeToggleVisibility() {
@@ -1937,6 +2133,8 @@
       if (badgeFeatureUnsubscribe) { badgeFeatureUnsubscribe(); badgeFeatureUnsubscribe = null; }
       if (nicknamesUnsubscribe) { nicknamesUnsubscribe(); nicknamesUnsubscribe = null; }
       if (officialUnsubscribe) { officialUnsubscribe(); officialUnsubscribe = null; }
+      if (threadLikesUnsubscribe) { threadLikesUnsubscribe(); threadLikesUnsubscribe = null; }
+      if (postLikesUnsubscribe) { postLikesUnsubscribe(); postLikesUnsubscribe = null; }
       try { await signOut(auth); } catch (e) { console.error(e); }
       document.body.style.background = '';
       showLoginView(); hideBootOverlay();
@@ -2024,6 +2222,7 @@
       initDeviceBansListener();
       initNicknamesListener();
       initOfficialUsersListener();
+      initThreadLikesListener();
 
       setTimeout(() => { if (checkSelfBan()) return; }, 800);
 
@@ -2311,6 +2510,13 @@
           ? `<span class="unread-badge">新着 ${unreadCount}件</span>`
           : '';
 
+        // ★ スレッドのいいね数
+        const likes = threadLikesCache[thread.id] || {};
+        const likeCount = Object.keys(likes).length;
+        const likeCountHtml = likeCount > 0
+          ? `<span class="thread-like-count-inline">❤️ ${likeCount}</span>`
+          : '';
+
         const item = document.createElement('div');
         item.className = 'thread-item bg-white p-3 border border-gray-300 rounded hover:bg-blue-50 cursor-pointer transition flex justify-between items-center shadow-sm'
           + (hasNew ? ' has-new' : '');
@@ -2322,6 +2528,7 @@
             ${subjHtml}
             <span class="font-bold text-blue-900 break-words">${titleHl}</span>
             <span class="text-xs text-gray-400 ml-2 whitespace-nowrap">(${date})</span>
+            ${likeCountHtml}
             ${unreadBadge}
             ${hitInfoHtml}
           </div>
@@ -2341,7 +2548,11 @@
       currentThreadSubject = 'other';
       currentThreadAuthorEmail = '';
       activeReplyParentId = null;
+      activeEditPostId = null;
       if (postsUnsubscribe) { postsUnsubscribe(); postsUnsubscribe = null; }
+      if (postLikesUnsubscribe) { postLikesUnsubscribe(); postLikesUnsubscribe = null; }
+      postLikesCache = {};
+      resetInThreadSearch();
       postsContainer.innerHTML = '<p class="text-gray-500 text-sm">読み込み中...</p>';
       setupSubjectTabs();
       cleanupReadThreads();
@@ -2354,7 +2565,9 @@
       currentThreadSubject = subject || 'other';
       currentThreadAuthorEmail = authorEmail || '';
       activeReplyParentId = null;
+      activeEditPostId = null;
 
+      resetInThreadSearch();
       markThreadAsRead(threadId);
 
       const targetItem = threadsContainer.querySelector(`.thread-item[data-thread-id="${threadId}"]`);
@@ -2379,6 +2592,8 @@
       threadListView.classList.add('hidden');
       threadDetailView.classList.remove('hidden');
       backToListBtn.classList.remove('hidden');
+      updateThreadLikeButton();
+      initPostLikesListener(threadId);
       loadPosts(threadId);
     }
 
@@ -2423,7 +2638,8 @@
             author: '名無しさん', content: contentHtml || '', contentText: contentText || '',
             createdAt: now,
             authorEmail: currentUser.email, authorUid: currentUser.uid, authorRole: userRole || null,
-            badgeVisible: myBadgePublic, parentId: null, file: fileData
+            badgeVisible: myBadgePublic, parentId: null, file: fileData,
+            editedAt: null
           });
           if (!threadSearchIndex[threadRef.id]) threadSearchIndex[threadRef.id] = { posts: [] };
           threadSearchIndex[threadRef.id].posts.push({ content: contentText || '' });
@@ -2500,7 +2716,6 @@
           const posts = [];
           postsSnap.forEach(d => {
             const data = d.data();
-            // 新形式はcontentText、旧形式はcontentをstripRichHtml
             const text = data.contentText || stripRichHtml(data.content || '');
             posts.push({ content: text });
           });
@@ -2559,8 +2774,48 @@
       postsContainer.innerHTML = '';
       if (allPostsCache.length === 0) {
         postsContainer.innerHTML = '<p class="text-gray-500 text-sm">まだ書き込みがありません。</p>';
+        if (inThreadSearchQuery.trim()) {
+          inThreadSearchInfo.classList.add('show');
+          inThreadSearchInfo.innerHTML = '🔍 このスレッドにはまだ書き込みがありません。';
+        } else {
+          inThreadSearchInfo.classList.remove('show');
+        }
         return;
       }
+
+      const inThreadTokens = tokenizeQuery(inThreadSearchQuery);
+      const hasInThreadSearch = inThreadTokens.length > 0;
+
+      // ★ スレッド内検索フィルタ
+      // マッチする投稿IDのセットを作成（親子関係維持のため、マッチした投稿とその祖先を含める）
+      let visiblePostIds = null;
+      if (hasInThreadSearch) {
+        const matched = new Set();
+        allPostsCache.forEach(p => {
+          const text = p.contentText || stripRichHtml(p.content || '');
+          if (matchesAllTokens(text, inThreadTokens)) {
+            matched.add(p.id);
+          }
+        });
+        // マッチした投稿の祖先も表示対象にする（親子ツリー表示のため）
+        visiblePostIds = new Set();
+        const byId = new Map(allPostsCache.map(p => [p.id, p]));
+        matched.forEach(id => {
+          let cur = byId.get(id);
+          while (cur) {
+            visiblePostIds.add(cur.id);
+            if (!cur.parentId) break;
+            cur = byId.get(cur.parentId);
+          }
+        });
+        // マッチした件数を表示
+        inThreadSearchInfo.classList.add('show');
+        inThreadSearchInfo.innerHTML = `🔍 <strong>「${escapeHtml(inThreadSearchQuery)}」</strong> の検索結果: <strong>${matched.size}</strong> 件のレスがヒット`;
+      } else {
+        inThreadSearchInfo.classList.remove('show');
+        inThreadSearchInfo.innerHTML = '';
+      }
+
       const posts = allPostsCache;
       const childrenMap = new Map();
       const rootPosts = [];
@@ -2576,8 +2831,48 @@
       });
       const frag = document.createDocumentFragment();
       const searchTokens = tokenizeQuery(currentSearchQuery);
-      rootPosts.forEach((p) => frag.appendChild(renderPostTree(p, childrenMap, searchTokens)));
+
+      // 表示対象でない投稿をスキップするためのヘルパー
+      function isVisible(postId) {
+        if (!visiblePostIds) return true;
+        return visiblePostIds.has(postId);
+      }
+
+      function renderFiltered(post) {
+        if (!isVisible(post.id)) return null;
+        // マッチした投稿だけを強調したいので、検索トークンを渡す
+        const isMatched = hasInThreadSearch && matchesAllTokens(post.contentText || stripRichHtml(post.content || ''), inThreadTokens);
+        const node = renderPostTree(post, childrenMap, searchTokens, {
+          inThreadTokens,
+          highlightInThread: isMatched
+        });
+        // 子も再帰的にフィルタ
+        // renderPostTree内で childrenMap から子を取得しているので、
+        // 事前に子をフィルタして渡す必要がある
+        return node;
+      }
+
+      // childrenMapをフィルタリング版に差し替え
+      if (visiblePostIds) {
+        const filteredChildrenMap = new Map();
+        childrenMap.forEach((children, parentId) => {
+          const filteredChildren = children.filter(c => visiblePostIds.has(c.id));
+          if (filteredChildren.length > 0) filteredChildrenMap.set(parentId, filteredChildren);
+        });
+        const filteredRootPosts = rootPosts.filter(p => visiblePostIds.has(p.id));
+        filteredRootPosts.forEach((p) => {
+          const node = renderPostTree(p, filteredChildrenMap, searchTokens, { inThreadTokens, highlightInThread: true });
+          if (node) frag.appendChild(node);
+        });
+      } else {
+        rootPosts.forEach((p) => {
+          const node = renderPostTree(p, childrenMap, searchTokens, { inThreadTokens, highlightInThread: false });
+          if (node) frag.appendChild(node);
+        });
+      }
       postsContainer.appendChild(frag);
+      if (activeEditPostId && keySet.has(activeEditPostId)) openEditBox(activeEditPostId);
+      else activeEditPostId = null;
       if (activeReplyParentId && keySet.has(activeReplyParentId)) openReplyBox(activeReplyParentId);
       else activeReplyParentId = null;
     }
@@ -2631,13 +2926,24 @@
       return post.author || '名無しさん';
     }
 
-    function renderPostTree(post, childrenMap, searchTokens = []) {
+    /**
+     * レス描画（編集ボタン・いいねボタン付き）
+     */
+    function renderPostTree(post, childrenMap, searchTokens = [], inThreadOpts = null) {
       const wrap = document.createElement('div');
       wrap.className = 'post-tree';
       wrap.dataset.postKey = post.id;
       const number = postNumberMap.get(post.id) || '?';
       let date = '送信中...';
       if (post.createdAt) { try { date = new Date(post.createdAt).toLocaleString('ja-JP'); } catch (e) { date = '日時不明'; } }
+
+      // 編集済みマーク
+      let editedMark = '';
+      if (post.editedAt) {
+        const editedDate = (() => { try { return new Date(post.editedAt).toLocaleString('ja-JP'); } catch (e) { return '不明'; } })();
+        editedMark = `<span class="edited-mark" title="編集日時: ${escapeHtml(editedDate)}">✏️ 編集済み</span>`;
+      }
+
       let opBadge = '';
       if (currentThreadOwnerUid && post.authorUid === currentThreadOwnerUid) opBadge = `<span class="op-badge">スレ主</span>`;
       const roleBadgeHtml = buildPostRoleBadge(post);
@@ -2660,20 +2966,35 @@
       const plainContent = post.contentText || stripRichHtml(post.content || '');
       const isSearchHit = searchTokens.length > 0 && matchesAllTokens(plainContent, searchTokens);
 
-      // 表示用HTML（新形式はcontentそのままサニタイズ、旧形式は改行→<br>）
+      // スレッド内検索ハイライト
       let contentHtml = '';
       if (post.content) {
-        // 新形式（HTML）か旧形式（プレーンテキスト）を判定
-        // 旧形式は\nが含まれており、<span>などのタグがない可能性が高い
-        // 新形式のcontentはサニタイズ済みのHTML（span等）
         if (/<span|<br|<a\s/i.test(post.content)) {
-          // HTML形式
           contentHtml = renderRichContent(post.content);
         } else {
-          // プレーンテキスト形式（旧データ）
           contentHtml = formatContent(post.content);
         }
       }
+      // スレッド内検索でヒットした場合、簡易ハイライト（テキストノードにmarkを挿入）
+      if (inThreadOpts && inThreadOpts.highlightInThread && inThreadOpts.inThreadTokens && inThreadOpts.inThreadTokens.length > 0) {
+        contentHtml = highlightPlainTextInHtml(contentHtml, inThreadOpts.inThreadTokens);
+      }
+
+      // ★ いいね
+      const likes = postLikesCache[post.id] || {};
+      const likeCount = Object.keys(likes).length;
+      const liked = !!(currentUser && likes[currentUser.uid]);
+      const likeBtnHtml = `
+        <button class="like-btn ${liked ? 'liked' : ''}" data-like-post-id="${post.id}" title="${liked ? 'いいねを取り消す' : 'いいねする'}">
+          <span class="like-heart">${liked ? '❤️' : '🤍'}</span>
+          <span class="like-count">${likeCount}</span>
+        </button>`;
+
+      // ★ 編集ボタン（自分の投稿のみ）
+      const isMyPost = !!(currentUser && post.authorUid && post.authorUid === currentUser.uid);
+      const editBtnHtml = isMyPost
+        ? `<button class="edit-btn" data-edit-post-id="${post.id}">編集</button>`
+        : '';
 
       let badgeManageBtn = '';
       if (canManageBadge()) badgeManageBtn = `<button class="badge-manage-btn" data-badge-uid="${post.authorUid}" data-badge-email="${escapeHtml(post.authorEmail || '')}">バッジ管理</button>`;
@@ -2702,8 +3023,11 @@
           <span class="post-author">${escapeHtml(displayName)}</span>
           ${officialBadgeHtml}${opBadge}${roleBadgeHtml}${customBadgeHtml}${bannedMark}<span>：</span>
           <span class="text-gray-500 text-xs font-normal">${date}</span>
+          ${editedMark}
           ${adminInfo}
-          <span class="ml-auto flex gap-1">
+          <span class="ml-auto flex gap-1 items-center flex-wrap">
+            ${likeBtnHtml}
+            ${editBtnHtml}
             ${badgeManageBtn}
             ${officialBtn}
             ${banBtn}
@@ -2731,15 +3055,178 @@
           handleBanAction(bnbtn.dataset.banAction, bnbtn.dataset.banUid, bnbtn.dataset.banEmail);
         });
       }
+      // ★ いいねボタン
+      const likeBtn = postDiv.querySelector('.like-btn');
+      if (likeBtn) {
+        likeBtn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (!currentUser) { alert('ログインが必要です。'); return; }
+          if (likeBtn.disabled) return;
+          likeBtn.disabled = true;
+          try {
+            await togglePostLike(currentThreadKey, likeBtn.dataset.likePostId);
+          } catch (err) {
+            console.error('いいねエラー:', err);
+            showBanner('いいねに失敗: ' + (err.code || err.message), true);
+          } finally {
+            likeBtn.disabled = false;
+          }
+        });
+      }
+      // ★ 編集ボタン
+      const editBtn = postDiv.querySelector('.edit-btn');
+      if (editBtn) {
+        editBtn.addEventListener('click', () => onEditClick(post.id));
+      }
+
       wrap.appendChild(postDiv);
       const children = childrenMap.get(post.id) || [];
       if (children.length > 0) {
         const childWrap = document.createElement('div');
         childWrap.className = 'post-children';
-        children.forEach((c) => childWrap.appendChild(renderPostTree(c, childrenMap, searchTokens)));
+        children.forEach((c) => childWrap.appendChild(renderPostTree(c, childrenMap, searchTokens, inThreadOpts)));
         wrap.appendChild(childWrap);
       }
       return wrap;
+    }
+
+    /**
+     * HTML内のテキストノードにハイライトを適用（タグを壊さない）
+     */
+    function highlightPlainTextInHtml(html, tokens) {
+      if (!html || !tokens || tokens.length === 0) return html;
+      const temp = document.createElement('div');
+      temp.innerHTML = html;
+      const sorted = [...tokens].sort((a, b) => b.length - a.length);
+
+      function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.nodeValue;
+          const lower = text.toLowerCase();
+          let hasHit = sorted.some(t => lower.includes(t.toLowerCase()));
+          if (!hasHit) return;
+          const frag = document.createDocumentFragment();
+          let remaining = text;
+          let safety = 0;
+          while (remaining.length > 0 && safety < 500) {
+            safety++;
+            let earliest = -1;
+            let matchedTok = null;
+            for (const tok of sorted) {
+              const idx = remaining.toLowerCase().indexOf(tok.toLowerCase());
+              if (idx >= 0 && (earliest === -1 || idx < earliest)) {
+                earliest = idx;
+                matchedTok = tok;
+              }
+            }
+            if (earliest === -1 || !matchedTok) {
+              frag.appendChild(document.createTextNode(remaining));
+              break;
+            }
+            if (earliest > 0) {
+              frag.appendChild(document.createTextNode(remaining.substring(0, earliest)));
+            }
+            const mark = document.createElement('mark');
+            mark.className = 'hl';
+            mark.textContent = remaining.substring(earliest, earliest + matchedTok.length);
+            frag.appendChild(mark);
+            remaining = remaining.substring(earliest + matchedTok.length);
+          }
+          node.parentNode.replaceChild(frag, node);
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          // <a>内はリンクなのでスキップしてもよいが、ハイライトしても問題ない
+          Array.from(node.childNodes).forEach(walk);
+        }
+      }
+      Array.from(temp.childNodes).forEach(walk);
+      return temp.innerHTML;
+    }
+
+    /* ============================================================
+     * ★ レス編集
+     * ============================================================ */
+    function onEditClick(postId) {
+      if (!currentUser) { alert('ログインが必要です。'); return; }
+      const post = allPostsCache.find(p => p.id === postId);
+      if (!post) return;
+      if (!post.authorUid || post.authorUid !== currentUser.uid) {
+        alert('自分の投稿のみ編集できます。');
+        return;
+      }
+      if (activeEditPostId === postId) { closeEditBox(); return; }
+      // 返信ボックスは閉じる
+      closeReplyBox();
+      activeEditPostId = postId;
+      openEditBox(postId);
+    }
+
+    function openEditBox(postId) {
+      document.querySelectorAll('.inline-edit-box').forEach(el => el.remove());
+      const post = allPostsCache.find(p => p.id === postId);
+      if (!post) return;
+      const targetWrap = postsContainer.querySelector(`.post-tree[data-post-key="${postId}"]`);
+      if (!targetWrap) return;
+      const targetCard = targetWrap.querySelector('.post-card');
+      if (!targetCard) return;
+
+      const box = document.createElement('div');
+      box.className = 'inline-edit-box';
+      box.innerHTML = `
+        <div class="reply-target-label" style="background:#cffafe;color:#155e75;">✏️ レス #${postNumberMap.get(postId) || '?'} を編集中</div>
+        <div class="edit-editor-wrap"></div>
+        <div class="edit-actions">
+          <button class="reply-cancel-btn edit-cancel-btn">キャンセル</button>
+          <button class="edit-save-btn">上書き保存</button>
+        </div>`;
+      targetCard.insertAdjacentElement('afterend', box);
+
+      const editEditorWrap = box.querySelector('.edit-editor-wrap');
+      const editEditor = createRichEditor(editEditorWrap, '編集内容を入力', post.content || '');
+
+      const cancelBtn = box.querySelector('.edit-cancel-btn');
+      const saveBtn = box.querySelector('.edit-save-btn');
+
+      cancelBtn.addEventListener('click', () => {
+        activeEditPostId = null;
+        box.remove();
+      });
+
+      saveBtn.addEventListener('click', async () => {
+        if (!currentUser) { alert('ログインが必要です。'); return; }
+        const newHtml = getEditorHtml(editEditorWrap);
+        const newText = getEditorText(editEditorWrap);
+        if (!newText) {
+          if (!confirm('本文が空になります。本当に保存しますか？')) return;
+        }
+        saveBtn.disabled = true;
+        const orig = saveBtn.textContent;
+        saveBtn.textContent = '保存中...';
+        try {
+          const now = Date.now();
+          await updateDoc(doc(db, COL.threads, currentThreadKey, 'posts', postId), {
+            content: newHtml || '',
+            contentText: newText || '',
+            editedAt: now,
+            editedBy: currentUser.email
+          });
+          showBanner('レスを編集しました', false);
+          activeEditPostId = null;
+          box.remove();
+        } catch (err) {
+          console.error('編集エラー:', err);
+          showBanner('編集失敗: ' + (err.code || err.message), true);
+          alert('編集に失敗しました。\n' + (err.message || ''));
+          saveBtn.disabled = false;
+          saveBtn.textContent = orig;
+        }
+      });
+
+      editEditor.focus();
+    }
+
+    function closeEditBox() {
+      activeEditPostId = null;
+      document.querySelectorAll('.inline-edit-box').forEach(el => el.remove());
     }
 
     async function handleBanAction(action, uid, email) {
@@ -3342,6 +3829,8 @@
     function onReplyClick(parentId) {
       if (!currentUser) { alert('ログインが必要です。'); return; }
       if (activeReplyParentId === parentId) { closeReplyBox(); return; }
+      // 編集ボックスは閉じる
+      closeEditBox();
       activeReplyParentId = parentId;
       openReplyBox(parentId);
     }
@@ -3372,7 +3861,6 @@
         </div>`;
       targetCard.insertAdjacentElement('afterend', box);
 
-      // 返信ボックス内にリッチエディタを作成
       const replyEditorWrap = box.querySelector('.reply-editor-wrap');
       const replyEditor = createRichEditor(replyEditorWrap, '返信を入力');
 
@@ -3425,7 +3913,8 @@
         author: '名無しさん', content: contentHtml || '', contentText: contentText || '',
         createdAt: now,
         authorEmail: currentUser.email, authorUid: currentUser.uid, authorRole: userRole || null,
-        badgeVisible: myBadgePublic, parentId, file: fileData
+        badgeVisible: myBadgePublic, parentId, file: fileData,
+        editedAt: null
       });
       try {
         const threadRef = doc(db, COL.threads, currentThreadKey);
@@ -3502,7 +3991,8 @@
           author: '名無しさん', content: contentHtml || '', contentText: contentText || '',
           createdAt: now,
           authorEmail: currentUser.email, authorUid: currentUser.uid, authorRole: userRole || null,
-          badgeVisible: myBadgePublic, parentId: null, file: fileData
+          badgeVisible: myBadgePublic, parentId: null, file: fileData,
+          editedAt: null
         });
         try {
           const threadRef = doc(db, COL.threads, currentThreadKey);
@@ -3545,6 +4035,7 @@
         const batch = writeBatch(db);
         toDelete.forEach(id => {
           batch.delete(doc(db, COL.threads, threadId, 'posts', id));
+          batch.delete(doc(db, COL.threads, threadId, 'postLikes', id));
         });
         await batch.commit();
         showBanner('レスを削除しました', false);
@@ -3575,6 +4066,8 @@
         const postsSnap = await getDocs(collection(db, COL.threads, threadId, 'posts'));
         const batch = writeBatch(db);
         postsSnap.forEach(d => batch.delete(d.ref));
+        // スレッドのいいねも削除
+        batch.delete(doc(db, COL.threadLikes, threadId));
         batch.delete(doc(db, COL.threads, threadId));
         await batch.commit();
         delete threadSearchIndex[threadId];
@@ -3599,7 +4092,13 @@
           const postsSnap = await getDocs(collection(db, COL.threads, tdoc.id, 'posts'));
           const posts = {};
           postsSnap.forEach(p => { posts[p.id] = p.data(); });
-          threadsData[tdoc.id] = { ...tdoc.data(), posts };
+          // レスいいねも取得
+          let postLikes = {};
+          try {
+            const plSnap = await getDocs(collection(db, COL.threads, tdoc.id, 'postLikes'));
+            plSnap.forEach(d => { postLikes[d.id] = d.data(); });
+          } catch (e) {}
+          threadsData[tdoc.id] = { ...tdoc.data(), posts, postLikes };
         }
         const grab = async (colName) => {
           const snap = await getDocs(collection(db, colName));
@@ -3613,11 +4112,12 @@
         const badgeFeatures = await grab(COL.badgeFeatures);
         const nicknames = await grab(COL.nicknames);
         const officialUsers = await grab(COL.officialUsers);
+        const threadLikes = await grab(COL.threadLikes);
 
         const payload = {
-          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 6 },
+          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 7 },
           threads: threadsData, customBadges, knownUsers, bannedUsers,
-          badgeFeatures, nicknames, officialUsers
+          badgeFeatures, nicknames, officialUsers, threadLikes
         };
         const json = JSON.stringify(payload, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
@@ -3658,15 +4158,24 @@
           const postsSnap = await getDocs(collection(db, COL.threads, tdoc.id, 'posts'));
           const batch = writeBatch(db);
           postsSnap.forEach(p => batch.delete(p.ref));
+          try {
+            const plSnap = await getDocs(collection(db, COL.threads, tdoc.id, 'postLikes'));
+            plSnap.forEach(d => batch.delete(d.ref));
+          } catch (e) {}
           batch.delete(tdoc.ref);
           await batch.commit();
         }
         for (const [tid, tdata] of Object.entries(parsed.threads)) {
-          const { posts, ...threadRest } = tdata;
+          const { posts, postLikes, ...threadRest } = tdata;
           await setDoc(doc(db, COL.threads, tid), threadRest);
           if (posts) {
             for (const [pid, pdata] of Object.entries(posts)) {
               await setDoc(doc(db, COL.threads, tid, 'posts', pid), pdata);
+            }
+          }
+          if (postLikes) {
+            for (const [pid, pdata] of Object.entries(postLikes)) {
+              await setDoc(doc(db, COL.threads, tid, 'postLikes', pid), pdata);
             }
           }
         }
@@ -3685,6 +4194,7 @@
         await restoreCol(COL.badgeFeatures, parsed.badgeFeatures);
         await restoreCol(COL.nicknames, parsed.nicknames);
         await restoreCol(COL.officialUsers, parsed.officialUsers);
+        await restoreCol(COL.threadLikes, parsed.threadLikes);
         showBanner('復元が完了しました', false);
         alert('復元が完了しました。');
         showThreadList();
@@ -3706,6 +4216,8 @@
       if (badgeFeatureUnsubscribe) badgeFeatureUnsubscribe();
       if (nicknamesUnsubscribe) nicknamesUnsubscribe();
       if (officialUnsubscribe) officialUnsubscribe();
+      if (threadLikesUnsubscribe) threadLikesUnsubscribe();
+      if (postLikesUnsubscribe) postLikesUnsubscribe();
     });
     window.addEventListener('unhandledrejection', (event) => {
       console.error('未処理のPromiseエラー:', event.reason);
