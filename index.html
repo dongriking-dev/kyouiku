@@ -7,6 +7,10 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='56' height='56' rx='8' fill='%231d4ed8'/%3E%3Crect x='8' y='8' width='48' height='48' rx='4' fill='%232563eb'/%3E%3Cpath d='M20 22h24M20 30h24M20 38h16' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='44' cy='44' r='10' fill='%23fbbf24'/%3E%3Cpath d='M40 44l3 3 6-6' stroke='%231f2937' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* 絵文字を使わないための共通アイコン設定 */
+    .icon-svg { display: inline-block; vertical-align: middle; width: 1em; height: 1em; fill: currentColor; }
+    .icon-svg-stroke { display: inline-block; vertical-align: middle; width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
     .threads-scroll { max-height: 560px; overflow-y: auto; scrollbar-width: thin; }
     .post-number { font-weight: 700; color: #1d4ed8; }
     .post-author { color: #15803d; font-weight: 600; }
@@ -504,7 +508,8 @@
     <button id="rulesToggleBtn" type="button"
       class="w-full bg-blue-900 hover:bg-blue-800 text-white text-left px-4 py-3 flex items-center justify-between transition">
       <span class="font-bold text-base flex items-center gap-2">
-        📜 学びの広場 利用ルール
+        <svg class="icon-svg" viewBox="0 0 24 24" width="20" height="20"><path d="M4 4h16v16H4z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        学びの広場 利用ルール
       </span>
       <span id="rulesToggleIcon" class="text-xl">▶</span>
     </button>
@@ -514,7 +519,7 @@
         <li><strong class="text-blue-900">ニックネームについて</strong><br>表示名は自由に設定できます。ニックネームを設定していない場合は「名無しさん」と表示されます。他の利用者への誹謗中傷となる名前は禁止です。</li>
         <li><strong class="text-blue-900">公式マークについて</strong><br>管理者が認めたユーザーには「✓ 公式」バッジが付与されます。公式マークはなりすまし防止のためのものであり、公式を騙る行為は禁止です。</li>
         <li><strong class="text-blue-900">文字装飾機能について</strong><br>投稿時に文字の色変更や蛍光ペン（ハイライト）が使えます。テキストを選択して色ボタンを押すだけの簡単操作です。</li>
-        <li><strong class="text-blue-900">いいね・編集機能について</strong><br>スレッドやレスに「❤️ いいね」を付けられます。自分のレスは投稿後いつでも編集できます（編集済みマークが表示されます）。</li>
+        <li><strong class="text-blue-900">いいね・編集機能について</strong><br>スレッドやレスに「いいね」を付けられます。自分のレスは投稿後いつでも編集できます（編集済みマークが表示されます）。</li>
         <li><strong class="text-blue-900">禁止事項</strong>
           <ul class="list-disc list-inside ml-4 mt-1 space-y-1 text-gray-700">
             <li>他の利用者への誹謗中傷・脅迫・嫌がらせ</li>
@@ -537,7 +542,7 @@
   <!-- バッジ管理モーダル -->
   <div id="badgeModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 620px;">
-      <h3 class="text-lg font-bold text-gray-800 mb-1">🏷️ バッジ管理（機能設定可能）</h3>
+      <h3 class="text-lg font-bold text-gray-800 mb-1">バッジ管理（機能設定可能）</h3>
       <p class="text-xs text-gray-500 mb-4">対象: <span id="badgeTargetEmail" class="admin-email"></span></p>
       <div class="mb-3">
         <p class="text-xs font-bold text-gray-600 mb-2">現在のバッジ:</p>
@@ -559,14 +564,14 @@
           <span id="badgePreviewChip" class="custom-badge" style="background:#ef4444;">バッジ</span>
         </div>
         <div class="mb-3 p-3 bg-gray-50 rounded border border-gray-200">
-          <p class="text-xs font-bold text-gray-700 mb-2">⚙️ バッジに付与する機能（複数選択可）</p>
+          <p class="text-xs font-bold text-gray-700 mb-2">バッジに付与する機能（複数選択可）</p>
           <div class="space-y-1">
-            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="badge-feature-checkbox" value="canDeletePost"><span>🗑️ 投稿削除権限（レス削除）</span></label>
-            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="badge-feature-checkbox" value="canDeleteThread"><span>🧵 スレッド削除権限</span></label>
-            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="badge-feature-checkbox" value="canBan"><span>🚫 BAN権限</span></label>
-            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="badge-feature-checkbox" value="canViewEmail"><span>📧 メールアドレス閲覧権限</span></label>
-            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="badge-feature-checkbox" value="canBackup"><span>💾 バックアップ・復元権限</span></label>
-            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="badge-feature-checkbox" value="canManageBadge"><span>🏷️ バッジ管理権限</span></label>
+            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="badge-feature-checkbox" value="canDeletePost"><span>投稿削除権限（レス削除）</span></label>
+            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="badge-feature-checkbox" value="canDeleteThread"><span>スレッド削除権限</span></label>
+            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="badge-feature-checkbox" value="canBan"><span>BAN権限</span></label>
+            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="badge-feature-checkbox" value="canViewEmail"><span>メールアドレス閲覧権限</span></label>
+            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="badge-feature-checkbox" value="canBackup"><span>バックアップ・復元権限</span></label>
+            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="badge-feature-checkbox" value="canManageBadge"><span>バッジ管理権限</span></label>
           </div>
         </div>
         <div class="flex justify-end gap-2">
@@ -583,7 +588,7 @@
   <!-- BAN管理モーダル -->
   <div id="banModal" class="modal-backdrop hidden">
     <div class="modal-content">
-      <h3 class="text-lg font-bold text-gray-800 mb-1">🚫 BANユーザー管理</h3>
+      <h3 class="text-lg font-bold text-gray-800 mb-1">BANユーザー管理</h3>
       <p class="text-xs text-gray-500 mb-4">メールアドレスを指定してBANできます。BANはUID・メール・デバイスの3つに紐づきます。</p>
       <div class="p-3 border border-red-200 bg-red-50 rounded mb-4">
         <p class="text-xs font-bold text-red-700 mb-2">新規BAN</p>
@@ -612,9 +617,9 @@
   <!-- ユーザー一覧モーダル -->
   <div id="userModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 780px;">
-      <h3 class="text-lg font-bold text-gray-800 mb-1">👥 サイトを開いたユーザー一覧</h3>
+      <h3 class="text-lg font-bold text-gray-800 mb-1">サイトを開いたユーザー一覧</h3>
       <p class="text-xs text-gray-500 mb-3">ログインしたことがある全ユーザーの一覧です（新しい順）。</p>
-      <input type="text" id="userSearchInput" class="user-search-input" placeholder="🔍 メールアドレスまたはニックネームで検索...">
+      <input type="text" id="userSearchInput" class="user-search-input" placeholder="メールアドレスまたはニックネームで検索...">
       <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
         <p class="text-xs text-gray-600">合計: <span id="userCountLabel" class="font-bold">0</span> 人</p>
         <div class="flex items-center gap-3 flex-wrap">
@@ -646,7 +651,7 @@
     <div class="modal-content" style="max-width: 480px;">
       <h3 class="text-lg font-bold text-gray-800 mb-1">ニックネーム設定（管理者）</h3>
       <p class="text-xs text-gray-500 mb-4">対象: <span id="nicknameTargetEmail" class="admin-email"></span></p>
-      <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mb-3">⚠️ 管理者が設定するニックネームです。本人が自分で設定したニックネームは上書きされます。</p>
+      <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mb-3">管理者が設定するニックネームです。本人が自分で設定したニックネームは上書きされます。</p>
       <label class="block text-xs text-gray-600 mb-1">ニックネーム（最大20文字）:</label>
       <input type="text" id="nicknameInput" maxlength="20" placeholder="例: 常連さん / 要注意人物" class="w-full border p-2 rounded text-sm mb-3 focus:ring-2 focus:ring-blue-300 outline-none">
       <div class="flex justify-end gap-2 flex-wrap">
@@ -660,10 +665,10 @@
   <!-- 自分のニックネーム設定モーダル -->
   <div id="myNicknameModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 480px;">
-      <h3 class="text-lg font-bold text-gray-800 mb-1">🏷️ 自分のニックネーム設定</h3>
+      <h3 class="text-lg font-bold text-gray-800 mb-1">自分のニックネーム設定</h3>
       <p class="text-xs text-gray-500 mb-3">投稿時に表示される名前です。設定しない場合は「名無しさん」と表示されます。</p>
       <div class="nickname-note">
-        💡 ニックネームは最大20文字です。<br>
+        ニックネームは最大20文字です。<br>
         誹謗中傷や不適切な名前は管理者により削除される場合があります。<br>
         メールアドレスは引き続き管理者のみ閲覧可能です。
       </div>
@@ -681,7 +686,7 @@
   <!-- 公式マーク設定モーダル -->
   <div id="officialModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 480px;">
-      <h3 class="text-lg font-bold text-gray-800 mb-1">✓ 公式マーク設定</h3>
+      <h3 class="text-lg font-bold text-gray-800 mb-1">公式マーク設定</h3>
       <p class="text-xs text-gray-500 mb-3">対象: <span id="officialTargetEmail" class="admin-email"></span></p>
       <p class="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded p-2 mb-3">
         公式マークを付与すると、投稿者名の横に「✓ 公式」バッジが表示され、なりすまし防止に役立ちます。
@@ -728,7 +733,7 @@
           <span id="officialMeBadge"></span>
           <label id="newMarkToggleWrap" class="new-toggle-wrap" title="新着マークを表示するかどうか">
             <input type="checkbox" id="newMarkToggle" checked>
-            <span>🔔 新着マーク</span>
+            <span>新着マーク</span>
           </label>
           <label id="badgeToggleWrap" class="badge-toggle-wrap hidden">
             <input type="checkbox" id="badgeToggle" checked>
@@ -742,13 +747,14 @@
       </div>
       <div class="flex items-center gap-2 flex-wrap">
         <button id="myNicknameBtn" class="my-nickname-btn unset hidden" title="自分のニックネームを設定">
-          🏷️ 名無しさん
+          <svg class="icon-svg" viewBox="0 0 24 24" width="14" height="14"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          名無しさん
         </button>
         <div id="adminControls" class="hidden flex gap-2 flex-wrap">
-          <button id="backupBtn" class="backup-btn hidden" onclick="doBackup()">💾 バックアップ</button>
-          <button id="restoreBtn" class="restore-btn hidden" onclick="document.getElementById('restoreInput').click()">📥 復元</button>
-          <button id="banListBtn" class="banlist-btn hidden" onclick="openBanModal()">🚫 BAN管理</button>
-          <button id="userListBtn" class="userlist-btn hidden" onclick="openUserModal()">👥 ユーザー一覧</button>
+          <button id="backupBtn" class="backup-btn hidden" onclick="doBackup()">バックアップ</button>
+          <button id="restoreBtn" class="restore-btn hidden" onclick="document.getElementById('restoreInput').click()">復元</button>
+          <button id="banListBtn" class="banlist-btn hidden" onclick="openBanModal()">BAN管理</button>
+          <button id="userListBtn" class="userlist-btn hidden" onclick="openUserModal()">ユーザー一覧</button>
           <input type="file" id="restoreInput" accept="application/json,.json" class="hidden">
         </div>
         <span id="userEmail" class="text-xs text-gray-500 hidden"></span>
@@ -778,7 +784,7 @@
             <label class="block text-xs text-gray-600 mb-1">最初の書き込み内容（質問内容など・任意）:</label>
             <div id="firstPostEditorWrap"></div>
             <div class="rich-help-box">
-              💡 <strong>使い方</strong>: 色を付けたい文字を選択 → 色ボタンを押すだけ。自由な色は 🎨 から選べます。
+              使い方: 色を付けたい文字を選択 → 色ボタンを押すだけ。自由な色はカラーピッカーから選べます。
             </div>
           </div>
           <div>
@@ -797,12 +803,12 @@
         <h2 class="text-xl font-bold border-b pb-1 mb-4 text-gray-700">スレッド一覧</h2>
 
         <div class="search-box-wrap">
-          <span class="search-icon">🔍</span>
+          <span class="search-icon"><svg class="icon-svg" viewBox="0 0 24 24" width="18" height="18"><circle cx="11" cy="11" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
           <input type="text" id="searchInput" class="search-input"
             placeholder="キーワードで検索（例: 数学 微分 / 化学反応 / 源氏物語）...">
           <button id="searchClearBtn" class="search-clear" title="クリア">✕</button>
           <div class="search-hint">
-            💡 スペースで区切ると <strong>AND検索</strong> になります。教科タブと組み合わせて絞り込みも可能です。
+            スペースで区切ると <strong>AND検索</strong> になります。教科タブと組み合わせて絞り込みも可能です。
             <kbd>Esc</kbd>でクリア
           </div>
         </div>
@@ -833,7 +839,9 @@
           <p id="currentThreadAuthor" class="text-xs text-gray-500 mt-1"></p>
           <div class="mt-3">
             <button id="threadLikeBtn" class="thread-like-btn" data-thread-id="">
-              <span class="like-heart">❤️</span>
+              <span class="like-heart">
+                <svg class="icon-svg" viewBox="0 0 24 24" width="18" height="18"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
               <span class="like-count">0</span>
             </button>
           </div>
@@ -841,9 +849,8 @@
         <button id="deleteThreadBtn" class="delete-btn hidden" onclick="deleteCurrentThread()">スレッドを削除</button>
       </div>
 
-      <!-- ★ スレッド内検索 -->
       <div class="in-thread-search-wrap">
-        <span class="in-thread-search-icon">🔍</span>
+        <span class="in-thread-search-icon"><svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16"><circle cx="11" cy="11" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
         <input type="text" id="inThreadSearchInput" class="in-thread-search-input"
           placeholder="このスレッド内を検索（レスを絞り込み）...">
         <button id="inThreadSearchClear" class="in-thread-search-clear" title="クリア">✕</button>
@@ -926,12 +933,12 @@
     const POSTS_LIMIT = 200;
 
     const SUBJECTS = {
-      math:     { id: 'math',     label: '数学', icon: '📐', color: '#1d4ed8' },
-      science:  { id: 'science',  label: '理科', icon: '🔬', color: '#059669' },
-      social:   { id: 'social',   label: '社会', icon: '🌏', color: '#b45309' },
-      japanese: { id: 'japanese', label: '国語', icon: '📖', color: '#dc2626' },
-      english:  { id: 'english',  label: '英語', icon: '🔤', color: '#7c3aed' },
-      other:    { id: 'other',    label: 'その他', icon: '💭', color: '#6b7280' }
+      math:     { id: 'math',     label: '数学', icon: 'M' },
+      science:  { id: 'science',  label: '理科', icon: 'R' },
+      social:   { id: 'social',   label: '社会', icon: 'S' },
+      japanese: { id: 'japanese', label: '国語', icon: 'K' },
+      english:  { id: 'english',  label: '英語', icon: 'E' },
+      other:    { id: 'other',    label: 'その他', icon: 'O' }
     };
     function getSubjectInfo(id) { return SUBJECTS[id] || SUBJECTS.other; }
     function subjectBadgeHtml(subjectId, showLabel = true) {
@@ -967,7 +974,6 @@
     let nicknamesUnsubscribe = null;
     let officialUnsubscribe = null;
 
-    // ★ いいねのリスナー（スレッド単位で切り替え）
     let threadLikesUnsubscribe = null;
     let postLikesUnsubscribe = null;
 
@@ -977,13 +983,9 @@
     let allThreadsCache = [];
     let postNumberMap = new Map();
 
-    // ★ スレッド内検索クエリ
     let inThreadSearchQuery = '';
 
-    // ★ いいねのキャッシュ
-    // threadLikesCache: { [threadId]: { [uid]: timestamp } }
     let threadLikesCache = {};
-    // postLikesCache: { [postId]: { [uid]: timestamp } }
     let postLikesCache = {};
 
     let threadSearchIndex = {};
@@ -1396,7 +1398,7 @@
       customTextWrap.className = 'rich-color-picker-wrap';
       customTextWrap.style.marginLeft = '4px';
       const customTextLabel = document.createElement('label');
-      customTextLabel.textContent = '🎨';
+      customTextLabel.textContent = '自由色';
       customTextLabel.title = '自由な色（文字）';
       const customTextInput = document.createElement('input');
       customTextInput.type = 'color';
@@ -1415,7 +1417,7 @@
       hlGroup.className = 'rich-toolbar-group';
       const hlLabel = document.createElement('span');
       hlLabel.className = 'rich-toolbar-label';
-      hlLabel.textContent = '🖍 蛍光:';
+      hlLabel.textContent = '蛍光:';
       hlGroup.appendChild(hlLabel);
 
       PRESET_HL_COLORS.forEach(preset => {
@@ -1435,7 +1437,7 @@
       customHlWrap.className = 'rich-color-picker-wrap';
       customHlWrap.style.marginLeft = '4px';
       const customHlLabel = document.createElement('label');
-      customHlLabel.textContent = '🖍🎨';
+      customHlLabel.textContent = '蛍光自由';
       customHlLabel.title = '自由な色（蛍光）';
       const customHlInput = document.createElement('input');
       customHlInput.type = 'color';
@@ -1455,7 +1457,7 @@
       const clearBtn = document.createElement('button');
       clearBtn.type = 'button';
       clearBtn.className = 'rich-toolbar-btn clear';
-      clearBtn.innerHTML = '✕ 装飾を解除';
+      clearBtn.innerHTML = '<svg class="icon-svg" viewBox="0 0 24 24" width="14" height="14"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> 装飾を解除';
       clearBtn.title = '選択範囲の色・蛍光を解除';
       clearBtn.addEventListener('mousedown', (e) => {
         e.preventDefault();
@@ -1755,7 +1757,7 @@
           <a href="${dataUrl}" target="_blank" rel="noopener noreferrer">
             <img src="${dataUrl}" alt="${escapeHtml(name)}" loading="lazy">
           </a>
-          <a href="${dataUrl}" download="${escapeHtml(name)}">📎 ${escapeHtml(name)}（${formatSize(file.size)}）</a>
+          <a href="${dataUrl}" download="${escapeHtml(name)}">添付: ${escapeHtml(name)}（${formatSize(file.size)}）</a>
         </div>`;
     }
     function formatSize(bytes) {
@@ -1835,9 +1837,6 @@
       else searchClearBtn.classList.remove('show');
     }
 
-    /* ============================================================
-     * ★ スレッド内検索イベント
-     * ============================================================ */
     (function initInThreadSearchEvents() {
       let debounce = null;
       inThreadSearchInput.addEventListener('input', () => {
@@ -1941,21 +1940,12 @@
       }, (err) => console.error('デバイスBAN監視エラー:', err));
     }
 
-    /* ============================================================
-     * ★ いいねリスナー
-     * ============================================================ */
     function initThreadLikesListener() {
       if (threadLikesUnsubscribe) { threadLikesUnsubscribe(); threadLikesUnsubscribe = null; }
       threadLikesUnsubscribe = onSnapshot(collection(db, COL.threadLikes), (snap) => {
         threadLikesCache = {};
         snap.forEach(d => { threadLikesCache[d.id] = d.data() || {}; });
-        // スレッド一覧のいいね数を更新
-        if (!threadDetailView.classList.contains('hidden') === false) {
-          renderThreadList();
-        } else {
-          renderThreadList();
-        }
-        // スレッド詳細のいいねボタンも更新
+        renderThreadList();
         updateThreadLikeButton();
       }, (err) => console.error('スレッドいいね監視エラー:', err));
     }
@@ -1963,8 +1953,6 @@
     function initPostLikesListener(threadId) {
       if (postLikesUnsubscribe) { postLikesUnsubscribe(); postLikesUnsubscribe = null; }
       if (!threadId) return;
-      // サブコレクションではなく、threadIdでフィルタするため、全体を監視する代わりに
-      // posts コレクションと同じくthreads/{threadId}/postLikesを使う
       postLikesUnsubscribe = onSnapshot(collection(db, COL.threads, threadId, 'postLikes'), (snap) => {
         postLikesCache = {};
         snap.forEach(d => { postLikesCache[d.id] = d.data() || {}; });
@@ -1979,13 +1967,10 @@
       const liked = !!(currentUser && likes[currentUser.uid]);
       threadLikeBtn.dataset.threadId = currentThreadKey;
       threadLikeBtn.classList.toggle('liked', liked);
-      threadLikeBtn.innerHTML = `<span class="like-heart">${liked ? '❤️' : '🤍'}</span><span class="like-count">${count}</span>`;
+      threadLikeBtn.innerHTML = `<span class="like-heart"><svg class="icon-svg" viewBox="0 0 24 24" width="18" height="18"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="${liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="like-count">${count}</span>`;
       threadLikeBtn.title = liked ? 'いいねを取り消す' : 'いいねする';
     }
 
-    /* ============================================================
-     * ★ スレッドいいねボタンのイベント
-     * ============================================================ */
     threadLikeBtn.addEventListener('click', async () => {
       if (!currentUser) { alert('ログインが必要です。'); return; }
       const threadId = threadLikeBtn.dataset.threadId;
@@ -2008,7 +1993,6 @@
       const snap = await getDoc(likesRef);
       const data = snap.exists() ? (snap.data() || {}) : {};
       if (data[currentUser.uid]) {
-        // 取り消し
         delete data[currentUser.uid];
         if (Object.keys(data).length === 0) {
           await deleteDoc(likesRef);
@@ -2019,13 +2003,10 @@
       } else {
         data[currentUser.uid] = Date.now();
         await setDoc(likesRef, data);
-        showBanner('いいねしました ❤️', false);
+        showBanner('いいねしました', false);
       }
     }
 
-    /* ============================================================
-     * ★ レスいいねトグル
-     * ============================================================ */
     async function togglePostLike(threadId, postId) {
       if (!currentUser) { alert('ログインが必要です。'); return; }
       if (!threadId || !postId) return;
@@ -2043,7 +2024,7 @@
       } else {
         data[currentUser.uid] = Date.now();
         await setDoc(likesRef, data);
-        showBanner('いいねしました ❤️', false);
+        showBanner('いいねしました', false);
       }
     }
 
@@ -2263,9 +2244,6 @@
       registerMyFingerprint();
     });
 
-    /* ============================================================
-     * 自分のニックネーム設定
-     * ============================================================ */
     const myNicknameModal = document.getElementById('myNicknameModal');
 
     myNicknameBtn.addEventListener('click', () => {
@@ -2335,9 +2313,6 @@
       }
     });
 
-    /* ============================================================
-     * バッジ表示トグル・メール表示トグル
-     * ============================================================ */
     badgeToggle.addEventListener('change', async () => {
       if (!currentUser) return;
       const visible = badgeToggle.checked;
@@ -2459,7 +2434,7 @@
         const filtered = filterThreadsBySearch(threads, tokens);
         results = filtered;
         searchResultInfo.innerHTML =
-          `🔍 <strong>「${escapeHtml(currentSearchQuery)}」</strong> の検索結果: ` +
+          `「${escapeHtml(currentSearchQuery)}」 の検索結果: ` +
           `<strong>${filtered.length}</strong> 件` +
           (currentSubjectFilter !== 'all' ? `（${getSubjectInfo(currentSubjectFilter).label} のみ）` : '');
       } else {
@@ -2468,7 +2443,7 @@
 
       if (results.length === 0) {
         if (tokens.length > 0) {
-          threadsContainer.innerHTML = `<p class="text-gray-500 text-sm">🔍 「${escapeHtml(currentSearchQuery)}」に一致するスレッドが見つかりませんでした。<br>キーワードを変えて試してみてください。</p>`;
+          threadsContainer.innerHTML = `<p class="text-gray-500 text-sm">「${escapeHtml(currentSearchQuery)}」に一致するスレッドが見つかりませんでした。<br>キーワードを変えて試してみてください。</p>`;
         } else {
           threadsContainer.innerHTML = '<p class="text-gray-500 text-sm">該当するスレッドがありません。新しく作成してください。</p>';
         }
@@ -2498,7 +2473,7 @@
             parts.push(`レス #${idxList}${more}`);
           }
           if (parts.length > 0) {
-            hitInfoHtml = `<div class="post-hit-info">🎯 ヒット: ${parts.join(' / ')}</div>`;
+            hitInfoHtml = `<div class="post-hit-info">ヒット: ${parts.join(' / ')}</div>`;
           }
         }
 
@@ -2510,11 +2485,10 @@
           ? `<span class="unread-badge">新着 ${unreadCount}件</span>`
           : '';
 
-        // ★ スレッドのいいね数
         const likes = threadLikesCache[thread.id] || {};
         const likeCount = Object.keys(likes).length;
         const likeCountHtml = likeCount > 0
-          ? `<span class="thread-like-count-inline">❤️ ${likeCount}</span>`
+          ? `<span class="thread-like-count-inline"><svg class="icon-svg" viewBox="0 0 24 24" width="12" height="12"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="currentColor" stroke="currentColor" stroke-width="2"/></svg> ${likeCount}</span>`
           : '';
 
         const item = document.createElement('div');
@@ -2776,7 +2750,7 @@
         postsContainer.innerHTML = '<p class="text-gray-500 text-sm">まだ書き込みがありません。</p>';
         if (inThreadSearchQuery.trim()) {
           inThreadSearchInfo.classList.add('show');
-          inThreadSearchInfo.innerHTML = '🔍 このスレッドにはまだ書き込みがありません。';
+          inThreadSearchInfo.innerHTML = 'このスレッドにはまだ書き込みがありません。';
         } else {
           inThreadSearchInfo.classList.remove('show');
         }
@@ -2786,8 +2760,6 @@
       const inThreadTokens = tokenizeQuery(inThreadSearchQuery);
       const hasInThreadSearch = inThreadTokens.length > 0;
 
-      // ★ スレッド内検索フィルタ
-      // マッチする投稿IDのセットを作成（親子関係維持のため、マッチした投稿とその祖先を含める）
       let visiblePostIds = null;
       if (hasInThreadSearch) {
         const matched = new Set();
@@ -2797,7 +2769,6 @@
             matched.add(p.id);
           }
         });
-        // マッチした投稿の祖先も表示対象にする（親子ツリー表示のため）
         visiblePostIds = new Set();
         const byId = new Map(allPostsCache.map(p => [p.id, p]));
         matched.forEach(id => {
@@ -2808,9 +2779,8 @@
             cur = byId.get(cur.parentId);
           }
         });
-        // マッチした件数を表示
         inThreadSearchInfo.classList.add('show');
-        inThreadSearchInfo.innerHTML = `🔍 <strong>「${escapeHtml(inThreadSearchQuery)}」</strong> の検索結果: <strong>${matched.size}</strong> 件のレスがヒット`;
+        inThreadSearchInfo.innerHTML = `「${escapeHtml(inThreadSearchQuery)}」 の検索結果: <strong>${matched.size}</strong> 件のレスがヒット`;
       } else {
         inThreadSearchInfo.classList.remove('show');
         inThreadSearchInfo.innerHTML = '';
@@ -2832,27 +2802,6 @@
       const frag = document.createDocumentFragment();
       const searchTokens = tokenizeQuery(currentSearchQuery);
 
-      // 表示対象でない投稿をスキップするためのヘルパー
-      function isVisible(postId) {
-        if (!visiblePostIds) return true;
-        return visiblePostIds.has(postId);
-      }
-
-      function renderFiltered(post) {
-        if (!isVisible(post.id)) return null;
-        // マッチした投稿だけを強調したいので、検索トークンを渡す
-        const isMatched = hasInThreadSearch && matchesAllTokens(post.contentText || stripRichHtml(post.content || ''), inThreadTokens);
-        const node = renderPostTree(post, childrenMap, searchTokens, {
-          inThreadTokens,
-          highlightInThread: isMatched
-        });
-        // 子も再帰的にフィルタ
-        // renderPostTree内で childrenMap から子を取得しているので、
-        // 事前に子をフィルタして渡す必要がある
-        return node;
-      }
-
-      // childrenMapをフィルタリング版に差し替え
       if (visiblePostIds) {
         const filteredChildrenMap = new Map();
         childrenMap.forEach((children, parentId) => {
@@ -2926,9 +2875,6 @@
       return post.author || '名無しさん';
     }
 
-    /**
-     * レス描画（編集ボタン・いいねボタン付き）
-     */
     function renderPostTree(post, childrenMap, searchTokens = [], inThreadOpts = null) {
       const wrap = document.createElement('div');
       wrap.className = 'post-tree';
@@ -2937,11 +2883,10 @@
       let date = '送信中...';
       if (post.createdAt) { try { date = new Date(post.createdAt).toLocaleString('ja-JP'); } catch (e) { date = '日時不明'; } }
 
-      // 編集済みマーク
       let editedMark = '';
       if (post.editedAt) {
         const editedDate = (() => { try { return new Date(post.editedAt).toLocaleString('ja-JP'); } catch (e) { return '不明'; } })();
-        editedMark = `<span class="edited-mark" title="編集日時: ${escapeHtml(editedDate)}">✏️ 編集済み</span>`;
+        editedMark = `<span class="edited-mark" title="編集日時: ${escapeHtml(editedDate)}"><svg class="icon-svg" viewBox="0 0 24 24" width="10" height="10"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" fill="none" stroke="currentColor" stroke-width="2"/></svg> 編集済み</span>`;
       }
 
       let opBadge = '';
@@ -2966,7 +2911,6 @@
       const plainContent = post.contentText || stripRichHtml(post.content || '');
       const isSearchHit = searchTokens.length > 0 && matchesAllTokens(plainContent, searchTokens);
 
-      // スレッド内検索ハイライト
       let contentHtml = '';
       if (post.content) {
         if (/<span|<br|<a\s/i.test(post.content)) {
@@ -2975,22 +2919,19 @@
           contentHtml = formatContent(post.content);
         }
       }
-      // スレッド内検索でヒットした場合、簡易ハイライト（テキストノードにmarkを挿入）
       if (inThreadOpts && inThreadOpts.highlightInThread && inThreadOpts.inThreadTokens && inThreadOpts.inThreadTokens.length > 0) {
         contentHtml = highlightPlainTextInHtml(contentHtml, inThreadOpts.inThreadTokens);
       }
 
-      // ★ いいね
       const likes = postLikesCache[post.id] || {};
       const likeCount = Object.keys(likes).length;
       const liked = !!(currentUser && likes[currentUser.uid]);
       const likeBtnHtml = `
         <button class="like-btn ${liked ? 'liked' : ''}" data-like-post-id="${post.id}" title="${liked ? 'いいねを取り消す' : 'いいねする'}">
-          <span class="like-heart">${liked ? '❤️' : '🤍'}</span>
+          <span class="like-heart"><svg class="icon-svg" viewBox="0 0 24 24" width="13" height="13"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="${liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <span class="like-count">${likeCount}</span>
         </button>`;
 
-      // ★ 編集ボタン（自分の投稿のみ）
       const isMyPost = !!(currentUser && post.authorUid && post.authorUid === currentUser.uid);
       const editBtnHtml = isMyPost
         ? `<button class="edit-btn" data-edit-post-id="${post.id}">編集</button>`
@@ -3055,7 +2996,6 @@
           handleBanAction(bnbtn.dataset.banAction, bnbtn.dataset.banUid, bnbtn.dataset.banEmail);
         });
       }
-      // ★ いいねボタン
       const likeBtn = postDiv.querySelector('.like-btn');
       if (likeBtn) {
         likeBtn.addEventListener('click', async (e) => {
@@ -3073,7 +3013,6 @@
           }
         });
       }
-      // ★ 編集ボタン
       const editBtn = postDiv.querySelector('.edit-btn');
       if (editBtn) {
         editBtn.addEventListener('click', () => onEditClick(post.id));
@@ -3090,9 +3029,6 @@
       return wrap;
     }
 
-    /**
-     * HTML内のテキストノードにハイライトを適用（タグを壊さない）
-     */
     function highlightPlainTextInHtml(html, tokens) {
       if (!html || !tokens || tokens.length === 0) return html;
       const temp = document.createElement('div');
@@ -3134,7 +3070,6 @@
           }
           node.parentNode.replaceChild(frag, node);
         } else if (node.nodeType === Node.ELEMENT_NODE) {
-          // <a>内はリンクなのでスキップしてもよいが、ハイライトしても問題ない
           Array.from(node.childNodes).forEach(walk);
         }
       }
@@ -3142,9 +3077,6 @@
       return temp.innerHTML;
     }
 
-    /* ============================================================
-     * ★ レス編集
-     * ============================================================ */
     function onEditClick(postId) {
       if (!currentUser) { alert('ログインが必要です。'); return; }
       const post = allPostsCache.find(p => p.id === postId);
@@ -3154,7 +3086,6 @@
         return;
       }
       if (activeEditPostId === postId) { closeEditBox(); return; }
-      // 返信ボックスは閉じる
       closeReplyBox();
       activeEditPostId = postId;
       openEditBox(postId);
@@ -3172,7 +3103,7 @@
       const box = document.createElement('div');
       box.className = 'inline-edit-box';
       box.innerHTML = `
-        <div class="reply-target-label" style="background:#cffafe;color:#155e75;">✏️ レス #${postNumberMap.get(postId) || '?'} を編集中</div>
+        <div class="reply-target-label" style="background:#cffafe;color:#155e75;">レス #${postNumberMap.get(postId) || '?'} を編集中</div>
         <div class="edit-editor-wrap"></div>
         <div class="edit-actions">
           <button class="reply-cancel-btn edit-cancel-btn">キャンセル</button>
@@ -3380,9 +3311,6 @@
       }
     });
 
-    /* ============================================================
-     * ユーザー一覧モーダル
-     * ============================================================ */
     const userModal = document.getElementById('userModal');
     const userListContainer = document.getElementById('userListContainer');
     const userSearchInput = document.getElementById('userSearchInput');
@@ -3456,9 +3384,9 @@
           const src = isSelf
             ? '<span class="nickname-source self">本人設定</span>'
             : '<span class="nickname-source admin">管理者設定</span>';
-          nicknameHtml = `<div class="nickname-line">🏷️ ニックネーム: <span class="${cls}">${escapeHtml(nickname)}</span>${src}</div>`;
+          nicknameHtml = `<div class="nickname-line">ニックネーム: <span class="${cls}">${escapeHtml(nickname)}</span>${src}</div>`;
         } else {
-          nicknameHtml = `<div class="nickname-line">🏷️ ニックネーム: <span class="nickname-empty">（未設定）</span></div>`;
+          nicknameHtml = `<div class="nickname-line">ニックネーム: <span class="nickname-empty">（未設定）</span></div>`;
         }
 
         const officialData = officialUsersCache[u.uid];
@@ -3479,10 +3407,10 @@
             <div class="meta-line">${roleTag}</div>
           </div>
           <div class="action-btns">
-            <button class="btn-mini btn-copy" data-copy="${escapeHtml(u.email)}">📋 コピー</button>
-            ${canSetNickname() ? `<button class="btn-mini btn-nickname" data-nick-uid="${escapeHtml(u.uid)}" data-nick-email="${escapeHtml(u.email)}">🏷️ ニックネーム</button>` : ''}
+            <button class="btn-mini btn-copy" data-copy="${escapeHtml(u.email)}">コピー</button>
+            ${canSetNickname() ? `<button class="btn-mini btn-nickname" data-nick-uid="${escapeHtml(u.uid)}" data-nick-email="${escapeHtml(u.email)}">ニックネーム</button>` : ''}
             ${canSetOfficial() ? `<button class="btn-mini btn-official" data-official-uid="${escapeHtml(u.uid)}" data-official-email="${escapeHtml(u.email)}">${isOfficial ? '✓ 公式解除' : '✓ 公式'}</button>` : ''}
-            ${canManageBadge() ? `<button class="btn-mini btn-badge" data-badge-uid="${escapeHtml(u.uid)}" data-badge-email="${escapeHtml(u.email)}">🏷️ バッジ</button>` : ''}
+            ${canManageBadge() ? `<button class="btn-mini btn-badge" data-badge-uid="${escapeHtml(u.uid)}" data-badge-email="${escapeHtml(u.email)}">バッジ</button>` : ''}
             ${canBan() && !isProtected ? (
               isBanned
                 ? `<button class="btn-mini btn-unban" data-unban-uid="${escapeHtml(u.uid)}" data-unban-email="${escapeHtml(u.email)}">解除</button>`
@@ -3506,9 +3434,6 @@
       });
     }
 
-    /* ============================================================
-     * 管理者用：他人のニックネーム設定モーダル
-     * ============================================================ */
     let nicknameEditingUid = null;
     let nicknameEditingEmail = '';
     window.openNicknameModal = function(uid, email) {
@@ -3586,9 +3511,6 @@
       }
     })();
 
-    /* ============================================================
-     * 管理者用：公式マーク設定モーダル
-     * ============================================================ */
     let officialEditingUid = null;
     let officialEditingEmail = '';
 
@@ -3655,9 +3577,6 @@
       }
     })();
 
-    /* ============================================================
-     * バッジ管理モーダル
-     * ============================================================ */
     const COLOR_PRESETS = ['#7c2d12', '#dc2626', '#ea580c', '#d97706', '#ca8a04', '#16a34a', '#0d9488', '#0284c7', '#1e40af', '#7c3aed', '#c026d3', '#db2777', '#475569', '#111827'];
     function buildColorRow() {
       const row = document.getElementById('badgeColorRow');
@@ -3829,7 +3748,6 @@
     function onReplyClick(parentId) {
       if (!currentUser) { alert('ログインが必要です。'); return; }
       if (activeReplyParentId === parentId) { closeReplyBox(); return; }
-      // 編集ボックスは閉じる
       closeEditBox();
       activeReplyParentId = parentId;
       openReplyBox(parentId);
@@ -3977,7 +3895,7 @@
           <span class="text-gray-500 text-xs font-normal">送信中...</span>
         </div>
         ${contentHtml ? `<div class="text-gray-900 rich-content mb-2">${renderRichContent(contentHtml)}</div>` : ''}
-        ${file ? `<div class="text-xs text-gray-400 mt-1">📎 ${escapeHtml(file.name)}（処理中...）</div>` : ''}`;
+        ${file ? `<div class="text-xs text-gray-400 mt-1">添付: ${escapeHtml(file.name)}（処理中...）</div>` : ''}`;
       postsContainer.appendChild(tempPost);
       tempPost.scrollIntoView({ behavior: 'smooth', block: 'end' });
       try {
@@ -4066,7 +3984,6 @@
         const postsSnap = await getDocs(collection(db, COL.threads, threadId, 'posts'));
         const batch = writeBatch(db);
         postsSnap.forEach(d => batch.delete(d.ref));
-        // スレッドのいいねも削除
         batch.delete(doc(db, COL.threadLikes, threadId));
         batch.delete(doc(db, COL.threads, threadId));
         await batch.commit();
@@ -4092,7 +4009,6 @@
           const postsSnap = await getDocs(collection(db, COL.threads, tdoc.id, 'posts'));
           const posts = {};
           postsSnap.forEach(p => { posts[p.id] = p.data(); });
-          // レスいいねも取得
           let postLikes = {};
           try {
             const plSnap = await getDocs(collection(db, COL.threads, tdoc.id, 'postLikes'));
