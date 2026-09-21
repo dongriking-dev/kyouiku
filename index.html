@@ -7,7 +7,6 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='56' height='56' rx='8' fill='%231d4ed8'/%3E%3Crect x='8' y='8' width='48' height='48' rx='4' fill='%232563eb'/%3E%3Cpath d='M20 22h24M20 30h24M20 38h16' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='44' cy='44' r='10' fill='%23fbbf24'/%3E%3Cpath d='M40 44l3 3 6-6' stroke='%231f2937' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* 絵文字を使わないための共通アイコン設定 */
     .icon-svg { display: inline-block; vertical-align: middle; width: 1em; height: 1em; fill: currentColor; }
     .icon-svg-stroke { display: inline-block; vertical-align: middle; width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
@@ -64,6 +63,8 @@
     .userlist-btn:hover { background: #075985; }
     .banlist-btn { background: #7f1d1d; color: #fff; font-size: 11px; padding: 6px 12px; border-radius: 4px; cursor: pointer; border: none; font-weight: 600; }
     .banlist-btn:hover { background: #991b1b; }
+    .announcement-btn { background: #b45309; color: #fff; font-size: 11px; padding: 6px 12px; border-radius: 4px; cursor: pointer; border: none; font-weight: 600; }
+    .announcement-btn:hover { background: #92400e; }
     .ban-btn { background: #111827; color: #fff; font-size: 11px; padding: 3px 10px; border-radius: 4px; cursor: pointer; border: none; }
     .ban-btn:hover { background: #374151; }
     .banned-mark { background: #991b1b; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 4px; font-weight: 700; }
@@ -307,7 +308,6 @@
     }
     .official-toggle-wrap input { cursor: pointer; }
 
-    /* リッチテキストツールバー */
     .rich-toolbar {
       display: flex; flex-wrap: wrap; gap: 6px; padding: 8px;
       background: #f9fafb; border: 1px solid #e5e7eb;
@@ -383,9 +383,6 @@
     }
     .rich-help-box strong { color: #1e40af; }
 
-    /* ============================================================
-       ★ いいねボタン
-       ============================================================ */
     .like-btn {
       display: inline-flex; align-items: center; gap: 4px;
       background: #fff; border: 1px solid #fecaca;
@@ -404,7 +401,6 @@
     .like-btn .like-heart { font-size: 13px; line-height: 1; }
     .like-btn .like-count { font-size: 11px; }
 
-    /* スレッドヘッダーのいいね */
     .thread-like-btn {
       display: inline-flex; align-items: center; gap: 6px;
       background: #fff; border: 2px solid #fecaca;
@@ -420,7 +416,6 @@
     }
     .thread-like-btn .like-heart { font-size: 16px; line-height: 1; }
 
-    /* スレッド一覧のいいね数表示 */
     .thread-like-count-inline {
       display: inline-flex; align-items: center; gap: 3px;
       background: #fef2f2; color: #dc2626; font-size: 10px;
@@ -428,9 +423,6 @@
       margin-left: 6px;
     }
 
-    /* ============================================================
-       ★ スレッド内検索
-       ============================================================ */
     .in-thread-search-wrap {
       position: relative; margin-bottom: 12px;
     }
@@ -466,9 +458,6 @@
     }
     .in-thread-search-info.show { display: block; }
 
-    /* ============================================================
-       ★ 編集済みマーク
-       ============================================================ */
     .edited-mark {
       display: inline-flex; align-items: center; gap: 3px;
       background: #f3f4f6; color: #6b7280;
@@ -478,7 +467,6 @@
       border: 1px solid #e5e7eb;
     }
 
-    /* 編集モードの枠 */
     .inline-edit-box {
       margin-top: 8px; padding: 10px;
       background: #ecfeff; border: 1px dashed #0891b2;
@@ -495,6 +483,31 @@
     }
     .edit-save-btn:hover { background: #0e7490; }
     .edit-save-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+
+    /* ★ アナウンス */
+    .announcement-card {
+      border-radius: 8px; padding: 12px 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      animation: annFadeIn 0.4s ease-out;
+    }
+    @keyframes annFadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .announcement-card.level-info    { background: #eff6ff; border-left: 6px solid #3b82f6; }
+    .announcement-card.level-warning { background: #fffbeb; border-left: 6px solid #f59e0b; }
+    .announcement-card.level-danger  { background: #fef2f2; border-left: 6px solid #ef4444; }
+    .announcement-level-chip {
+      display: inline-block; color: #fff; font-size: 10px;
+      font-weight: 700; padding: 1px 8px; border-radius: 9999px;
+      margin-right: 6px;
+    }
+    .announcement-card.level-info    .announcement-level-chip { background: #3b82f6; }
+    .announcement-card.level-warning .announcement-level-chip { background: #f59e0b; }
+    .announcement-card.level-danger  .announcement-level-chip { background: #ef4444; }
+    .announcement-title { font-size: 14px; font-weight: 700; color: #1f2937; }
+    .announcement-body  { color: #1f2937; font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; margin-top: 4px; }
+    .announcement-meta  { color: #6b7280; font-size: 10px; margin-top: 6px; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans p-4 max-w-5xl mx-auto">
@@ -535,6 +548,9 @@
       <p class="mt-4 text-xs text-gray-500 text-right">最終更新: 2026年9月</p>
     </div>
   </div>
+
+  <!-- ★ アナウンス表示エリア -->
+  <div id="announcementArea" class="hidden mb-4"></div>
 
   <div id="statusBanner" class="bg-red-600 text-white"></div>
 
@@ -703,6 +719,33 @@
     </div>
   </div>
 
+  <!-- ★ アナウンス投稿モーダル -->
+  <div id="announcementModal" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 560px;">
+      <h3 class="text-lg font-bold text-gray-800 mb-1">アナウンスを投稿</h3>
+      <p class="text-xs text-gray-500 mb-4">サイト上部にお知らせとして表示されます。管理者・主のみ投稿できます。</p>
+      <label class="block text-xs text-gray-600 mb-1">タイトル（任意・最大50文字）:</label>
+      <input type="text" id="announcementTitleInput" maxlength="50" placeholder="例: メンテナンスのお知らせ" class="w-full border p-2 rounded text-sm mb-3 focus:ring-2 focus:ring-blue-300 outline-none">
+      <label class="block text-xs text-gray-600 mb-1">本文（必須・最大300文字）:</label>
+      <textarea id="announcementBodyInput" maxlength="300" rows="4" placeholder="お知らせの内容を入力..." class="w-full border p-2 rounded text-sm mb-3 focus:ring-2 focus:ring-blue-300 outline-none resize-vertical"></textarea>
+      <label class="block text-xs text-gray-600 mb-1">重要度:</label>
+      <select id="announcementLevelInput" class="w-full border p-2 rounded text-sm mb-3">
+        <option value="info">通常（青）</option>
+        <option value="warning">注意（黄）</option>
+        <option value="danger">重要（赤）</option>
+      </select>
+      <label class="block text-xs text-gray-600 mb-1">ピン留め（一覧の一番上に固定）:</label>
+      <label class="flex items-center gap-2 text-xs text-gray-700 mb-3 cursor-pointer">
+        <input type="checkbox" id="announcementPinInput">
+        <span>このアナウンスをピン留めする</span>
+      </label>
+      <div class="flex justify-end gap-2 flex-wrap">
+        <button id="announcementCancelBtn" class="reply-cancel-btn">キャンセル</button>
+        <button id="announcementSaveBtn" class="bg-blue-700 hover:bg-blue-800 text-white text-xs py-1.5 px-4 rounded font-bold">投稿する</button>
+      </div>
+    </div>
+  </div>
+
   <div id="loginView" class="hidden">
     <div class="bg-white border border-gray-300 rounded-lg shadow p-8 max-w-md mx-auto mt-16 text-center">
       <h1 class="text-3xl font-bold text-blue-900 mb-2">どんぐり学びの広場</h1>
@@ -750,6 +793,7 @@
           名無しさん
         </button>
         <div id="adminControls" class="hidden flex gap-2 flex-wrap">
+          <button id="announcementBtn" class="announcement-btn hidden" onclick="openAnnouncementModal()">📢 アナウンス</button>
           <button id="backupBtn" class="backup-btn hidden" onclick="doBackup()">バックアップ</button>
           <button id="restoreBtn" class="restore-btn hidden" onclick="document.getElementById('restoreInput').click()">復元</button>
           <button id="banListBtn" class="banlist-btn hidden" onclick="openBanModal()">BAN管理</button>
@@ -925,7 +969,8 @@
       userDevices: 'manabi_userDevices',
       officialUsers: 'manabi_officialUsers',
       threadLikes: 'manabi_threadLikes',
-      postLikes: 'manabi_postLikes'
+      postLikes: 'manabi_postLikes',
+      announcements: 'manabi_announcements'
     };
 
     const THREAD_LIST_LIMIT = 100;
@@ -975,6 +1020,7 @@
 
     let threadLikesUnsubscribe = null;
     let postLikesUnsubscribe = null;
+    let announcementsUnsubscribe = null;
 
     let activeReplyParentId = null;
     let activeEditPostId = null;
@@ -986,6 +1032,7 @@
 
     let threadLikesCache = {};
     let postLikesCache = {};
+    let announcementsCache = [];
 
     let threadSearchIndex = {};
 
@@ -1054,6 +1101,7 @@
     function canBan() { if (userRole === 'admin' || userRole === 'owner') return true; return canDo('canBan'); }
     function canSetNickname() { return userRole === 'admin' || userRole === 'owner'; }
     function canSetOfficial() { return userRole === 'admin' || userRole === 'owner'; }
+    function canAnnounce() { return userRole === 'admin' || userRole === 'owner'; }
 
     function hasBadgeFeature(uid, feature) {
       if (!uid || !feature) return false;
@@ -1959,6 +2007,129 @@
       }, (err) => console.error('レスいいね監視エラー:', err));
     }
 
+    /* ============================================================
+     * ★ アナウンス
+     * ============================================================ */
+    function initAnnouncementsListener() {
+      if (announcementsUnsubscribe) announcementsUnsubscribe();
+      const q = query(collection(db, COL.announcements), orderBy('createdAt', 'desc'), limit(20));
+      announcementsUnsubscribe = onSnapshot(q, (snap) => {
+        announcementsCache = [];
+        snap.forEach(d => { announcementsCache.push({ id: d.id, ...d.data() }); });
+        renderAnnouncements();
+      }, (err) => console.error('アナウンス監視エラー:', err));
+    }
+
+    function renderAnnouncements() {
+      const area = document.getElementById('announcementArea');
+      if (!area) return;
+      if (!announcementsCache || announcementsCache.length === 0) {
+        area.classList.add('hidden');
+        area.innerHTML = '';
+        return;
+      }
+      area.classList.remove('hidden');
+      // ピン留めを上に、その後 createdAt 降順
+      const sorted = [...announcementsCache].sort((a, b) => {
+        const pa = a.pinned ? 1 : 0;
+        const pb = b.pinned ? 1 : 0;
+        if (pa !== pb) return pb - pa;
+        return (b.createdAt || 0) - (a.createdAt || 0);
+      });
+      let html = '<div class="space-y-2">';
+      sorted.forEach(a => {
+        const lvl = ['info', 'warning', 'danger'].includes(a.level) ? a.level : 'info';
+        const labels = { info: 'お知らせ', warning: '注意', danger: '重要' };
+        const canDel = canAnnounce();
+        const date = a.createdAt ? new Date(a.createdAt).toLocaleString('ja-JP') : '';
+        html += `
+          <div class="announcement-card level-${lvl}">
+            <div class="flex justify-between items-start gap-2 flex-wrap">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center flex-wrap gap-1">
+                  <span class="announcement-level-chip">${labels[lvl]}</span>
+                  ${a.pinned ? '<span style="background:#111827;color:#fff;font-size:10px;padding:1px 8px;border-radius:9999px;margin-right:6px;">📌 ピン留め</span>' : ''}
+                  ${a.title ? `<span class="announcement-title">${escapeHtml(a.title)}</span>` : ''}
+                </div>
+                <div class="announcement-body">${escapeHtml(a.body || '')}</div>
+                <div class="announcement-meta">投稿者: ${escapeHtml(a.authorEmail || '不明')} ／ ${date}</div>
+              </div>
+              ${canDel ? `<button class="delete-btn" data-ann-id="${a.id}">削除</button>` : ''}
+            </div>
+          </div>`;
+      });
+      html += '</div>';
+      area.innerHTML = html;
+      area.querySelectorAll('[data-ann-id]').forEach(btn => {
+        btn.addEventListener('click', () => deleteAnnouncement(btn.dataset.annId));
+      });
+    }
+
+    window.openAnnouncementModal = function() {
+      if (!canAnnounce()) { alert('アナウンス投稿権限がありません。'); return; }
+      document.getElementById('announcementTitleInput').value = '';
+      document.getElementById('announcementBodyInput').value = '';
+      document.getElementById('announcementLevelInput').value = 'info';
+      document.getElementById('announcementPinInput').checked = false;
+      document.getElementById('announcementModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('announcementBodyInput').focus(), 100);
+    };
+
+    function closeAnnouncementModal() {
+      document.getElementById('announcementModal').classList.add('hidden');
+    }
+
+    async function deleteAnnouncement(id) {
+      if (!canAnnounce()) { alert('削除権限がありません。'); return; }
+      if (!confirm('このアナウンスを削除しますか？')) return;
+      try {
+        await deleteDoc(doc(db, COL.announcements, id));
+        showBanner('アナウンスを削除しました', false);
+      } catch (err) {
+        console.error('アナウンス削除エラー:', err);
+        showBanner('削除失敗: ' + (err.code || err.message), true);
+      }
+    }
+
+    (function initAnnouncementModalEvents() {
+      const modal = document.getElementById('announcementModal');
+      const cancelBtn = document.getElementById('announcementCancelBtn');
+      const saveBtn = document.getElementById('announcementSaveBtn');
+      if (cancelBtn) cancelBtn.addEventListener('click', closeAnnouncementModal);
+      if (modal) modal.addEventListener('click', (e) => { if (e.target.id === 'announcementModal') closeAnnouncementModal(); });
+      if (saveBtn) {
+        saveBtn.addEventListener('click', async () => {
+          if (!canAnnounce()) { alert('投稿権限がありません。'); return; }
+          if (!currentUser) { alert('ログインが必要です。'); return; }
+          const title = document.getElementById('announcementTitleInput').value.trim();
+          const body = document.getElementById('announcementBodyInput').value.trim();
+          const level = document.getElementById('announcementLevelInput').value;
+          const pinned = document.getElementById('announcementPinInput').checked;
+          if (!body) { alert('本文を入力してください。'); return; }
+          saveBtn.disabled = true;
+          const orig = saveBtn.textContent;
+          saveBtn.textContent = '投稿中...';
+          try {
+            await addDoc(collection(db, COL.announcements), {
+              title, body, level, pinned,
+              createdAt: Date.now(),
+              authorEmail: currentUser.email,
+              authorUid: currentUser.uid
+            });
+            showBanner('アナウンスを投稿しました', false);
+            closeAnnouncementModal();
+          } catch (err) {
+            console.error('アナウンス投稿エラー:', err);
+            showBanner('投稿失敗: ' + (err.code || err.message), true);
+            alert('投稿に失敗しました。\n' + (err.message || ''));
+          } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = orig;
+          }
+        });
+      }
+    })();
+
     function updateThreadLikeButton() {
       if (!currentThreadKey || !threadLikeBtn) return;
       const likes = threadLikesCache[currentThreadKey] || {};
@@ -2066,17 +2237,23 @@
       const restoreBtn = document.getElementById('restoreBtn');
       const banListBtn = document.getElementById('banListBtn');
       const userListBtn = document.getElementById('userListBtn');
+      const announcementBtn = document.getElementById('announcementBtn');
 
       const showBackup = canBackup();
       const showBan = canBan();
       const showUserList = canViewUserList();
+      const showAnnounce = canAnnounce();
 
       if (showBackup) { backupBtn.classList.remove('hidden'); restoreBtn.classList.remove('hidden'); }
       else { backupBtn.classList.add('hidden'); restoreBtn.classList.add('hidden'); }
       if (showBan) banListBtn.classList.remove('hidden'); else banListBtn.classList.add('hidden');
       if (showUserList) userListBtn.classList.remove('hidden'); else userListBtn.classList.add('hidden');
+      if (announcementBtn) {
+        if (showAnnounce) announcementBtn.classList.remove('hidden');
+        else announcementBtn.classList.add('hidden');
+      }
 
-      const anyVisible = showBackup || showBan || showUserList;
+      const anyVisible = showBackup || showBan || showUserList || showAnnounce;
       if (anyVisible) adminControls.classList.remove('hidden');
       else adminControls.classList.add('hidden');
     }
@@ -2115,6 +2292,7 @@
       if (officialUnsubscribe) { officialUnsubscribe(); officialUnsubscribe = null; }
       if (threadLikesUnsubscribe) { threadLikesUnsubscribe(); threadLikesUnsubscribe = null; }
       if (postLikesUnsubscribe) { postLikesUnsubscribe(); postLikesUnsubscribe = null; }
+      if (announcementsUnsubscribe) { announcementsUnsubscribe(); announcementsUnsubscribe = null; }
       try { await signOut(auth); } catch (e) { console.error(e); }
       document.body.style.background = '';
       showLoginView(); hideBootOverlay();
@@ -2203,6 +2381,7 @@
       initNicknamesListener();
       initOfficialUsersListener();
       initThreadLikesListener();
+      initAnnouncementsListener();
 
       setTimeout(() => { if (checkSelfBan()) return; }, 800);
 
@@ -4028,11 +4207,12 @@
         const nicknames = await grab(COL.nicknames);
         const officialUsers = await grab(COL.officialUsers);
         const threadLikes = await grab(COL.threadLikes);
+        const announcements = await grab(COL.announcements);
 
         const payload = {
-          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 7 },
+          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 8 },
           threads: threadsData, customBadges, knownUsers, bannedUsers,
-          badgeFeatures, nicknames, officialUsers, threadLikes
+          badgeFeatures, nicknames, officialUsers, threadLikes, announcements
         };
         const json = JSON.stringify(payload, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
@@ -4110,6 +4290,7 @@
         await restoreCol(COL.nicknames, parsed.nicknames);
         await restoreCol(COL.officialUsers, parsed.officialUsers);
         await restoreCol(COL.threadLikes, parsed.threadLikes);
+        await restoreCol(COL.announcements, parsed.announcements);
         showBanner('復元が完了しました', false);
         alert('復元が完了しました。');
         showThreadList();
@@ -4133,6 +4314,7 @@
       if (officialUnsubscribe) officialUnsubscribe();
       if (threadLikesUnsubscribe) threadLikesUnsubscribe();
       if (postLikesUnsubscribe) postLikesUnsubscribe();
+      if (announcementsUnsubscribe) announcementsUnsubscribe();
     });
     window.addEventListener('unhandledrejection', (event) => {
       console.error('未処理のPromiseエラー:', event.reason);
