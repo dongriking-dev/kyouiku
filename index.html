@@ -279,7 +279,6 @@
       padding: 8px 10px; margin-bottom: 12px; line-height: 1.5;
     }
 
-    /* ★ 公式マーク */
     .official-badge {
       background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
       color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 9999px;
@@ -300,69 +299,112 @@
     }
     .official-toggle-wrap input { cursor: pointer; }
 
-    /* ★ 文字色・蛍光ペン用スタイル */
-    .color-toolbar {
-      display: flex; flex-wrap: wrap; gap: 4px; padding: 6px;
+    /* ============================================================
+       ★ WYSIWYGエディタ風の装飾ツールバー
+       ============================================================ */
+    .rich-toolbar {
+      display: flex; flex-wrap: wrap; gap: 6px; padding: 8px;
       background: #f9fafb; border: 1px solid #e5e7eb;
       border-radius: 6px 6px 0 0; align-items: center;
     }
-    .color-toolbar-label {
+    .rich-toolbar-group {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 6px; background: #fff; border-radius: 6px;
+      border: 1px solid #e5e7eb;
+    }
+    .rich-toolbar-label {
       font-size: 10px; color: #6b7280; font-weight: 700;
-      margin-right: 4px; user-select: none;
+      user-select: none; margin-right: 2px;
     }
-    .color-tool-btn {
-      width: 24px; height: 24px; border-radius: 4px; border: 1px solid #d1d5db;
-      cursor: pointer; font-size: 11px; display: flex; align-items: center;
-      justify-content: center; background: #fff; transition: transform 0.1s;
-      padding: 0; font-weight: 700;
+    .rich-color-btn {
+      width: 26px; height: 26px; border-radius: 6px;
+      border: 2px solid #fff; cursor: pointer; padding: 0;
+      box-shadow: 0 0 0 1px #d1d5db; transition: transform 0.1s;
+      position: relative;
     }
-    .color-tool-btn:hover { transform: scale(1.15); box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
-    .color-tool-btn.hl-yellow { background: #fef08a; }
-    .color-tool-btn.hl-pink   { background: #fbcfe8; }
-    .color-tool-btn.hl-green  { background: #bbf7d0; }
-    .color-tool-btn.hl-blue   { background: #bfdbfe; }
-    .color-tool-btn.hl-orange { background: #fed7aa; }
-    .color-tool-btn.txt-red    { color: #dc2626; }
-    .color-tool-btn.txt-blue   { color: #1d4ed8; }
-    .color-tool-btn.txt-green  { color: #15803d; }
-    .color-tool-btn.txt-orange { color: #ea580c; }
-    .color-tool-btn.txt-purple { color: #7c3aed; }
-    .color-tool-btn.txt-pink   { color: #db2777; }
-    .color-tool-btn.txt-brown  { color: #78350f; }
-    .color-tool-btn.txt-gray   { color: #4b5563; }
-    .color-tool-btn.clear-btn {
-      background: #f3f4f6; color: #6b7280; font-size: 12px;
-      border: 1px solid #d1d5db;
-    }
-    .color-tool-btn.clear-btn:hover { background: #e5e7eb; }
+    .rich-color-btn:hover { transform: scale(1.15); box-shadow: 0 0 0 2px #1d4ed8; }
+    .rich-color-btn.selected { box-shadow: 0 0 0 2px #111827; }
 
-    .bb-preview-box {
+    .rich-color-picker-wrap {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 6px; background: #fff; border-radius: 6px;
+      border: 1px solid #e5e7eb;
+    }
+    .rich-color-picker-wrap input[type="color"] {
+      width: 32px; height: 26px; border: 1px solid #d1d5db;
+      border-radius: 4px; cursor: pointer; padding: 0; background: none;
+    }
+    .rich-color-picker-wrap label {
+      font-size: 10px; color: #374151; font-weight: 700; cursor: pointer;
+    }
+
+    .rich-toolbar-btn {
+      background: #fff; color: #374151; font-size: 11px;
+      padding: 5px 10px; border-radius: 6px; border: 1px solid #d1d5db;
+      cursor: pointer; font-weight: 600; display: inline-flex;
+      align-items: center; gap: 4px; transition: all 0.1s;
+    }
+    .rich-toolbar-btn:hover { background: #f3f4f6; border-color: #9ca3af; }
+    .rich-toolbar-btn:active { transform: scale(0.97); }
+    .rich-toolbar-btn.clear { color: #dc2626; }
+    .rich-toolbar-btn.clear:hover { background: #fef2f2; border-color: #fca5a5; }
+
+    /* 装飾済みスパンの見た目（表示用） */
+    .post-card .text-gray-900 span[style*="background"],
+    .post-card .text-gray-900 span[style*="color"] {
+      border-radius: 2px;
+      padding: 0 2px;
+    }
+
+    /* リッチテキスト表示コンテナ */
+    .rich-content {
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.7;
+    }
+
+    /* リッチエディタ用プレビュー */
+    .rich-preview-box {
       margin-top: 6px; padding: 8px 10px; background: #f8fafc;
       border: 1px dashed #cbd5e1; border-radius: 6px;
       font-size: 13px; min-height: 40px; display: none;
-      white-space: pre-wrap; word-break: break-word; line-height: 1.6;
+      white-space: pre-wrap; word-break: break-word; line-height: 1.7;
     }
-    .bb-preview-box.show { display: block; }
-    .bb-preview-box .bb-preview-label {
+    .rich-preview-box.show { display: block; }
+    .rich-preview-box .rich-preview-label {
       font-size: 10px; color: #94a3b8; font-weight: 700;
       margin-bottom: 4px; display: block;
     }
 
-    .bb-toggle-btn {
-      background: #6366f1; color: #fff; font-size: 11px;
-      padding: 4px 10px; border-radius: 4px; border: none;
-      cursor: pointer; font-weight: 600; margin-top: 4px;
+    /* ヘルプ */
+    .rich-help-box {
+      font-size: 11px; color: #4b5563; background: #eff6ff;
+      border: 1px solid #bfdbfe; border-radius: 6px;
+      padding: 8px 10px; margin-top: 6px; line-height: 1.6;
     }
-    .bb-toggle-btn:hover { background: #4f46e5; }
-    .bb-help-box {
-      font-size: 11px; color: #4b5563; background: #f3f4f6;
-      border: 1px solid #e5e7eb; border-radius: 6px;
-      padding: 8px 10px; margin-top: 6px; line-height: 1.7;
+    .rich-help-box strong { color: #1e40af; }
+
+    /* contenteditable エディタ */
+    .rich-editor {
+      width: 100%; min-height: 80px; border: 1px solid #d1d5db;
+      border-top: none; border-radius: 0 0 6px 6px; padding: 10px;
+      font-size: 14px; outline: none; background: #fff;
+      white-space: pre-wrap; word-break: break-word; line-height: 1.7;
+      overflow-y: auto; max-height: 320px;
     }
-    .bb-help-box code {
-      background: #fff; border: 1px solid #d1d5db; border-radius: 3px;
-      padding: 1px 5px; font-family: monospace; font-size: 10px;
-      color: #1e40af;
+    .rich-editor:focus {
+      border-color: #1d4ed8;
+      box-shadow: 0 0 0 2px rgba(29,78,216,0.15);
+    }
+    .rich-editor:empty::before {
+      content: attr(data-placeholder);
+      color: #9ca3af;
+      pointer-events: none;
+    }
+
+    /* 返信ボックス内のリッチエディタ */
+    .inline-reply-box .rich-editor {
+      min-height: 60px; font-size: 13px;
     }
   </style>
 </head>
@@ -386,7 +428,7 @@
         <li><strong class="text-blue-900">Googleログイン必須</strong><br>当サイトのご利用にはGoogleアカウントでのログインが必要です。</li>
         <li><strong class="text-blue-900">ニックネームについて</strong><br>表示名は自由に設定できます。ニックネームを設定していない場合は「名無しさん」と表示されます。他の利用者への誹謗中傷となる名前は禁止です。</li>
         <li><strong class="text-blue-900">公式マークについて</strong><br>管理者が認めたユーザーには「✓ 公式」バッジが付与されます。公式マークはなりすまし防止のためのものであり、公式を騙る行為は禁止です。</li>
-        <li><strong class="text-blue-900">文字装飾機能について</strong><br>投稿時に文字の色変更や蛍光ペン（ハイライト）が使えます。強調したい部分にご利用ください。ただし、過度な装飾や読者の目を引くための悪用は禁止です。</li>
+        <li><strong class="text-blue-900">文字装飾機能について</strong><br>投稿時に文字の色変更や蛍光ペン（ハイライト）が使えます。テキストを選択して色ボタンを押すだけの簡単操作です。強調したい部分にご利用ください。過度な装飾や読者の目を引くための悪用は禁止です。</li>
         <li><strong class="text-blue-900">禁止事項</strong>
           <ul class="list-disc list-inside ml-4 mt-1 space-y-1 text-gray-700">
             <li>他の利用者への誹謗中傷・脅迫・嫌がらせ</li>
@@ -406,9 +448,7 @@
 
   <div id="statusBanner" class="bg-red-600 text-white"></div>
 
-  <!-- ============================================================
-       バッジ管理モーダル
-       ============================================================ -->
+  <!-- バッジ管理モーダル -->
   <div id="badgeModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 620px;">
       <h3 class="text-lg font-bold text-gray-800 mb-1">🏷️ バッジ管理（機能設定可能）</h3>
@@ -552,7 +592,7 @@
     </div>
   </div>
 
-  <!-- ★ 管理者用：公式マーク設定モーダル -->
+  <!-- 公式マーク設定モーダル -->
   <div id="officialModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 480px;">
       <h3 class="text-lg font-bold text-gray-800 mb-1">✓ 公式マーク設定</h3>
@@ -649,15 +689,10 @@
           </div>
           <input type="text" id="threadTitle" placeholder="質問・スレッドのタイトル（必須）" maxlength="100" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none" required>
           <div>
-            <div class="color-toolbar" id="firstPostToolbar"></div>
-            <textarea id="firstPostContent" rows="3" placeholder="最初の書き込み内容（質問内容など・任意）" maxlength="2000" class="w-full border border-t-0 p-2 rounded-b text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none" style="border-radius: 0 0 6px 6px;"></textarea>
-            <div class="bb-preview-box" id="firstPostPreview">
-              <span class="bb-preview-label">📝 プレビュー</span>
-              <span class="bb-preview-content"></span>
-            </div>
-            <div class="bb-help-box">
-              💡 <strong>使い方</strong>: 色ボタンを押すと <code>[red]...[/red]</code> のようなタグが挿入されます。テキストを選択してからボタンを押すと、選択範囲を囲みます。<br>
-              蛍光ペン: <code>[hl]黄色[/hl]</code> / <code>[hlp]ピンク[/hlp]</code> / <code>[hlg]緑[/hlg]</code> / <code>[hlb]青[/hlb]</code> / <code>[hlo]オレンジ[/hlo]</code>
+            <label class="block text-xs text-gray-600 mb-1">最初の書き込み内容（質問内容など・任意）:</label>
+            <div id="firstPostEditorWrap"></div>
+            <div class="rich-help-box">
+              💡 <strong>使い方</strong>: 色を付けたい文字を選択 → 色ボタンを押すだけ。自由な色は 🎨 から選べます。タグ文字は一切入りません。
             </div>
           </div>
           <div>
@@ -717,14 +752,7 @@
       <section class="bg-blue-50 border border-blue-200 p-4 rounded mb-6 shadow-sm">
         <h3 class="text-md font-bold text-gray-700 mb-2">このスレッドに書き込む</h3>
         <form id="postForm" class="space-y-3">
-          <div>
-            <div class="color-toolbar" id="postToolbar"></div>
-            <textarea id="postContent" rows="4" placeholder="コメントを入力してください。URLは自動でリンク化されます。" maxlength="2000" class="w-full border border-t-0 p-2 rounded-b text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none" style="border-radius: 0 0 6px 6px;"></textarea>
-            <div class="bb-preview-box" id="postPreview">
-              <span class="bb-preview-label">📝 プレビュー</span>
-              <span class="bb-preview-content"></span>
-            </div>
-          </div>
+          <div id="postEditorWrap"></div>
           <div class="flex items-center justify-between flex-wrap gap-3">
             <div class="flex-1 min-w-[200px]">
               <label class="block text-xs text-gray-600 mb-1">画像を添付（自動リサイズ・最大200KB）:</label>
@@ -1065,296 +1093,158 @@
     window.addEventListener('offline', () => setConnection(false));
 
     /* ============================================================
-     * ★ BBCode風装飾のパース
+     * ★ リッチテキスト処理（WYSIWYG方式）
      * ============================================================ */
-    // サポートするタグ定義
-    const BB_TAGS = {
-      red:      { open: '<span style="color:#dc2626;font-weight:700;">', close: '</span>' },
-      blue:     { open: '<span style="color:#1d4ed8;font-weight:700;">', close: '</span>' },
-      green:    { open: '<span style="color:#15803d;font-weight:700;">', close: '</span>' },
-      orange:   { open: '<span style="color:#ea580c;font-weight:700;">', close: '</span>' },
-      purple:   { open: '<span style="color:#7c3aed;font-weight:700;">', close: '</span>' },
-      pink:     { open: '<span style="color:#db2777;font-weight:700;">', close: '</span>' },
-      brown:    { open: '<span style="color:#78350f;font-weight:700;">', close: '</span>' },
-      gray:     { open: '<span style="color:#4b5563;font-weight:700;">', close: '</span>' },
-      hl:       { open: '<span style="background:#fef08a;color:#111827;padding:0 3px;border-radius:2px;">', close: '</span>' },
-      hlp:      { open: '<span style="background:#fbcfe8;color:#111827;padding:0 3px;border-radius:2px;">', close: '</span>' },
-      hlg:      { open: '<span style="background:#bbf7d0;color:#111827;padding:0 3px;border-radius:2px;">', close: '</span>' },
-      hlb:      { open: '<span style="background:#bfdbfe;color:#111827;padding:0 3px;border-radius:2px;">', close: '</span>' },
-      hlo:      { open: '<span style="background:#fed7aa;color:#111827;padding:0 3px;border-radius:2px;">', close: '</span>' }
-    };
+
+    // 許可するHTMLタグ・属性（ホワイトリスト）
+    const ALLOWED_STYLE_PROPS = ['color', 'background-color', 'background'];
 
     /**
-     * 生のテキストをサニタイズ + BBCodeタグをHTMLに変換 + URLリンク化
-     * 安全のため、まずHTMLエスケープしてからBBCodeを処理する
+     * ユーザーが入力したHTML（contenteditable由来）をサニタイズ
+     * 許可されたのは <span style="color:.../background-color:...">のみ</span>
      */
-    function parseBBCode(rawText) {
-      if (!rawText) return '';
-      // 1) HTMLエスケープ（タグ偽装防止）
-      let text = escapeHtml(rawText);
+    function sanitizeRichHtml(html) {
+      if (!html) return '';
+      const temp = document.createElement('div');
+      temp.innerHTML = html;
 
-      // 2) BBCodeタグをプレースホルダに退避しつつ処理
-      //    入れ子対応のため、繰り返し置換する
-      const tagNames = Object.keys(BB_TAGS);
-      let safety = 0;
-      const maxIter = 10;
-      while (safety < maxIter) {
-        let replaced = false;
-        for (const tag of tagNames) {
-          const openRe = new RegExp(`\\[${tag}\\]`, 'gi');
-          const closeRe = new RegExp(`\\[/${tag}\\]`, 'gi');
-          if (openRe.test(text) || closeRe.test(text)) {
-            // 対応する閉じタグが後方にあるかチェック（簡易）
-            const openRegexG = new RegExp(`\\[${tag}\\]`, 'g');
-            const closeRegexG = new RegExp(`\\[/${tag}\\]`, 'g');
-            const openCount = (text.match(openRegexG) || []).length;
-            const closeCount = (text.match(closeRegexG) || []).length;
-            if (openCount > 0 && closeCount > 0) {
-              // 開きタグを一時トークンに置換
-              text = text.replace(openRegexG, `\u0001OPEN_${tag}\u0001`);
-              text = text.replace(closeRegexG, `\u0001CLOSE_${tag}\u0001`);
-              replaced = true;
-            }
-          }
+      // 危険なタグ・属性を除去し、許可するものだけ残す
+      function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) return;
+        if (node.nodeType !== Node.ELEMENT_NODE) {
+          node.remove();
+          return;
         }
-        if (!replaced) break;
-        safety++;
-      }
+        const tag = node.tagName.toLowerCase();
 
-      // 3) URLリンク化（BBCodeタグの外側にのみ作用）
-      //    まだトークン化された状態でURLを処理
-      const urlRegex = /(https?:\/\/[^\s<]+)/g;
-      text = text.replace(urlRegex, (url) =>
-        `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline break-all">${url}</a>`);
+        // script/style/iframe等の危険タグは子も含めて除去
+        if (['script', 'style', 'iframe', 'object', 'embed', 'link', 'meta'].includes(tag)) {
+          node.remove();
+          return;
+        }
 
-      // 4) トークンを実際のHTMLタグに戻す
-      for (const tag of tagNames) {
-        const info = BB_TAGS[tag];
-        const openToken = new RegExp(`\\u0001OPEN_${tag}\\u0001`, 'g');
-        const closeToken = new RegExp(`\\u0001CLOSE_${tag}\\u0001`, 'g');
-        text = text.replace(openToken, info.open);
-        text = text.replace(closeToken, info.close);
-      }
+        // 許可タグ以外は「タグを外して中身だけ残す」
+        if (!['span', 'br', 'div', 'p'].includes(tag)) {
+          const parent = node.parentNode;
+          while (node.firstChild) parent.insertBefore(node.firstChild, node);
+          parent.removeChild(node);
+          return;
+        }
 
-      // 5) 未対応の残りタグを無効化（安全のため）
-      //    [xxx] 形式の未知タグをエスケープした状態でそのまま表示
-      //    既にescapeHtml済みなので追加処理不要
-
-      return text;
-    }
-
-    /**
-     * 検索ハイライト用：BBCode を除去した素テキストを返す（検索インデックス用）
-     */
-    function stripBBCode(rawText) {
-      if (!rawText) return '';
-      return rawText.replace(/\[\/?[a-zA-Z]+\]/g, '');
-    }
-
-    /* ============================================================
-     * ★ カラーツールバー生成
-     * ============================================================ */
-    const TOOLBAR_DEFS = [
-      // テキスト色
-      { type: 'text', tag: 'red',    label: 'A', color: '#dc2626', title: '赤字' },
-      { type: 'text', tag: 'blue',   label: 'A', color: '#1d4ed8', title: '青字' },
-      { type: 'text', tag: 'green',  label: 'A', color: '#15803d', title: '緑字' },
-      { type: 'text', tag: 'orange', label: 'A', color: '#ea580c', title: 'オレンジ字' },
-      { type: 'text', tag: 'purple', label: 'A', color: '#7c3aed', title: '紫字' },
-      { type: 'text', tag: 'pink',   label: 'A', color: '#db2777', title: 'ピンク字' },
-      { type: 'text', tag: 'brown',  label: 'A', color: '#78350f', title: '茶字' },
-      { type: 'text', tag: 'gray',   label: 'A', color: '#4b5563', title: 'グレー字' },
-      // 蛍光ペン
-      { type: 'hl', tag: 'hl',  label: '🖍', bg: '#fef08a', title: '黄色ハイライト' },
-      { type: 'hl', tag: 'hlp', label: '🖍', bg: '#fbcfe8', title: 'ピンクハイライト' },
-      { type: 'hl', tag: 'hlg', label: '🖍', bg: '#bbf7d0', title: '緑ハイライト' },
-      { type: 'hl', tag: 'hlb', label: '🖍', bg: '#bfdbfe', title: '青ハイライト' },
-      { type: 'hl', tag: 'hlo', label: '🖍', bg: '#fed7aa', title: 'オレンジハイライト' }
-    ];
-
-    function buildColorToolbar(containerId) {
-      const container = document.getElementById(containerId);
-      if (!container) return;
-      container.innerHTML = '';
-
-      // 文字色ラベル
-      const label1 = document.createElement('span');
-      label1.className = 'color-toolbar-label';
-      label1.textContent = '文字色:';
-      container.appendChild(label1);
-
-      TOOLBAR_DEFS.filter(d => d.type === 'text').forEach(def => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = `color-tool-btn txt-${def.tag}`;
-        btn.textContent = def.label;
-        btn.title = def.title;
-        btn.style.color = def.color;
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          applyBBCodeTag(containerId, def.tag);
+        // 属性を処理
+        const attrs = Array.from(node.attributes);
+        attrs.forEach(attr => {
+          const name = attr.name.toLowerCase();
+          // style以外の属性はすべて除去（onclick等の危険属性対策）
+          if (name !== 'style') {
+            node.removeAttribute(attr.name);
+            return;
+          }
+          // styleプロパティを解析して許可したものだけ残す
+          const styleText = attr.value;
+          const safeStyles = [];
+          styleText.split(';').forEach(part => {
+            const [propRaw, valRaw] = part.split(':').map(s => (s || '').trim());
+            if (!propRaw || !valRaw) return;
+            const prop = propRaw.toLowerCase();
+            if (!ALLOWED_STYLE_PROPS.includes(prop)) return;
+            // 値のサニタイズ：色コード等のみ許可（URL等は弾く）
+            if (!/^[#a-zA-Z0-9(),.%\s\-]+$/.test(valRaw)) return;
+            // javascript: 等の危険な値を弾く
+            if (/javascript|expression|url\s*\(/i.test(valRaw)) return;
+            safeStyles.push(`${prop}: ${valRaw}`);
+          });
+          if (safeStyles.length > 0) {
+            node.setAttribute('style', safeStyles.join('; '));
+          } else {
+            node.removeAttribute('style');
+          }
         });
-        container.appendChild(btn);
-      });
 
-      // 区切り
-      const sep = document.createElement('span');
-      sep.style.cssText = 'width:1px;height:20px;background:#d1d5db;margin:0 6px;';
-      container.appendChild(sep);
+        // 子を再帰処理
+        Array.from(node.childNodes).forEach(walk);
+      }
 
-      // 蛍光ペンラベル
-      const label2 = document.createElement('span');
-      label2.className = 'color-toolbar-label';
-      label2.textContent = '蛍光ペン:';
-      container.appendChild(label2);
+      Array.from(temp.childNodes).forEach(walk);
 
-      TOOLBAR_DEFS.filter(d => d.type === 'hl').forEach(def => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'color-tool-btn';
-        btn.textContent = def.label;
-        btn.title = def.title;
-        btn.style.background = def.bg;
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          applyBBCodeTag(containerId, def.tag);
-        });
-        container.appendChild(btn);
-      });
-
-      // 区切り
-      const sep2 = document.createElement('span');
-      sep2.style.cssText = 'width:1px;height:20px;background:#d1d5db;margin:0 6px;';
-      container.appendChild(sep2);
-
-      // クリアボタン
-      const clearBtn = document.createElement('button');
-      clearBtn.type = 'button';
-      clearBtn.className = 'color-tool-btn clear-btn';
-      clearBtn.textContent = '✕';
-      clearBtn.title = '選択範囲のタグを除去';
-      clearBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        removeAllTagsFromSelection(containerId);
-      });
-      container.appendChild(clearBtn);
+      // divやpを改行に置換（innerTextの改行を維持するため）
+      let result = temp.innerHTML;
+      // divやpの開始タグを改行に
+      result = result.replace(/<div[^>]*>/gi, '\n').replace(/<\/div>/gi, '');
+      result = result.replace(/<p[^>]*>/gi, '\n').replace(/<\/p>/gi, '');
+      // 連続する改行を整理
+      result = result.replace(/\n{3,}/g, '\n\n');
+      return result.trim();
     }
 
     /**
-     * 対応するtextareaにBBCodeタグを挿入
+     * 保存されたHTMLを安全に表示用に変換
+     * （Firestoreから読み込んだデータをinnerHTMLに挿入する前にサニタイズ）
      */
-    function applyBBCodeTag(toolbarId, tag) {
-      // ツールバーIDからtextareaを特定
-      const map = {
-        'firstPostToolbar': 'firstPostContent',
-        'postToolbar': 'postContent'
-      };
-      const textareaId = map[toolbarId];
-      if (!textareaId) return;
-      const ta = document.getElementById(textareaId);
-      if (!ta) return;
-
-      const start = ta.selectionStart;
-      const end = ta.selectionEnd;
-      const value = ta.value;
-      const selected = value.substring(start, end);
-
-      const openTag = `[${tag}]`;
-      const closeTag = `[/${tag}]`;
-
-      let newValue, newCursorStart, newCursorEnd;
-      if (selected) {
-        newValue = value.substring(0, start) + openTag + selected + closeTag + value.substring(end);
-        newCursorStart = start + openTag.length;
-        newCursorEnd = end + openTag.length;
-      } else {
-        newValue = value.substring(0, start) + openTag + closeTag + value.substring(end);
-        newCursorStart = start + openTag.length;
-        newCursorEnd = newCursorStart;
-      }
-
-      ta.value = newValue;
-      ta.focus();
-      ta.setSelectionRange(newCursorStart, newCursorEnd);
-      // プレビュー更新
-      updateBBCodePreview(textareaId);
+    function renderRichContent(html) {
+      if (!html) return '';
+      // 既にサニタイズ済みだが、念のため再サニタイズ
+      const sanitized = sanitizeRichHtml(html);
+      // URL自動リンク化（<span>タグを壊さないようにテキストノードのみ対象）
+      return autoLinkInHtml(sanitized);
     }
 
     /**
-     * 選択範囲からBBCodeタグを除去
+     * HTMLを壊さずにURLをリンク化
      */
-    function removeAllTagsFromSelection(toolbarId) {
-      const map = {
-        'firstPostToolbar': 'firstPostContent',
-        'postToolbar': 'postContent'
-      };
-      const textareaId = map[toolbarId];
-      if (!textareaId) return;
-      const ta = document.getElementById(textareaId);
-      if (!ta) return;
+    function autoLinkInHtml(html) {
+      if (!html) return '';
+      const temp = document.createElement('div');
+      temp.innerHTML = html;
 
-      const start = ta.selectionStart;
-      const end = ta.selectionEnd;
-      const value = ta.value;
-      const selected = value.substring(start, end);
-
-      if (!selected) {
-        // 選択がなければ何もしない（textarea全体からは除去しない）
-        return;
+      function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.nodeValue;
+          const urlRegex = /(https?:\/\/[^\s<]+)/g;
+          if (urlRegex.test(text)) {
+            const frag = document.createDocumentFragment();
+            let lastIndex = 0;
+            text.replace(urlRegex, (url, _p, offset) => {
+              if (offset > lastIndex) {
+                frag.appendChild(document.createTextNode(text.substring(lastIndex, offset)));
+              }
+              const a = document.createElement('a');
+              a.href = url;
+              a.target = '_blank';
+              a.rel = 'noopener noreferrer';
+              a.className = 'text-blue-600 underline break-all';
+              a.textContent = url;
+              frag.appendChild(a);
+              lastIndex = offset + url.length;
+              return url;
+            });
+            if (lastIndex < text.length) {
+              frag.appendChild(document.createTextNode(text.substring(lastIndex)));
+            }
+            node.parentNode.replaceChild(frag, node);
+          }
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          Array.from(node.childNodes).forEach(walk);
+        }
       }
-
-      // 選択範囲内のタグを全て除去
-      const cleaned = selected.replace(/\[\/?[a-zA-Z]+\]/g, '');
-      const newValue = value.substring(0, start) + cleaned + value.substring(end);
-      ta.value = newValue;
-      ta.focus();
-      ta.setSelectionRange(start, start + cleaned.length);
-      updateBBCodePreview(textareaId);
+      Array.from(temp.childNodes).forEach(walk);
+      return temp.innerHTML;
     }
 
     /**
-     * BBCodeプレビュー更新
+     * リッチHTMLからプレーンテキストを抽出（検索インデックス用）
      */
-    function updateBBCodePreview(textareaId) {
-      const previewMap = {
-        'firstPostContent': 'firstPostPreview',
-        'postContent': 'postPreview'
-      };
-      const previewId = previewMap[textareaId];
-      if (!previewId) return;
-      const previewBox = document.getElementById(previewId);
-      if (!previewBox) return;
-      const ta = document.getElementById(textareaId);
-      if (!ta) return;
-
-      const contentEl = previewBox.querySelector('.bb-preview-content');
-      const raw = ta.value.trim();
-      if (!raw) {
-        previewBox.classList.remove('show');
-        if (contentEl) contentEl.innerHTML = '';
-        return;
-      }
-      previewBox.classList.add('show');
-      if (contentEl) {
-        contentEl.innerHTML = parseBBCode(raw) || '<span style="color:#9ca3af;">（タグのみ）</span>';
-      }
+    function stripRichHtml(html) {
+      if (!html) return '';
+      const temp = document.createElement('div');
+      temp.innerHTML = html;
+      return (temp.textContent || temp.innerText || '').replace(/\s+/g, ' ').trim();
     }
-
-    // ツールバー初期化
-    buildColorToolbar('firstPostToolbar');
-    buildColorToolbar('postToolbar');
-
-    // プレビュー自動更新（inputイベント）
-    document.getElementById('firstPostContent').addEventListener('input', () => {
-      updateBBCodePreview('firstPostContent');
-    });
-    document.getElementById('postContent').addEventListener('input', () => {
-      updateBBCodePreview('postContent');
-    });
 
     function formatContent(str) {
+      // 旧形式のテキストが来た場合（移行用）：改行を<br>に
       if (!str) return '';
-      return parseBBCode(str);
+      return escapeHtml(str).replace(/\n/g, '<br>');
     }
     function escapeHtml(str) {
       if (!str) return '';
@@ -1363,6 +1253,330 @@
     function showMainView() { loginView.classList.add('hidden'); mainView.classList.remove('hidden'); }
     function showLoginView() { loginView.classList.remove('hidden'); mainView.classList.add('hidden'); }
     function hideBootOverlay() { bootOverlay.classList.add('hidden'); }
+
+    /* ============================================================
+     * ★ リッチエディタの構築
+     * ============================================================ */
+    const PRESET_TEXT_COLORS = [
+      { color: '#dc2626', title: '赤' },
+      { color: '#ea580c', title: 'オレンジ' },
+      { color: '#ca8a04', title: '黄色' },
+      { color: '#16a34a', title: '緑' },
+      { color: '#0891b2', title: '水色' },
+      { color: '#1d4ed8', title: '青' },
+      { color: '#7c3aed', title: '紫' },
+      { color: '#db2777', title: 'ピンク' },
+      { color: '#78350f', title: '茶' },
+      { color: '#4b5563', title: 'グレー' },
+      { color: '#000000', title: '黒' }
+    ];
+    const PRESET_HL_COLORS = [
+      { color: '#fef08a', title: '黄色' },
+      { color: '#fbcfe8', title: 'ピンク' },
+      { color: '#bbf7d0', title: '緑' },
+      { color: '#bfdbfe', title: '青' },
+      { color: '#fed7aa', title: 'オレンジ' },
+      { color: '#e9d5ff', title: '紫' },
+      { color: '#fecaca', title: '赤' },
+      { color: '#ccfbf1', title: 'ミント' }
+    ];
+
+    /**
+     * リッチエディタを生成
+     * @param {HTMLElement} wrapper - エディタを挿入する親要素
+     * @param {string} placeholder - プレースホルダ
+     * @param {string} initialHtml - 初期HTML（編集時用）
+     * @returns {HTMLElement} - contenteditable要素
+     */
+    function createRichEditor(wrapper, placeholder = '', initialHtml = '') {
+      wrapper.innerHTML = '';
+
+      // ツールバー
+      const toolbar = document.createElement('div');
+      toolbar.className = 'rich-toolbar';
+
+      // 文字色ボタングループ
+      const textGroup = document.createElement('div');
+      textGroup.className = 'rich-toolbar-group';
+      const tLabel = document.createElement('span');
+      tLabel.className = 'rich-toolbar-label';
+      tLabel.textContent = '文字色:';
+      textGroup.appendChild(tLabel);
+
+      PRESET_TEXT_COLORS.forEach(preset => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'rich-color-btn';
+        btn.style.background = preset.color;
+        btn.title = preset.title;
+        btn.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          applyTextColor(wrapper, preset.color);
+        });
+        textGroup.appendChild(btn);
+      });
+
+      // 自由な色
+      const customTextWrap = document.createElement('div');
+      customTextWrap.className = 'rich-color-picker-wrap';
+      customTextWrap.style.marginLeft = '4px';
+      const customTextLabel = document.createElement('label');
+      customTextLabel.textContent = '🎨';
+      customTextLabel.title = '自由な色（文字）';
+      const customTextInput = document.createElement('input');
+      customTextInput.type = 'color';
+      customTextInput.value = '#dc2626';
+      customTextInput.title = '自由な色を選ぶ';
+      customTextInput.addEventListener('input', () => {
+        applyTextColor(wrapper, customTextInput.value);
+      });
+      customTextWrap.appendChild(customTextLabel);
+      customTextWrap.appendChild(customTextInput);
+      textGroup.appendChild(customTextWrap);
+
+      toolbar.appendChild(textGroup);
+
+      // 蛍光ペンボタングループ
+      const hlGroup = document.createElement('div');
+      hlGroup.className = 'rich-toolbar-group';
+      const hlLabel = document.createElement('span');
+      hlLabel.className = 'rich-toolbar-label';
+      hlLabel.textContent = '🖍 蛍光:';
+      hlGroup.appendChild(hlLabel);
+
+      PRESET_HL_COLORS.forEach(preset => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'rich-color-btn';
+        btn.style.background = preset.color;
+        btn.title = preset.title + '（蛍光）';
+        btn.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          applyHighlight(wrapper, preset.color);
+        });
+        hlGroup.appendChild(btn);
+      });
+
+      // 自由な蛍光色
+      const customHlWrap = document.createElement('div');
+      customHlWrap.className = 'rich-color-picker-wrap';
+      customHlWrap.style.marginLeft = '4px';
+      const customHlLabel = document.createElement('label');
+      customHlLabel.textContent = '🖍🎨';
+      customHlLabel.title = '自由な色（蛍光）';
+      const customHlInput = document.createElement('input');
+      customHlInput.type = 'color';
+      customHlInput.value = '#fef08a';
+      customHlInput.title = '自由な蛍光色を選ぶ';
+      customHlInput.addEventListener('input', () => {
+        applyHighlight(wrapper, customHlInput.value);
+      });
+      customHlWrap.appendChild(customHlLabel);
+      customHlWrap.appendChild(customHlInput);
+      hlGroup.appendChild(customHlWrap);
+
+      toolbar.appendChild(hlGroup);
+
+      // クリアボタン
+      const clearGroup = document.createElement('div');
+      clearGroup.className = 'rich-toolbar-group';
+      const clearBtn = document.createElement('button');
+      clearBtn.type = 'button';
+      clearBtn.className = 'rich-toolbar-btn clear';
+      clearBtn.innerHTML = '✕ 装飾を解除';
+      clearBtn.title = '選択範囲の色・蛍光を解除';
+      clearBtn.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        removeFormatting(wrapper);
+      });
+      clearGroup.appendChild(clearBtn);
+      toolbar.appendChild(clearGroup);
+
+      wrapper.appendChild(toolbar);
+
+      // エディタ本体
+      const editor = document.createElement('div');
+      editor.className = 'rich-editor';
+      editor.contentEditable = 'true';
+      editor.setAttribute('data-placeholder', placeholder);
+      if (initialHtml) editor.innerHTML = initialHtml;
+      wrapper.appendChild(editor);
+
+      // ペースト時にリッチHTMLをサニタイズ
+      editor.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const html = (e.clipboardData || window.clipboardData).getData('text/html');
+        const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+        if (html) {
+          const sanitized = sanitizeRichHtml(html);
+          document.execCommand('insertHTML', false, sanitized);
+        } else if (text) {
+          document.execCommand('insertText', false, text);
+        }
+      });
+
+      return editor;
+    }
+
+    /**
+     * エディタ内で文字色を適用
+     */
+    function applyTextColor(wrapper, color) {
+      const editor = wrapper.querySelector('.rich-editor');
+      if (!editor) return;
+      editor.focus();
+
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+      const range = selection.getRangeAt(0);
+
+      if (range.collapsed) {
+        // 選択なし → カーソル位置に色付きspanを挿入し、カーソルを中に入れる
+        const span = document.createElement('span');
+        span.style.color = color;
+        span.appendChild(document.createTextNode('\u200b')); // ゼロ幅スペース
+        range.insertNode(span);
+        // カーソルをspan内に移動
+        const newRange = document.createRange();
+        newRange.selectNodeContents(span);
+        newRange.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+      } else {
+        // 選択範囲をspanで囲む（document.execCommandが一番簡単で確実）
+        document.execCommand('styleWithCSS', false, true);
+        document.execCommand('foreColor', false, color);
+      }
+    }
+
+    /**
+     * エディタ内で蛍光ペンを適用
+     */
+    function applyHighlight(wrapper, color) {
+      const editor = wrapper.querySelector('.rich-editor');
+      if (!editor) return;
+      editor.focus();
+
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+      const range = selection.getRangeAt(0);
+
+      if (range.collapsed) {
+        const span = document.createElement('span');
+        span.style.backgroundColor = color;
+        span.appendChild(document.createTextNode('\u200b'));
+        range.insertNode(span);
+        const newRange = document.createRange();
+        newRange.selectNodeContents(span);
+        newRange.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+      } else {
+        // 選択範囲をspanで囲む
+        try {
+          const span = document.createElement('span');
+          span.style.backgroundColor = color;
+          // extractContents → 選択内容を取り出す
+          const contents = range.extractContents();
+          span.appendChild(contents);
+          range.insertNode(span);
+          // 選択を維持
+          selection.removeAllRanges();
+          const newRange = document.createRange();
+          newRange.selectNodeContents(span);
+          selection.addRange(newRange);
+        } catch (e) {
+          console.warn('ハイライト適用失敗:', e);
+          // フォールバック
+          document.execCommand('hiliteColor', false, color);
+        }
+      }
+    }
+
+    /**
+     * 選択範囲の装飾を解除
+     */
+    function removeFormatting(wrapper) {
+      const editor = wrapper.querySelector('.rich-editor');
+      if (!editor) return;
+      editor.focus();
+
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+      const range = selection.getRangeAt(0);
+
+      if (range.collapsed) {
+        // カーソル位置の親要素の装飾を解除
+        let node = range.startContainer;
+        while (node && node !== editor) {
+          if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'SPAN') {
+            node.style.color = '';
+            node.style.backgroundColor = '';
+            if (!node.style.cssText) {
+              // 空になったspanは展開
+              const parent = node.parentNode;
+              while (node.firstChild) parent.insertBefore(node.firstChild, node);
+              parent.removeChild(node);
+            }
+            break;
+          }
+          node = node.parentNode;
+        }
+      } else {
+        // 選択範囲内のspanから装飾を除去
+        const contents = range.extractContents();
+        const walker = document.createTreeWalker(contents, NodeFilter.SHOW_ELEMENT);
+        const spansToUnwrap = [];
+        let n;
+        while ((n = walker.nextNode())) {
+          if (n.tagName === 'SPAN') {
+            n.style.color = '';
+            n.style.backgroundColor = '';
+            if (!n.style.cssText) spansToUnwrap.push(n);
+          }
+        }
+        spansToUnwrap.forEach(span => {
+          const parent = span.parentNode;
+          while (span.firstChild) parent.insertBefore(span.firstChild, span);
+          parent.removeChild(span);
+        });
+        range.insertNode(contents);
+      }
+    }
+
+    // メイン投稿エディタと、スレッド作成エディタを作成
+    const firstPostEditor = createRichEditor(
+      document.getElementById('firstPostEditorWrap'),
+      '最初の書き込み内容（質問内容など・任意）'
+    );
+    const postEditor = createRichEditor(
+      document.getElementById('postEditorWrap'),
+      'コメントを入力してください。URLは自動でリンク化されます。'
+    );
+
+    /* ============================================================
+     * リッチエディタの値取得・クリア
+     * ============================================================ */
+    function getEditorHtml(wrapper) {
+      const editor = wrapper.querySelector('.rich-editor');
+      if (!editor) return '';
+      return sanitizeRichHtml(editor.innerHTML);
+    }
+    function getEditorText(wrapper) {
+      const editor = wrapper.querySelector('.rich-editor');
+      if (!editor) return '';
+      return (editor.textContent || '').replace(/\u200b/g, '').trim();
+    }
+    function clearEditor(wrapper) {
+      const editor = wrapper.querySelector('.rich-editor');
+      if (!editor) return;
+      editor.innerHTML = '';
+    }
+    function setEditorHtml(wrapper, html) {
+      const editor = wrapper.querySelector('.rich-editor');
+      if (!editor) return;
+      editor.innerHTML = html || '';
+    }
 
     function showBanOverlay() {
       if (banOverlayShown) return;
@@ -1422,7 +1636,6 @@
         if (!tok) return;
         const escapedTok = tok.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const re = new RegExp(escapedTok, 'gi');
-        // <span>タグ内部や属性は避ける簡易処理（タグを跨がないよう、テキスト部分のみ対象にするのが理想だが簡易）
         result = result.replace(re, (match) => `<mark class="hl">${match}</mark>`);
       });
       return result;
@@ -2174,7 +2387,8 @@
       if (!currentUser) { alert('ログインが必要です。'); return; }
       const subject = document.getElementById('selectedSubject').value;
       const title = document.getElementById('threadTitle').value.trim();
-      const content = document.getElementById('firstPostContent').value.trim();
+      const contentHtml = getEditorHtml(document.getElementById('firstPostEditorWrap'));
+      const contentText = getEditorText(document.getElementById('firstPostEditorWrap'));
       const fileInput = document.getElementById('threadFileInput');
       const file = fileInput.files[0];
       const btn = document.getElementById('createThreadBtn');
@@ -2193,25 +2407,26 @@
         if (file) fileData = await fileToBase64Image(file);
         document.getElementById('createThreadForm').reset();
         document.getElementById('threadPreviewBox').classList.remove('show');
-        document.getElementById('firstPostPreview').classList.remove('show');
+        clearEditor(document.getElementById('firstPostEditorWrap'));
         document.querySelectorAll('#subjectSelectBig .subject-select-btn').forEach(b => b.classList.remove('selected'));
         document.getElementById('selectedSubject').value = '';
         selectedSubjectForNewThread = '';
 
         const now = Date.now();
         const threadRef = await addDoc(collection(db, COL.threads), {
-          title, subject, createdAt: now, lastPostAt: now, postCount: content || fileData ? 1 : 0,
+          title, subject, createdAt: now, lastPostAt: now, postCount: (contentText || fileData) ? 1 : 0,
           authorEmail: currentUser.email, authorUid: currentUser.uid, authorRole: userRole || null
         });
 
-        if (content || fileData) {
+        if (contentText || fileData) {
           await addDoc(collection(db, COL.threads, threadRef.id, 'posts'), {
-            author: '名無しさん', content: content || '', createdAt: now,
+            author: '名無しさん', content: contentHtml || '', contentText: contentText || '',
+            createdAt: now,
             authorEmail: currentUser.email, authorUid: currentUser.uid, authorRole: userRole || null,
             badgeVisible: myBadgePublic, parentId: null, file: fileData
           });
           if (!threadSearchIndex[threadRef.id]) threadSearchIndex[threadRef.id] = { posts: [] };
-          threadSearchIndex[threadRef.id].posts.push({ content: stripBBCode(content || '') });
+          threadSearchIndex[threadRef.id].posts.push({ content: contentText || '' });
         }
         showBanner('スレッドを保存しました', false);
         const tempEl = document.getElementById('optimistic_thread_' + tempKey);
@@ -2285,7 +2500,9 @@
           const posts = [];
           postsSnap.forEach(d => {
             const data = d.data();
-            posts.push({ content: stripBBCode(data.content || '') });
+            // 新形式はcontentText、旧形式はcontentをstripRichHtml
+            const text = data.contentText || stripRichHtml(data.content || '');
+            posts.push({ content: text });
           });
           newIndex[tid] = { posts };
         } catch (err) {
@@ -2314,7 +2531,9 @@
         posts.forEach((p, i) => postNumberMap.set(p.id, i + 1));
 
         threadSearchIndex[threadId] = {
-          posts: posts.map(p => ({ content: stripBBCode(p.content || '') }))
+          posts: posts.map(p => ({
+            content: p.contentText || stripRichHtml(p.content || '')
+          }))
         };
 
         const lastPost = posts[posts.length - 1];
@@ -2438,20 +2657,22 @@
       }
       const fileHtml = post.file ? buildFileHtml(post.file) : '';
 
-      const plainContent = stripBBCode(post.content || '');
+      const plainContent = post.contentText || stripRichHtml(post.content || '');
       const isSearchHit = searchTokens.length > 0 && matchesAllTokens(plainContent, searchTokens);
 
-      // BBCode タグを保持したまま、検索ハイライトを適用したい場合：
-      // ハイライトは BBCode 処理後のHTMLに対して行う（ただしタグ属性を壊さないよう注意）
-      let contentFinal;
-      if (searchTokens.length > 0 && isSearchHit) {
-        // BBCode処理してから、テキストノードだけをハイライトするのは複雑なため、
-        // BBCodeを含む元テキストでハイライト → BBCodeパース
-        // ただし安全のため、素のHTMLエスケープ + BBCode処理 → その上でハイライト
-        contentFinal = parseBBCode(post.content || '');
-        // ハイライトは簡易的にオフ（タグ破壊防止）
-      } else {
-        contentFinal = parseBBCode(post.content || '');
+      // 表示用HTML（新形式はcontentそのままサニタイズ、旧形式は改行→<br>）
+      let contentHtml = '';
+      if (post.content) {
+        // 新形式（HTML）か旧形式（プレーンテキスト）を判定
+        // 旧形式は\nが含まれており、<span>などのタグがない可能性が高い
+        // 新形式のcontentはサニタイズ済みのHTML（span等）
+        if (/<span|<br|<a\s/i.test(post.content)) {
+          // HTML形式
+          contentHtml = renderRichContent(post.content);
+        } else {
+          // プレーンテキスト形式（旧データ）
+          contentHtml = formatContent(post.content);
+        }
       }
 
       let badgeManageBtn = '';
@@ -2490,7 +2711,7 @@
             ${canDelete() || canDo('canDeletePost') ? `<button class="delete-btn" data-post-key="${post.id}">削除</button>` : ''}
           </span>
         </div>
-        ${post.content ? `<div class="text-gray-900 whitespace-pre-wrap mb-1 break-words">${contentFinal}</div>` : ''}
+        ${post.content ? `<div class="text-gray-900 rich-content mb-1">${contentHtml}</div>` : ''}
         ${fileHtml}
         ${replyLabel ? `<div class="mt-1">${replyLabel}</div>` : ''}
       `;
@@ -3136,12 +3357,7 @@
       box.className = 'inline-reply-box';
       box.innerHTML = `
         <div class="reply-target-label">>>${parentNum} への返信</div>
-        <div class="color-toolbar reply-toolbar"></div>
-        <textarea class="reply-textarea" placeholder="返信を入力（最大2000文字）" maxlength="2000"></textarea>
-        <div class="bb-preview-box reply-preview-bb">
-          <span class="bb-preview-label">📝 プレビュー</span>
-          <span class="bb-preview-content"></span>
-        </div>
+        <div class="reply-editor-wrap"></div>
         <div class="mt-2">
           <label class="block text-xs text-gray-600 mb-1">画像を添付（任意）:</label>
           <input type="file" class="reply-file text-xs text-gray-600 w-full" accept="image/*">
@@ -3155,18 +3371,17 @@
           <button class="reply-send-btn bg-blue-800 hover:bg-blue-900 text-white text-xs py-1.5 px-4 rounded">返信する</button>
         </div>`;
       targetCard.insertAdjacentElement('afterend', box);
-      const ta = box.querySelector('.reply-textarea');
+
+      // 返信ボックス内にリッチエディタを作成
+      const replyEditorWrap = box.querySelector('.reply-editor-wrap');
+      const replyEditor = createRichEditor(replyEditorWrap, '返信を入力');
+
       const fileInp = box.querySelector('.reply-file');
       const cancelBtn = box.querySelector('.reply-cancel-btn');
       const sendBtn = box.querySelector('.reply-send-btn');
       const previewBox = box.querySelector('.reply-preview');
       const previewImg = box.querySelector('.reply-preview-img');
       const previewInfo = box.querySelector('.reply-preview-info');
-      const replyToolbar = box.querySelector('.reply-toolbar');
-      const replyBbPreview = box.querySelector('.reply-preview-bb');
-
-      // 返信ボックスのツールバーを生成（専用IDではなくDOM直接）
-      buildInlineColorToolbar(replyToolbar, ta, replyBbPreview);
 
       fileInp.addEventListener('change', async () => {
         const f = fileInp.files[0];
@@ -3180,13 +3395,14 @@
       });
       cancelBtn.addEventListener('click', () => { activeReplyParentId = null; box.remove(); });
       sendBtn.addEventListener('click', async () => {
-        const content = ta.value.trim();
+        const contentHtml = getEditorHtml(replyEditorWrap);
+        const contentText = getEditorText(replyEditorWrap);
         const file = fileInp.files[0];
-        if (!content && !file) { alert('返信内容または画像を指定してください。'); return; }
+        if (!contentText && !file) { alert('返信内容または画像を指定してください。'); return; }
         sendBtn.disabled = true;
         sendBtn.textContent = file ? '画像処理中...' : '送信中...';
         try {
-          await submitReply(parentId, content, file);
+          await submitReply(parentId, contentHtml, contentText, file);
           activeReplyParentId = null;
           box.remove();
         } catch (err) {
@@ -3195,144 +3411,19 @@
           sendBtn.textContent = '返信する';
         }
       });
-      ta.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') sendBtn.click(); });
-      ta.focus();
+      replyEditor.focus();
     }
-
-    /**
-     * 返信ボックス用のインラインツールバーを生成
-     */
-    function buildInlineColorToolbar(container, textarea, previewBox) {
-      if (!container) return;
-      container.innerHTML = '';
-
-      const label1 = document.createElement('span');
-      label1.className = 'color-toolbar-label';
-      label1.textContent = '文字色:';
-      container.appendChild(label1);
-
-      TOOLBAR_DEFS.filter(d => d.type === 'text').forEach(def => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'color-tool-btn';
-        btn.textContent = def.label;
-        btn.title = def.title;
-        btn.style.color = def.color;
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          applyBBCodeTagToTextarea(textarea, previewBox, def.tag);
-        });
-        container.appendChild(btn);
-      });
-
-      const sep = document.createElement('span');
-      sep.style.cssText = 'width:1px;height:20px;background:#d1d5db;margin:0 6px;';
-      container.appendChild(sep);
-
-      const label2 = document.createElement('span');
-      label2.className = 'color-toolbar-label';
-      label2.textContent = '蛍光ペン:';
-      container.appendChild(label2);
-
-      TOOLBAR_DEFS.filter(d => d.type === 'hl').forEach(def => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'color-tool-btn';
-        btn.textContent = def.label;
-        btn.title = def.title;
-        btn.style.background = def.bg;
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          applyBBCodeTagToTextarea(textarea, previewBox, def.tag);
-        });
-        container.appendChild(btn);
-      });
-
-      const sep2 = document.createElement('span');
-      sep2.style.cssText = 'width:1px;height:20px;background:#d1d5db;margin:0 6px;';
-      container.appendChild(sep2);
-
-      const clearBtn = document.createElement('button');
-      clearBtn.type = 'button';
-      clearBtn.className = 'color-tool-btn clear-btn';
-      clearBtn.textContent = '✕';
-      clearBtn.title = '選択範囲のタグを除去';
-      clearBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        removeTagsFromTextareaSelection(textarea, previewBox);
-      });
-      container.appendChild(clearBtn);
-
-      // 入力イベントでプレビュー更新
-      textarea.addEventListener('input', () => {
-        updateInlineBBCodePreview(textarea, previewBox);
-      });
-    }
-
-    function applyBBCodeTagToTextarea(ta, previewBox, tag) {
-      if (!ta) return;
-      const start = ta.selectionStart;
-      const end = ta.selectionEnd;
-      const value = ta.value;
-      const selected = value.substring(start, end);
-      const openTag = `[${tag}]`;
-      const closeTag = `[/${tag}]`;
-      let newValue, newCursorStart, newCursorEnd;
-      if (selected) {
-        newValue = value.substring(0, start) + openTag + selected + closeTag + value.substring(end);
-        newCursorStart = start + openTag.length;
-        newCursorEnd = end + openTag.length;
-      } else {
-        newValue = value.substring(0, start) + openTag + closeTag + value.substring(end);
-        newCursorStart = start + openTag.length;
-        newCursorEnd = newCursorStart;
-      }
-      ta.value = newValue;
-      ta.focus();
-      ta.setSelectionRange(newCursorStart, newCursorEnd);
-      updateInlineBBCodePreview(ta, previewBox);
-    }
-
-    function removeTagsFromTextareaSelection(ta, previewBox) {
-      if (!ta) return;
-      const start = ta.selectionStart;
-      const end = ta.selectionEnd;
-      const value = ta.value;
-      const selected = value.substring(start, end);
-      if (!selected) return;
-      const cleaned = selected.replace(/\[\/?[a-zA-Z]+\]/g, '');
-      const newValue = value.substring(0, start) + cleaned + value.substring(end);
-      ta.value = newValue;
-      ta.focus();
-      ta.setSelectionRange(start, start + cleaned.length);
-      updateInlineBBCodePreview(ta, previewBox);
-    }
-
-    function updateInlineBBCodePreview(ta, previewBox) {
-      if (!previewBox) return;
-      const contentEl = previewBox.querySelector('.bb-preview-content');
-      const raw = ta.value.trim();
-      if (!raw) {
-        previewBox.classList.remove('show');
-        if (contentEl) contentEl.innerHTML = '';
-        return;
-      }
-      previewBox.classList.add('show');
-      if (contentEl) {
-        contentEl.innerHTML = parseBBCode(raw) || '<span style="color:#9ca3af;">（タグのみ）</span>';
-      }
-    }
-
     function closeReplyBox() { activeReplyParentId = null; document.querySelectorAll('.inline-reply-box').forEach(el => el.remove()); }
 
-    async function submitReply(parentId, content, file) {
+    async function submitReply(parentId, contentHtml, contentText, file) {
       if (!currentUser) throw new Error('ログインが必要です');
       if (!currentThreadKey) throw new Error('スレッドが選択されていません');
       let fileData = null;
       if (file) fileData = await fileToBase64Image(file);
       const now = Date.now();
       await addDoc(collection(db, COL.threads, currentThreadKey, 'posts'), {
-        author: '名無しさん', content: content || '', createdAt: now,
+        author: '名無しさん', content: contentHtml || '', contentText: contentText || '',
+        createdAt: now,
         authorEmail: currentUser.email, authorUid: currentUser.uid, authorRole: userRole || null,
         badgeVisible: myBadgePublic, parentId, file: fileData
       });
@@ -3346,7 +3437,7 @@
       } catch (e) { console.warn('lastPostAt更新スキップ:', e.message); }
 
       if (!threadSearchIndex[currentThreadKey]) threadSearchIndex[currentThreadKey] = { posts: [] };
-      threadSearchIndex[currentThreadKey].posts.push({ content: stripBBCode(content || '') });
+      threadSearchIndex[currentThreadKey].posts.push({ content: contentText || '' });
 
       markThreadAsRead(currentThreadKey);
       showBanner('返信を保存しました', false);
@@ -3356,11 +3447,12 @@
       e.preventDefault();
       if (!currentUser) { alert('ログインが必要です。'); return; }
       if (!currentThreadKey) { alert('スレッドが選択されていません。'); return; }
-      const content = document.getElementById('postContent').value.trim();
+      const contentHtml = getEditorHtml(document.getElementById('postEditorWrap'));
+      const contentText = getEditorText(document.getElementById('postEditorWrap'));
       const fileInput = document.getElementById('fileInput');
       const file = fileInput.files[0];
       const submitBtn = document.getElementById('submitBtn');
-      if (!content && !file) { alert('コメントまたは画像を指定してください。'); return; }
+      if (!contentText && !file) { alert('コメントまたは画像を指定してください。'); return; }
       const originalText = submitBtn.innerText;
       submitBtn.disabled = true;
       submitBtn.innerText = file ? '画像処理中...' : '送信中...';
@@ -3395,7 +3487,7 @@
           ${optimisticOfficialBadge}${opBadge}${optimisticRoleBadge}${optimisticCustomBadge}<span>：</span>
           <span class="text-gray-500 text-xs font-normal">送信中...</span>
         </div>
-        ${content ? `<div class="text-gray-900 whitespace-pre-wrap mb-2 break-words">${parseBBCode(content)}</div>` : ''}
+        ${contentHtml ? `<div class="text-gray-900 rich-content mb-2">${renderRichContent(contentHtml)}</div>` : ''}
         ${file ? `<div class="text-xs text-gray-400 mt-1">📎 ${escapeHtml(file.name)}（処理中...）</div>` : ''}`;
       postsContainer.appendChild(tempPost);
       tempPost.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -3404,10 +3496,11 @@
         if (file) fileData = await fileToBase64Image(file);
         document.getElementById('postForm').reset();
         document.getElementById('postPreviewBox').classList.remove('show');
-        document.getElementById('postPreview').classList.remove('show');
+        clearEditor(document.getElementById('postEditorWrap'));
         const now = Date.now();
         await addDoc(collection(db, COL.threads, currentThreadKey, 'posts'), {
-          author: '名無しさん', content: content || '', createdAt: now,
+          author: '名無しさん', content: contentHtml || '', contentText: contentText || '',
+          createdAt: now,
           authorEmail: currentUser.email, authorUid: currentUser.uid, authorRole: userRole || null,
           badgeVisible: myBadgePublic, parentId: null, file: fileData
         });
@@ -3421,7 +3514,7 @@
         } catch (e) { console.warn('lastPostAt更新スキップ:', e.message); }
 
         if (!threadSearchIndex[currentThreadKey]) threadSearchIndex[currentThreadKey] = { posts: [] };
-        threadSearchIndex[currentThreadKey].posts.push({ content: stripBBCode(content || '') });
+        threadSearchIndex[currentThreadKey].posts.push({ content: contentText || '' });
 
         markThreadAsRead(currentThreadKey);
         showBanner('書き込みを保存しました', false);
@@ -3522,7 +3615,7 @@
         const officialUsers = await grab(COL.officialUsers);
 
         const payload = {
-          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 5 },
+          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 6 },
           threads: threadsData, customBadges, knownUsers, bannedUsers,
           badgeFeatures, nicknames, officialUsers
         };
