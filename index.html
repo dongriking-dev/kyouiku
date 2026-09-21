@@ -508,6 +508,91 @@
     .announcement-title { font-size: 14px; font-weight: 700; color: #1f2937; }
     .announcement-body  { color: #1f2937; font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; margin-top: 4px; }
     .announcement-meta  { color: #6b7280; font-size: 10px; margin-top: 6px; }
+
+    /* ============================================================
+     * ★ 問い合わせチャット関連
+     * ============================================================ */
+    .contact-btn {
+      background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+      color: #fff; font-size: 13px; font-weight: 700;
+      padding: 10px 18px; border-radius: 8px; border: none;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+      box-shadow: 0 2px 8px rgba(29,78,216,0.35);
+      transition: all 0.15s;
+    }
+    .contact-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(29,78,216,0.5); }
+
+    .contact-cta-box {
+      margin-top: 16px; padding: 14px 16px;
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      border: 2px solid #93c5fd; border-radius: 10px;
+    }
+    .contact-cta-box .contact-title {
+      font-size: 14px; font-weight: 700; color: #1e3a8a;
+      display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+    }
+    .contact-cta-box .contact-desc {
+      font-size: 12px; color: #1e40af; margin-bottom: 10px; line-height: 1.5;
+    }
+
+    .chat-row { display: flex; flex-direction: column; margin-bottom: 8px; }
+    .chat-row.me { align-items: flex-end; }
+    .chat-row.other { align-items: flex-start; }
+    .chat-bubble {
+      max-width: 78%; padding: 8px 12px; border-radius: 12px;
+      font-size: 13px; line-height: 1.5; word-break: break-word;
+      white-space: pre-wrap; position: relative;
+    }
+    .chat-bubble.me {
+      background: #1d4ed8; color: #fff;
+      border-bottom-right-radius: 3px;
+    }
+    .chat-bubble.other {
+      background: #fff; color: #1f2937;
+      border: 1px solid #e5e7eb;
+      border-bottom-left-radius: 3px;
+    }
+    .chat-bubble .chat-sender {
+      font-size: 10px; font-weight: 700; opacity: 0.85; margin-bottom: 3px;
+    }
+    .chat-bubble .chat-time {
+      display: block; font-size: 9px; opacity: 0.7; margin-top: 4px;
+    }
+
+    .inbox-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;
+      background: #fff; margin-bottom: 6px; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .inbox-item:hover { background: #f3f4f6; border-color: #9ca3af; }
+    .inbox-item.unread { background: #eff6ff; border-left: 4px solid #1d4ed8; }
+    .inbox-item .avatar {
+      width: 38px; height: 38px; border-radius: 9999px;
+      background: #1d4ed8; color: #fff; display: flex;
+      align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; flex-shrink: 0;
+    }
+    .inbox-item .info { flex: 1; min-width: 0; }
+    .inbox-item .info .name { font-weight: 700; font-size: 13px; color: #1f2937; }
+    .inbox-item .info .preview {
+      font-size: 11px; color: #6b7280; margin-top: 2px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .inbox-item .info .time { font-size: 10px; color: #9ca3af; }
+    .inbox-item .unread-count {
+      background: #ef4444; color: #fff; font-size: 10px;
+      font-weight: 700; padding: 2px 7px; border-radius: 9999px;
+    }
+
+    .handover-candidate {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 6px;
+      background: #f9fafb; margin-bottom: 4px; font-size: 12px; cursor: pointer;
+    }
+    .handover-candidate:hover { background: #eff6ff; border-color: #93c5fd; }
+    .handover-candidate .email { font-family: monospace; color: #1e40af; }
+    .handover-candidate.selected { background: #dbeafe; border-color: #1d4ed8; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans p-4 max-w-5xl mx-auto">
@@ -545,6 +630,23 @@
         <li><strong class="text-blue-900">記録される情報</strong><br>メールアドレス、ログイン日時、デバイス情報を記録します。管理者・主のみ閲覧可能です。荒らし対策などのため。</li>
         <li><strong class="text-blue-900">ルールの変更</strong><br>本ルールは予告なく変更されることがあります。</li>
       </ol>
+
+      <!-- ★ 規約についての問い合わせボタン -->
+      <div class="contact-cta-box">
+        <div class="contact-title">
+          <svg class="icon-svg" viewBox="0 0 24 24" width="18" height="18"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          規約についてわからないことがあればこちらへ
+        </div>
+        <div class="contact-desc">
+          規約の内容やサイトの使い方について、管理者と1対1で質問できます。<br>
+          返信が届くとサイト内で確認できます。
+        </div>
+        <button id="openContactChatBtn" class="contact-btn" type="button">
+          <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16"><path d="M4 4h16v12H5.17L4 17.17z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          管理者に質問する（1対1チャット）
+        </button>
+      </div>
+
       <p class="mt-4 text-xs text-gray-500 text-right">最終更新: 2026年9月</p>
     </div>
   </div>
@@ -587,6 +689,7 @@
             <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="badge-feature-checkbox" value="canViewEmail"><span>メールアドレス閲覧権限</span></label>
             <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="badge-feature-checkbox" value="canBackup"><span>バックアップ・復元権限</span></label>
             <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="badge-feature-checkbox" value="canManageBadge"><span>バッジ管理権限</span></label>
+            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="badge-feature-checkbox" value="canAnswerContact"><span>問い合わせ対応権限</span></label>
           </div>
         </div>
         <div class="flex justify-end gap-2">
@@ -746,6 +849,87 @@
     </div>
   </div>
 
+  <!-- ★ 問い合わせチャットモーダル（一般ユーザー用） -->
+  <div id="contactChatModal" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 560px;">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-lg font-bold text-gray-800">📩 管理者への問い合わせ</h3>
+        <button id="contactChatCloseBtn" class="reply-cancel-btn">閉じる</button>
+      </div>
+      <div class="p-2 bg-blue-50 border border-blue-200 rounded mb-3">
+        <p class="text-xs text-blue-800">
+          <strong>担当:</strong> <span id="contactAdminLabel">管理者</span><br>
+          <span class="text-gray-600">規約やサイトについてわからないことを1対1で質問できます。</span>
+        </p>
+      </div>
+      <div id="contactChatMessages" style="max-height: 340px; overflow-y: auto; padding: 8px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 8px;">
+        <p class="text-xs text-gray-400 text-center">読み込み中...</p>
+      </div>
+      <div class="flex gap-2">
+        <textarea id="contactChatInput" rows="2" placeholder="メッセージを入力...（Ctrl+Enterで送信）" class="flex-1 border p-2 rounded text-sm focus:ring-2 focus:ring-blue-300 outline-none resize-none"></textarea>
+        <button id="contactChatSendBtn" class="bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold px-4 rounded">送信</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ★ 管理者用：問い合わせ一覧モーダル -->
+  <div id="adminInboxModal" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 640px;">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-lg font-bold text-gray-800">📨 問い合わせ一覧</h3>
+        <button id="adminInboxCloseBtn" class="reply-cancel-btn">閉じる</button>
+      </div>
+      <div id="adminInboxList" style="max-height: 60vh; overflow-y: auto;">
+        <p class="text-xs text-gray-400">読み込み中...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ★ 管理者用：個別問い合わせチャットモーダル -->
+  <div id="adminChatModal" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 560px;">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-lg font-bold text-gray-800">問い合わせ対応</h3>
+        <button id="adminChatCloseBtn" class="reply-cancel-btn">閉じる</button>
+      </div>
+      <div class="p-2 bg-amber-50 border border-amber-200 rounded mb-3">
+        <p class="text-xs text-amber-800">
+          <strong>相手:</strong> <span id="adminChatPartnerLabel">-</span>
+        </p>
+      </div>
+      <div id="adminChatMessages" style="max-height: 340px; overflow-y: auto; padding: 8px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 8px;">
+        <p class="text-xs text-gray-400 text-center">読み込み中...</p>
+      </div>
+      <div class="flex gap-2">
+        <textarea id="adminChatInput" rows="2" placeholder="返信を入力...（Ctrl+Enterで送信）" class="flex-1 border p-2 rounded text-sm focus:ring-2 focus:ring-blue-300 outline-none resize-none"></textarea>
+        <button id="adminChatSendBtn" class="bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold px-4 rounded">返信</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ★ 管理者バトンタッチモーダル -->
+  <div id="adminHandoverModal" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 480px;">
+      <h3 class="text-lg font-bold text-gray-800 mb-1">管理者バトンタッチ</h3>
+      <p class="text-xs text-gray-500 mb-3">別のユーザーに「問い合わせ対応管理者」の権限を渡します。</p>
+      <div class="p-3 bg-amber-50 border border-amber-200 rounded mb-3">
+        <p class="text-xs text-amber-800">
+          ⚠️ バトンタッチすると、相手も問い合わせチャットに回答できるようになります。<br>
+          あなた自身の管理者権限は失われません（複数管理者OK）。
+        </p>
+      </div>
+      <label class="block text-xs text-gray-600 mb-1">相手のメールアドレス:</label>
+      <input type="email" id="handoverEmailInput" placeholder="例: teacher@example.com" class="w-full border p-2 rounded text-sm mb-2 font-mono">
+      <label class="block text-xs text-gray-600 mb-1">表示名（任意・最大20文字）:</label>
+      <input type="text" id="handoverNameInput" maxlength="20" placeholder="例: 田中先生" class="w-full border p-2 rounded text-sm mb-3">
+      <div id="handoverCandidateList" class="mb-3"></div>
+      <div class="flex justify-end gap-2 flex-wrap">
+        <button id="handoverCancelBtn" class="reply-cancel-btn">キャンセル</button>
+        <button id="handoverSaveBtn" class="bg-amber-600 hover:bg-amber-700 text-white text-xs py-1.5 px-4 rounded font-bold">バトンを渡す</button>
+      </div>
+    </div>
+  </div>
+
   <div id="loginView" class="hidden">
     <div class="bg-white border border-gray-300 rounded-lg shadow p-8 max-w-md mx-auto mt-16 text-center">
       <h1 class="text-3xl font-bold text-blue-900 mb-2">どんぐり学びの広場</h1>
@@ -794,6 +978,8 @@
         </button>
         <div id="adminControls" class="hidden flex gap-2 flex-wrap">
           <button id="announcementBtn" class="announcement-btn hidden" onclick="openAnnouncementModal()">📢 アナウンス</button>
+          <button id="adminInboxBtn" class="announcement-btn hidden" onclick="openAdminInbox()">📨 問い合わせ</button>
+          <button id="handoverBtn" class="userlist-btn hidden" onclick="openHandoverModal()">🔑 管理者バトン</button>
           <button id="backupBtn" class="backup-btn hidden" onclick="doBackup()">バックアップ</button>
           <button id="restoreBtn" class="restore-btn hidden" onclick="document.getElementById('restoreInput').click()">復元</button>
           <button id="banListBtn" class="banlist-btn hidden" onclick="openBanModal()">BAN管理</button>
@@ -970,7 +1156,10 @@
       officialUsers: 'manabi_officialUsers',
       threadLikes: 'manabi_threadLikes',
       postLikes: 'manabi_postLikes',
-      announcements: 'manabi_announcements'
+      announcements: 'manabi_announcements',
+      contactChats: 'manabi_contactChats',
+      contactMessages: 'manabi_contactMessages',
+      contactAdmins: 'manabi_contactAdmins'
     };
 
     const THREAD_LIST_LIMIT = 100;
@@ -1061,6 +1250,18 @@
     let readThreads = {};
     let banOverlayShown = false;
 
+    // ★ 問い合わせチャット用
+    let contactAdminsCache = {};
+    let contactAdminsUnsubscribe = null;
+    let myContactRoomUnsubscribe = null;
+    let myContactMessagesUnsubscribe = null;
+    let adminChatRoomUnsubscribe = null;
+    let adminChatMessagesUnsubscribe = null;
+    let currentAdminChatRoomId = null;
+    let currentAdminChatUserId = null;
+    let contactChatMessagesCache = [];
+    let adminChatMessagesCache = [];
+
     const loginView = document.getElementById('loginView');
     const mainView = document.getElementById('mainView');
     const threadListView = document.getElementById('threadListView');
@@ -1134,6 +1335,15 @@
       if (!currentUser) return false;
       if (userRole === 'admin' || userRole === 'owner') return true;
       if (isProtectedEmail(currentUser.email)) return true;
+      return false;
+    }
+
+    // ★ 問い合わせ対応管理者判定
+    function isContactAdmin() {
+      if (!currentUser) return false;
+      if (userRole === 'admin' || userRole === 'owner') return true;
+      if (contactAdminsCache[currentUser.uid]) return true;
+      if (hasBadgeFeature(currentUser.uid, 'canAnswerContact')) return true;
       return false;
     }
 
@@ -2028,7 +2238,6 @@
         return;
       }
       area.classList.remove('hidden');
-      // ピン留めを上に、その後 createdAt 降順
       const sorted = [...announcementsCache].sort((a, b) => {
         const pa = a.pinned ? 1 : 0;
         const pb = b.pinned ? 1 : 0;
@@ -2124,6 +2333,428 @@
           } finally {
             saveBtn.disabled = false;
             saveBtn.textContent = orig;
+          }
+        });
+      }
+    })();
+
+    /* ============================================================
+     * ★ 問い合わせチャット機能
+     * ============================================================ */
+    function initContactAdminsListener() {
+      if (contactAdminsUnsubscribe) contactAdminsUnsubscribe();
+      contactAdminsUnsubscribe = onSnapshot(collection(db, COL.contactAdmins), (snap) => {
+        contactAdminsCache = {};
+        snap.forEach(d => { contactAdminsCache[d.id] = d.data(); });
+        updateContactAdminVisibility();
+        const modal = document.getElementById('adminInboxModal');
+        if (modal && !modal.classList.contains('hidden')) renderAdminInbox();
+        updateAdminControlsVisibility();
+      }, (err) => console.error('問い合わせ管理者監視エラー:', err));
+    }
+
+    function updateContactAdminVisibility() {
+      const inboxBtn = document.getElementById('adminInboxBtn');
+      const handoverBtn = document.getElementById('handoverBtn');
+      if (!inboxBtn || !handoverBtn) return;
+      if (isContactAdmin()) inboxBtn.classList.remove('hidden');
+      else inboxBtn.classList.add('hidden');
+      if (canSetOfficial() || isContactAdmin()) handoverBtn.classList.remove('hidden');
+      else handoverBtn.classList.add('hidden');
+    }
+
+    function getContactRoomId(uid) { return 'room_' + uid; }
+
+    function getContactAdminLabel() {
+      const ids = Object.keys(contactAdminsCache);
+      if (ids.length === 0) {
+        if (userRole === 'admin' || userRole === 'owner') return '管理者（あなた）';
+        return '管理者';
+      }
+      const names = ids.map(uid => contactAdminsCache[uid].displayName || contactAdminsCache[uid].email || '管理者');
+      return names.slice(0, 3).join('、') + (names.length > 3 ? ' 他' : '');
+    }
+
+    window.openContactChatModal = async function() {
+      if (!currentUser) { alert('ログインが必要です。'); return; }
+      if (isContactAdmin()) {
+        alert('あなたは問い合わせ対応管理者です。\n「📨 問い合わせ」ボタンから一覧を開いてください。');
+        return;
+      }
+      const modal = document.getElementById('contactChatModal');
+      modal.classList.remove('hidden');
+      document.getElementById('contactAdminLabel').textContent = getContactAdminLabel();
+      await loadMyContactRoom();
+    };
+
+    function closeContactChatModal() {
+      document.getElementById('contactChatModal').classList.add('hidden');
+      if (myContactRoomUnsubscribe) { myContactRoomUnsubscribe(); myContactRoomUnsubscribe = null; }
+      if (myContactMessagesUnsubscribe) { myContactMessagesUnsubscribe(); myContactMessagesUnsubscribe = null; }
+    }
+
+    async function loadMyContactRoom() {
+      const roomId = getContactRoomId(currentUser.uid);
+      const roomRef = doc(db, COL.contactChats, roomId);
+      const snap = await getDoc(roomRef);
+      if (!snap.exists()) {
+        await setDoc(roomRef, {
+          userId: currentUser.uid,
+          userEmail: currentUser.email || '',
+          userName: nicknamesCache[currentUser.uid]?.nickname || currentUser.displayName || '名無しさん',
+          createdAt: Date.now(),
+          lastMessageAt: Date.now(),
+          lastMessage: '',
+          unreadByAdmin: 0,
+          unreadByUser: 0
+        });
+      } else {
+        try { await updateDoc(roomRef, { unreadByUser: 0 }); } catch (e) {}
+      }
+      if (myContactMessagesUnsubscribe) myContactMessagesUnsubscribe();
+      const q = query(
+        collection(db, COL.contactMessages),
+        where('roomId', '==', roomId),
+        orderBy('createdAt', 'asc'),
+        limit(200)
+      );
+      myContactMessagesUnsubscribe = onSnapshot(q, (s) => {
+        contactChatMessagesCache = [];
+        s.forEach(d => contactChatMessagesCache.push({ id: d.id, ...d.data() }));
+        renderContactChatMessages();
+      }, (err) => {
+        console.error('問い合わせメッセージ監視エラー:', err);
+        document.getElementById('contactChatMessages').innerHTML =
+          '<p class="text-xs text-red-500 text-center">読み込みに失敗しました。<br>（インデックスが必要な場合があります）</p>';
+      });
+    }
+
+    function renderContactChatMessages() {
+      const container = document.getElementById('contactChatMessages');
+      if (!container) return;
+      if (contactChatMessagesCache.length === 0) {
+        container.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">まだメッセージがありません。<br>下の入力欄から質問を送ってみましょう。</p>';
+        return;
+      }
+      let html = '';
+      contactChatMessagesCache.forEach(m => {
+        const isMe = currentUser && m.senderUid === currentUser.uid;
+        const time = m.createdAt ? new Date(m.createdAt).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+        const senderLabel = isMe ? 'あなた' : (m.senderName || '管理者');
+        html += `<div class="chat-row ${isMe ? 'me' : 'other'}">
+          <div class="chat-bubble ${isMe ? 'me' : 'other'}">
+            ${!isMe ? `<div class="chat-sender">${escapeHtml(senderLabel)}</div>` : ''}
+            ${escapeHtml(m.text || '')}
+            <span class="chat-time">${time}</span>
+          </div>
+        </div>`;
+      });
+      container.innerHTML = html;
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function sendContactMessage(text) {
+      if (!currentUser) return;
+      if (!text || !text.trim()) return;
+      const roomId = getContactRoomId(currentUser.uid);
+      const roomRef = doc(db, COL.contactChats, roomId);
+      const roomSnap = await getDoc(roomRef);
+      const roomData = roomSnap.exists() ? roomSnap.data() : {};
+      const now = Date.now();
+      await addDoc(collection(db, COL.contactMessages), {
+        roomId,
+        senderUid: currentUser.uid,
+        senderEmail: currentUser.email || '',
+        senderName: nicknamesCache[currentUser.uid]?.nickname || '名無しさん',
+        senderRole: 'user',
+        text: text.trim(),
+        createdAt: now
+      });
+      await setDoc(roomRef, {
+        userId: currentUser.uid,
+        userEmail: currentUser.email || '',
+        userName: nicknamesCache[currentUser.uid]?.nickname || currentUser.displayName || '名無しさん',
+        lastMessageAt: now,
+        lastMessage: text.trim().slice(0, 60),
+        unreadByAdmin: (roomData.unreadByAdmin || 0) + 1,
+        unreadByUser: 0
+      }, { merge: true });
+    }
+
+    /* --- 管理者側 --- */
+    window.openAdminInbox = function() {
+      if (!isContactAdmin()) { alert('問い合わせ対応権限がありません。'); return; }
+      document.getElementById('adminInboxModal').classList.remove('hidden');
+      renderAdminInbox();
+    };
+
+    function closeAdminInbox() {
+      document.getElementById('adminInboxModal').classList.add('hidden');
+    }
+
+    async function renderAdminInbox() {
+      const container = document.getElementById('adminInboxList');
+      if (!container) return;
+      container.innerHTML = '<p class="text-xs text-gray-400">読み込み中...</p>';
+      try {
+        const q = query(collection(db, COL.contactChats), orderBy('lastMessageAt', 'desc'), limit(100));
+        const snap = await getDocs(q);
+        if (snap.empty) {
+          container.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">まだ問い合わせはありません。</p>';
+          return;
+        }
+        let html = '';
+        snap.forEach(d => {
+          const r = d.data();
+          const unread = r.unreadByAdmin || 0;
+          const initial = (r.userName || r.userEmail || '?').charAt(0).toUpperCase();
+          const time = r.lastMessageAt ? new Date(r.lastMessageAt).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+          html += `<div class="inbox-item ${unread > 0 ? 'unread' : ''}" data-room-id="${d.id}" data-user-id="${r.userId || ''}">
+            <div class="avatar">${escapeHtml(initial)}</div>
+            <div class="info">
+              <div class="name">${escapeHtml(r.userName || '名無しさん')}</div>
+              <div class="preview">${escapeHtml(r.lastMessage || '（メッセージなし）')}</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="time">${time}</div>
+              ${unread > 0 ? `<div class="unread-count">${unread}</div>` : ''}
+            </div>
+          </div>`;
+        });
+        container.innerHTML = html;
+        container.querySelectorAll('.inbox-item').forEach(item => {
+          item.addEventListener('click', () => openAdminChat(item.dataset.roomId, item.dataset.userId));
+        });
+      } catch (err) {
+        console.error('問い合わせ一覧取得エラー:', err);
+        container.innerHTML = '<p class="text-xs text-red-500 text-center py-4">読み込みに失敗しました。<br>（インデックスが必要な場合があります）</p>';
+      }
+    }
+
+    async function openAdminChat(roomId, userId) {
+      currentAdminChatRoomId = roomId;
+      currentAdminChatUserId = userId;
+      document.getElementById('adminChatModal').classList.remove('hidden');
+      const roomSnap = await getDoc(doc(db, COL.contactChats, roomId));
+      if (roomSnap.exists()) {
+        const r = roomSnap.data();
+        document.getElementById('adminChatPartnerLabel').textContent =
+          `${r.userName || '名無しさん'}（${r.userEmail || 'メール不明'}）`;
+      }
+      try { await updateDoc(doc(db, COL.contactChats, roomId), { unreadByAdmin: 0 }); } catch (e) {}
+
+      if (adminChatMessagesUnsubscribe) adminChatMessagesUnsubscribe();
+      const q = query(
+        collection(db, COL.contactMessages),
+        where('roomId', '==', roomId),
+        orderBy('createdAt', 'asc'),
+        limit(300)
+      );
+      adminChatMessagesUnsubscribe = onSnapshot(q, (s) => {
+        adminChatMessagesCache = [];
+        s.forEach(d => adminChatMessagesCache.push({ id: d.id, ...d.data() }));
+        renderAdminChatMessages();
+      }, (err) => {
+        console.error('管理者チャット監視エラー:', err);
+        document.getElementById('adminChatMessages').innerHTML =
+          '<p class="text-xs text-red-500 text-center">読み込みに失敗しました。</p>';
+      });
+    }
+
+    function closeAdminChat() {
+      document.getElementById('adminChatModal').classList.add('hidden');
+      currentAdminChatRoomId = null;
+      currentAdminChatUserId = null;
+      if (adminChatMessagesUnsubscribe) { adminChatMessagesUnsubscribe(); adminChatMessagesUnsubscribe = null; }
+    }
+
+    function renderAdminChatMessages() {
+      const container = document.getElementById('adminChatMessages');
+      if (!container) return;
+      if (adminChatMessagesCache.length === 0) {
+        container.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">まだメッセージがありません。</p>';
+        return;
+      }
+      let html = '';
+      adminChatMessagesCache.forEach(m => {
+        const isMe = currentUser && m.senderUid === currentUser.uid;
+        const time = m.createdAt ? new Date(m.createdAt).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+        const senderLabel = isMe ? 'あなた' : (m.senderName || 'ユーザー');
+        html += `<div class="chat-row ${isMe ? 'me' : 'other'}">
+          <div class="chat-bubble ${isMe ? 'me' : 'other'}">
+            ${!isMe ? `<div class="chat-sender">${escapeHtml(senderLabel)}</div>` : ''}
+            ${escapeHtml(m.text || '')}
+            <span class="chat-time">${time}</span>
+          </div>
+        </div>`;
+      });
+      container.innerHTML = html;
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function sendAdminReply(text) {
+      if (!currentUser || !currentAdminChatRoomId) return;
+      if (!text || !text.trim()) return;
+      const now = Date.now();
+      const roomRef = doc(db, COL.contactChats, currentAdminChatRoomId);
+      const roomSnap = await getDoc(roomRef);
+      const roomData = roomSnap.exists() ? roomSnap.data() : {};
+      await addDoc(collection(db, COL.contactMessages), {
+        roomId: currentAdminChatRoomId,
+        senderUid: currentUser.uid,
+        senderEmail: currentUser.email || '',
+        senderName: nicknamesCache[currentUser.uid]?.nickname || '管理者',
+        senderRole: 'admin',
+        text: text.trim(),
+        createdAt: now
+      });
+      await setDoc(roomRef, {
+        lastMessageAt: now,
+        lastMessage: text.trim().slice(0, 60),
+        unreadByUser: (roomData.unreadByUser || 0) + 1,
+        unreadByAdmin: 0
+      }, { merge: true });
+    }
+
+    /* --- 管理者バトンタッチ --- */
+    window.openHandoverModal = function() {
+      if (!canSetOfficial() && !isContactAdmin()) { alert('バトンタッチ権限がありません。'); return; }
+      document.getElementById('handoverEmailInput').value = '';
+      document.getElementById('handoverNameInput').value = '';
+      renderHandoverCandidates();
+      document.getElementById('adminHandoverModal').classList.remove('hidden');
+    };
+
+    function closeHandoverModal() {
+      document.getElementById('adminHandoverModal').classList.add('hidden');
+    }
+
+    function renderHandoverCandidates() {
+      const container = document.getElementById('handoverCandidateList');
+      if (!container) return;
+      container.innerHTML = '';
+      const keyword = (document.getElementById('handoverEmailInput').value || '').trim().toLowerCase();
+      const list = Object.entries(knownUsersCache || {})
+        .map(([uid, u]) => ({ uid, email: (u && u.email) || '' }))
+        .filter(u => u.email && u.uid !== (currentUser && currentUser.uid))
+        .filter(u => !contactAdminsCache[u.uid])
+        .filter(u => !keyword || u.email.toLowerCase().includes(keyword))
+        .slice(0, 6);
+
+      if (list.length === 0) return;
+      container.innerHTML = '<p class="text-xs text-gray-500 mb-1">候補（クリックで選択）:</p>';
+      list.forEach(u => {
+        const nick = nicknamesCache[u.uid]?.nickname || '';
+        const row = document.createElement('div');
+        row.className = 'handover-candidate';
+        row.innerHTML = `<span class="email">${escapeHtml(u.email)}</span>${nick ? `<span class="text-gray-500">${escapeHtml(nick)}</span>` : ''}`;
+        row.addEventListener('click', () => {
+          document.getElementById('handoverEmailInput').value = u.email;
+          document.getElementById('handoverNameInput').value = nick || '';
+          container.querySelectorAll('.handover-candidate').forEach(el => el.classList.remove('selected'));
+          row.classList.add('selected');
+        });
+        container.appendChild(row);
+      });
+    }
+
+    /* --- イベント登録 --- */
+    (function initContactChatEvents() {
+      const openBtn = document.getElementById('openContactChatBtn');
+      const chatModal = document.getElementById('contactChatModal');
+      const closeBtn = document.getElementById('contactChatCloseBtn');
+      const sendBtn = document.getElementById('contactChatSendBtn');
+      const input = document.getElementById('contactChatInput');
+
+      if (openBtn) openBtn.addEventListener('click', () => window.openContactChatModal());
+      if (closeBtn) closeBtn.addEventListener('click', closeContactChatModal);
+      if (chatModal) chatModal.addEventListener('click', (e) => { if (e.target.id === 'contactChatModal') closeContactChatModal(); });
+      if (sendBtn && input) {
+        const doSend = async () => {
+          const t = input.value.trim();
+          if (!t) return;
+          sendBtn.disabled = true;
+          try {
+            await sendContactMessage(t);
+            input.value = '';
+          } catch (err) {
+            console.error('送信エラー:', err);
+            alert('送信に失敗しました。');
+          } finally {
+            sendBtn.disabled = false;
+          }
+        };
+        sendBtn.addEventListener('click', doSend);
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); doSend(); }
+        });
+      }
+
+      const inboxClose = document.getElementById('adminInboxCloseBtn');
+      const inboxModal = document.getElementById('adminInboxModal');
+      if (inboxClose) inboxClose.addEventListener('click', closeAdminInbox);
+      if (inboxModal) inboxModal.addEventListener('click', (e) => { if (e.target.id === 'adminInboxModal') closeAdminInbox(); });
+
+      const adminChatClose = document.getElementById('adminChatCloseBtn');
+      const adminChatModal = document.getElementById('adminChatModal');
+      const adminSendBtn = document.getElementById('adminChatSendBtn');
+      const adminInput = document.getElementById('adminChatInput');
+      if (adminChatClose) adminChatClose.addEventListener('click', closeAdminChat);
+      if (adminChatModal) adminChatModal.addEventListener('click', (e) => { if (e.target.id === 'adminChatModal') closeAdminChat(); });
+      if (adminSendBtn && adminInput) {
+        const doSend = async () => {
+          const t = adminInput.value.trim();
+          if (!t) return;
+          adminSendBtn.disabled = true;
+          try {
+            await sendAdminReply(t);
+            adminInput.value = '';
+          } catch (err) {
+            console.error('返信エラー:', err);
+            alert('返信に失敗しました。');
+          } finally {
+            adminSendBtn.disabled = false;
+          }
+        };
+        adminSendBtn.addEventListener('click', doSend);
+        adminInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); doSend(); }
+        });
+      }
+
+      const handoverCancel = document.getElementById('handoverCancelBtn');
+      const handoverModal = document.getElementById('adminHandoverModal');
+      const handoverSave = document.getElementById('handoverSaveBtn');
+      const handoverEmail = document.getElementById('handoverEmailInput');
+      if (handoverCancel) handoverCancel.addEventListener('click', closeHandoverModal);
+      if (handoverModal) handoverModal.addEventListener('click', (e) => { if (e.target.id === 'adminHandoverModal') closeHandoverModal(); });
+      if (handoverEmail) handoverEmail.addEventListener('input', renderHandoverCandidates);
+      if (handoverSave) {
+        handoverSave.addEventListener('click', async () => {
+          if (!canSetOfficial() && !isContactAdmin()) { alert('権限がありません。'); return; }
+          const email = (handoverEmail.value || '').trim().toLowerCase();
+          const name = (document.getElementById('handoverNameInput').value || '').trim();
+          if (!email) { alert('メールアドレスを入力してください。'); return; }
+          const target = Object.entries(knownUsersCache || {}).find(([uid, u]) => u && u.email && u.email.toLowerCase() === email);
+          if (!target) { alert('このメールアドレスのユーザーが見つかりません。\n（一度でもサイトを開いたことがある必要があります）'); return; }
+          const [targetUid] = target;
+          if (targetUid === (currentUser && currentUser.uid)) { alert('自分自身にはバトンを渡せません。'); return; }
+          if (!confirm(`${email} に問い合わせ対応管理者の権限を渡しますか？`)) return;
+          handoverSave.disabled = true;
+          try {
+            await setDoc(doc(db, COL.contactAdmins, targetUid), {
+              email,
+              displayName: name || email.split('@')[0],
+              grantedAt: Date.now(),
+              grantedBy: currentUser.email
+            });
+            showBanner('管理者バトンを渡しました', false);
+            closeHandoverModal();
+          } catch (err) {
+            console.error('バトンタッチエラー:', err);
+            showBanner('失敗: ' + (err.code || err.message), true);
+          } finally {
+            handoverSave.disabled = false;
           }
         });
       }
@@ -2237,11 +2868,15 @@
       const banListBtn = document.getElementById('banListBtn');
       const userListBtn = document.getElementById('userListBtn');
       const announcementBtn = document.getElementById('announcementBtn');
+      const inboxBtn = document.getElementById('adminInboxBtn');
+      const handoverBtn = document.getElementById('handoverBtn');
 
       const showBackup = canBackup();
       const showBan = canBan();
       const showUserList = canViewUserList();
       const showAnnounce = canAnnounce();
+      const showInbox = isContactAdmin();
+      const showHandover = canSetOfficial() || isContactAdmin();
 
       if (showBackup) { backupBtn.classList.remove('hidden'); restoreBtn.classList.remove('hidden'); }
       else { backupBtn.classList.add('hidden'); restoreBtn.classList.add('hidden'); }
@@ -2251,8 +2886,16 @@
         if (showAnnounce) announcementBtn.classList.remove('hidden');
         else announcementBtn.classList.add('hidden');
       }
+      if (inboxBtn) {
+        if (showInbox) inboxBtn.classList.remove('hidden');
+        else inboxBtn.classList.add('hidden');
+      }
+      if (handoverBtn) {
+        if (showHandover) handoverBtn.classList.remove('hidden');
+        else handoverBtn.classList.add('hidden');
+      }
 
-      const anyVisible = showBackup || showBan || showUserList || showAnnounce;
+      const anyVisible = showBackup || showBan || showUserList || showAnnounce || showInbox || showHandover;
       if (anyVisible) adminControls.classList.remove('hidden');
       else adminControls.classList.add('hidden');
     }
@@ -2292,6 +2935,11 @@
       if (threadLikesUnsubscribe) { threadLikesUnsubscribe(); threadLikesUnsubscribe = null; }
       if (postLikesUnsubscribe) { postLikesUnsubscribe(); postLikesUnsubscribe = null; }
       if (announcementsUnsubscribe) { announcementsUnsubscribe(); announcementsUnsubscribe = null; }
+      if (contactAdminsUnsubscribe) { contactAdminsUnsubscribe(); contactAdminsUnsubscribe = null; }
+      if (myContactRoomUnsubscribe) { myContactRoomUnsubscribe(); myContactRoomUnsubscribe = null; }
+      if (myContactMessagesUnsubscribe) { myContactMessagesUnsubscribe(); myContactMessagesUnsubscribe = null; }
+      if (adminChatRoomUnsubscribe) { adminChatRoomUnsubscribe(); adminChatRoomUnsubscribe = null; }
+      if (adminChatMessagesUnsubscribe) { adminChatMessagesUnsubscribe(); adminChatMessagesUnsubscribe = null; }
       try { await signOut(auth); } catch (e) { console.error(e); }
       document.body.style.background = '';
       showLoginView(); hideBootOverlay();
@@ -2381,6 +3029,7 @@
       initOfficialUsersListener();
       initThreadLikesListener();
       initAnnouncementsListener();
+      initContactAdminsListener();
 
       setTimeout(() => { if (checkSelfBan()) return; }, 800);
 
@@ -3545,12 +4194,16 @@
         const isBannedByEmail = ek ? !!bannedUsersCache[ek] : false;
         const isBanned = isBannedByUid || isBannedByEmail;
         const isProtected = (u.role === 'admin') || (u.role === 'owner') || isProtectedEmail(u.email);
+        const isContactAdminUser = !!contactAdminsCache[u.uid] || u.role === 'admin' || u.role === 'owner';
 
         let roleTag = '<span class="role-tag none">一般</span>';
         if (u.role === 'admin') roleTag = '<span class="role-tag admin">管理者</span>';
         else if (u.role === 'owner') roleTag = '<span class="role-tag owner">主</span>';
         else if (u.role === 'vip') roleTag = '<span class="role-tag vip">VIP</span>';
         if (isBanned) roleTag += ' <span class="role-tag banned">BAN中</span>';
+        if (isContactAdminUser && u.role !== 'admin' && u.role !== 'owner') {
+          roleTag += ' <span class="role-tag" style="background:#b45309;">問い合わせ対応</span>';
+        }
 
         const nicknameData = nicknamesCache[u.uid];
         const nickname = nicknameData && nicknameData.nickname ? nicknameData.nickname : '';
@@ -3801,7 +4454,7 @@
         if (!b || !b.label) return;
         let featuresHtml = '';
         const features = b.features || {};
-        const featureNames = { canDeletePost: '投稿削除', canDeleteThread: 'スレッド削除', canBan: 'BAN', canViewEmail: 'メール閲覧', canBackup: 'バックアップ', canManageBadge: 'バッジ管理' };
+        const featureNames = { canDeletePost: '投稿削除', canDeleteThread: 'スレッド削除', canBan: 'BAN', canViewEmail: 'メール閲覧', canBackup: 'バックアップ', canManageBadge: 'バッジ管理', canAnswerContact: '問い合わせ対応' };
         Object.keys(featureNames).forEach(f => { if (features[f]) featuresHtml += `<span class="feat-tag active">${featureNames[f]}</span>`; });
         if (!featuresHtml) featuresHtml = '<span class="feat-tag">機能なし</span>';
         const row = document.createElement('div');
@@ -4207,11 +4860,15 @@
         const officialUsers = await grab(COL.officialUsers);
         const threadLikes = await grab(COL.threadLikes);
         const announcements = await grab(COL.announcements);
+        const contactAdmins = await grab(COL.contactAdmins);
+        const contactChats = await grab(COL.contactChats);
+        const contactMessages = await grab(COL.contactMessages);
 
         const payload = {
-          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 8 },
+          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 9 },
           threads: threadsData, customBadges, knownUsers, bannedUsers,
-          badgeFeatures, nicknames, officialUsers, threadLikes, announcements
+          badgeFeatures, nicknames, officialUsers, threadLikes, announcements,
+          contactAdmins, contactChats, contactMessages
         };
         const json = JSON.stringify(payload, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
@@ -4290,6 +4947,9 @@
         await restoreCol(COL.officialUsers, parsed.officialUsers);
         await restoreCol(COL.threadLikes, parsed.threadLikes);
         await restoreCol(COL.announcements, parsed.announcements);
+        await restoreCol(COL.contactAdmins, parsed.contactAdmins);
+        await restoreCol(COL.contactChats, parsed.contactChats);
+        await restoreCol(COL.contactMessages, parsed.contactMessages);
         showBanner('復元が完了しました', false);
         alert('復元が完了しました。');
         showThreadList();
@@ -4314,6 +4974,11 @@
       if (threadLikesUnsubscribe) threadLikesUnsubscribe();
       if (postLikesUnsubscribe) postLikesUnsubscribe();
       if (announcementsUnsubscribe) announcementsUnsubscribe();
+      if (contactAdminsUnsubscribe) contactAdminsUnsubscribe();
+      if (myContactRoomUnsubscribe) myContactRoomUnsubscribe();
+      if (myContactMessagesUnsubscribe) myContactMessagesUnsubscribe();
+      if (adminChatRoomUnsubscribe) adminChatRoomUnsubscribe();
+      if (adminChatMessagesUnsubscribe) adminChatMessagesUnsubscribe();
     });
     window.addEventListener('unhandledrejection', (event) => {
       console.error('未処理のPromiseエラー:', event.reason);
