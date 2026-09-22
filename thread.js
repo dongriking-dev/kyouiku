@@ -1,16 +1,13 @@
 // ============================================================
 // thread.js — スレッド詳細ページ専用
-// ★ このスレッドの posts / postLikes / threadLikes の3本だけ監視
-// ★ 一覧の監視は一切しない → カクつき激減
 // ============================================================
 import {
   db, auth, provider, COL, getSubjectInfo, subjectBadgeHtml,
   roleFromEmail, escapeHtml, showBanner, fileToBase64Image, formatSize,
   buildFileHtml, renderRichContent, stripRichHtml, formatContent,
-  createRichEditor, getEditorHtml, getEditorText, clearEditor, setEditorHtml,
+  createRichEditor, getEditorHtml, getEditorText, clearEditor,
   tokenizeQuery, matchesAllTokens,
-  loadBadgeVisibility, loadEmailVisibility,
-  loadReadThreads, saveReadThreads, emailToKey
+  loadBadgeVisibility, loadReadThreads, saveReadThreads, emailToKey
 } from './common.js';
 
 import {
@@ -34,9 +31,7 @@ let nicknamesCache = {};
 let customBadgesCache = {};
 let officialUsersCache = {};
 let bannedUsersCache = {};
-let badgeFeaturePermissions = {};
 let myBadgePublic = true;
-let myEmailVisible = true;
 let activeReplyParentId = null;
 let activeEditPostId = null;
 let inThreadSearchQuery = '';
@@ -49,7 +44,6 @@ let nicknamesUnsubscribe = null;
 let badgesUnsubscribe = null;
 let officialUnsubscribe = null;
 let bannedUsersUnsubscribe = null;
-let badgeFeatureUnsubscribe = null;
 let threadDocUnsubscribe = null;
 
 let intentionalSignOut = false;
@@ -68,7 +62,7 @@ const inThreadSearchInput = $('inThreadSearchInput');
 const inThreadSearchClear = $('inThreadSearchClear');
 const inThreadSearchInfo = $('inThreadSearchInfo');
 
-// ---------------- URL から threadId 取得 ----------------
+// ---------------- URL から threadId ----------------
 const params = new URLSearchParams(location.search);
 threadId = params.get('id');
 if (!threadId) {
@@ -78,33 +72,26 @@ if (!threadId) {
 
 // ---------------- 権限 ----------------
 function canDelete() { return userRole === 'admin' || userRole === 'owner' || userRole === 'vip'; }
-function canDo(feature) {
-  if (userRole === 'admin' || userRole === 'owner') return true;
-  if (userRole === 'vip' && (feature === 'canDeletePost' || feature === 'canDeleteThread')) return true;
-  if (currentUser && badgeFeaturePermissions[currentUser.uid]?.[feature]) return true;
-  return false;
-}
-function canManageBadge() { return userRole === 'admin' || userRole === 'owner'; }
-function canSetOfficial() { return userRole === 'admin' || userRole === 'owner'; }
-function canBan() { return userRole === 'admin' || userRole === 'owner'; }
 function canViewEmail() { return userRole === 'admin' || userRole === 'owner'; }
-function isProtectedEmail(email) {
-  if (!email) return false;
-  const e = email.toLowerCase().trim();
-  return e === 'katou.noel114514@gmail.com' || e === '18107@v.nakijin.ed.jp';
-}
-function isProtectedUid(uid) {
-  if (!uid) return false;
-  const u = nicknamesCache[uid]; // 簡易
-  if (officialUsersCache[uid]?.official) return true;
-  return false;
-}
 
-// ---------------- 起動 ----------------
+// ---------------- 接続 ----------------
+function setConnection(online) {
+  if (online) {
+    connDot.className = 'inline-block w-2 h-2 rounded-full bg-green-500';
+    connText.textContent = 'オンライン（リアルタイム同期中）';
+  } else {
+    connDot.className = 'inline-block w-2 h-2 rounded-full bg-red-500';
+    connText.textContent = 'オフライン';
+  }
+}
+window.addEventListener('online', () => setConnection(true));
+window.addEventListener('offline', () => setConnection(false));
+
+// ---------------- ログイン ----------------
 $('googleLoginBtn').addEventListener('click', async () => {
   try { await signInWithPopup(auth, provider); }
   catch (err) {
-    if (err.code !== 'auth/popup-closed-by-user') alert("ログイン失敗: " + (err.message || ''));
+    if (err.code !== 'auth/popup-closed-by-user') alert("ログインに失敗しました: " + (err.message || ''));
   }
 });
 $('logoutBtn').addEventListener('click', async () => {
@@ -118,21 +105,10 @@ function showMainView() { loginView.classList.add('hidden'); mainView.classList.
 function showLoginView() { loginView.classList.remove('hidden'); mainView.classList.add('hidden'); }
 function hideBootOverlay() { bootOverlay.classList.add('hidden'); }
 
-function setConnection(online) {
-  if (online) {
-    connDot.className = 'inline-block w-2 h-2 rounded-full bg-green-500';
-    connText.textContent = 'オンライン';
-  } else {
-    connDot.className = 'inline-block w-2 h-2 rounded-full bg-red-500';
-    connText.textContent = 'オフライン';
-  }
-}
-window.addEventListener('online', () => setConnection(true));
-window.addEventListener('offline', () => setConnection(false));
-
 async function trySilentSignIn() {
   try {
-    const p = new (await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js")).GoogleAuthProvider();
+    const { GoogleAuthProvider } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+    const p = new GoogleAuthProvider();
     p.setCustomParameters({ prompt: 'none' });
     await signInWithPopup(auth, p);
   } catch (err) {
@@ -140,6 +116,7 @@ async function trySilentSignIn() {
   } finally { initialAuthCheckDone = true; }
 }
 
+// ---------------- 認証 ----------------
 onAuthStateChanged(auth, async (user) => {
   if (intentionalSignOut) { currentUser = null; return; }
   currentUser = user;
@@ -151,7 +128,6 @@ onAuthStateChanged(auth, async (user) => {
   }
   userRole = roleFromEmail(user.email);
   myBadgePublic = loadBadgeVisibility(user.email);
-  myEmailVisible = loadEmailVisibility(user.email);
   readThreads = loadReadThreads(user.uid);
 
   await loadThreadMeta();
@@ -163,11 +139,11 @@ onAuthStateChanged(auth, async (user) => {
   initBadgesListener();
   initOfficialListener();
   initBannedUsersListener();
-  initBadgeFeatureListener();
 
-  createRichEditor($('postEditorWrap'), 'コメントを入力...');
+  createRichEditor($('postEditorWrap'), 'コメントを入力してください。URLは自動でリンク化されます。');
   setupInThreadSearch();
   setupPostForm();
+  setupFileInput();
   setupLikeButton();
   setupDeleteThreadBtn();
 
@@ -185,7 +161,7 @@ function renderRoleBadge(role) {
   else if (role === 'vip') c.innerHTML = '<span class="vip-badge">VIP</span>';
 }
 
-// ---------------- スレッド本体のメタ ----------------
+// ---------------- スレッド本体 ----------------
 async function loadThreadMeta() {
   const snap = await getDoc(doc(db, COL.threads, threadId));
   if (!snap.exists()) {
@@ -199,10 +175,8 @@ async function loadThreadMeta() {
   $('currentThreadSubjectWrap').innerHTML = subjectBadgeHtml(threadData.subject);
   $('currentThreadDate').innerText = '作成日時: ' + (threadData.createdAt ? new Date(threadData.createdAt).toLocaleString('ja-JP') : '不明');
   threadLikeBtn.dataset.threadId = threadId;
-  // 既読
   markThreadAsRead();
 }
-
 function initThreadDocListener() {
   if (threadDocUnsubscribe) threadDocUnsubscribe();
   threadDocUnsubscribe = onSnapshot(doc(db, COL.threads, threadId), (snap) => {
@@ -212,21 +186,16 @@ function initThreadDocListener() {
     }
   });
 }
-
 function markThreadAsRead() {
   if (!currentUser || !threadId) return;
   readThreads[threadId] = Date.now();
   saveReadThreads(currentUser.uid, readThreads);
 }
 
-// ---------------- 監視：レス ----------------
+// ---------------- 監視 ----------------
 function initPostsListener() {
   if (postsUnsubscribe) postsUnsubscribe();
-  const q = query(
-    collection(db, COL.threads, threadId, 'posts'),
-    orderBy('createdAt', 'asc'),
-    limit(300)
-  );
+  const q = query(collection(db, COL.threads, threadId, 'posts'), orderBy('createdAt', 'asc'), limit(300));
   postsUnsubscribe = onSnapshot(q, (snap) => {
     setConnection(true);
     const posts = [];
@@ -242,7 +211,6 @@ function initPostsListener() {
     postsContainer.innerHTML = '<p class="text-red-500 text-sm">読み込みに失敗しました。</p>';
   });
 }
-
 function initPostLikesListener() {
   if (postLikesUnsubscribe) postLikesUnsubscribe();
   postLikesUnsubscribe = onSnapshot(collection(db, COL.threads, threadId, 'postLikes'), (snap) => {
@@ -251,7 +219,6 @@ function initPostLikesListener() {
     renderPostsFromCache();
   }, (err) => console.error('レスいいね監視エラー:', err));
 }
-
 function initThreadLikesListener() {
   if (threadLikesUnsubscribe) threadLikesUnsubscribe();
   threadLikesUnsubscribe = onSnapshot(collection(db, COL.threadLikes), (snap) => {
@@ -260,8 +227,6 @@ function initThreadLikesListener() {
     updateThreadLikeButton();
   }, (err) => console.error('スレッドいいね監視エラー:', err));
 }
-
-// ---------------- 監視：ユーザー情報系 ----------------
 function initNicknamesListener() {
   if (nicknamesUnsubscribe) nicknamesUnsubscribe();
   nicknamesUnsubscribe = onSnapshot(collection(db, COL.nicknames), (snap) => {
@@ -294,16 +259,8 @@ function initBannedUsersListener() {
     renderPostsFromCache();
   }, (err) => console.error('BAN監視エラー:', err));
 }
-function initBadgeFeatureListener() {
-  if (badgeFeatureUnsubscribe) badgeFeatureUnsubscribe();
-  badgeFeatureUnsubscribe = onSnapshot(collection(db, COL.badgeFeatures), (snap) => {
-    badgeFeaturePermissions = {};
-    snap.forEach(d => { badgeFeaturePermissions[d.id] = d.data(); });
-    renderPostsFromCache();
-  }, (err) => console.error('バッジ機能監視エラー:', err));
-}
 
-// ---------------- 検索（スレッド内） ----------------
+// ---------------- スレッド内検索 ----------------
 function setupInThreadSearch() {
   let debounce = null;
   inThreadSearchInput.addEventListener('input', () => {
@@ -322,68 +279,6 @@ function setupInThreadSearch() {
 }
 
 // ---------------- レス描画 ----------------
-function renderPostsFromCache() {
-  postsContainer.innerHTML = '';
-  if (allPostsCache.length === 0) {
-    postsContainer.innerHTML = '<p class="text-gray-500 text-sm">まだ書き込みがありません。</p>';
-    inThreadSearchInfo.classList.remove('show');
-    return;
-  }
-
-  const inThreadTokens = tokenizeQuery(inThreadSearchQuery);
-  const hasSearch = inThreadTokens.length > 0;
-
-  let visibleIds = null;
-  if (hasSearch) {
-    const matched = new Set();
-    allPostsCache.forEach(p => {
-      const text = p.contentText || stripRichHtml(p.content || '');
-      if (matchesAllTokens(text, inThreadTokens)) matched.add(p.id);
-    });
-    visibleIds = new Set();
-    const byId = new Map(allPostsCache.map(p => [p.id, p]));
-    matched.forEach(id => {
-      let cur = byId.get(id);
-      while (cur) {
-        visibleIds.add(cur.id);
-        if (!cur.parentId) break;
-        cur = byId.get(cur.parentId);
-      }
-    });
-    inThreadSearchInfo.classList.add('show');
-    inThreadSearchInfo.innerHTML = `「${escapeHtml(inThreadSearchQuery)}」 の検索結果: <strong>${matched.size}</strong> 件`;
-  } else {
-    inThreadSearchInfo.classList.remove('show');
-  }
-
-  const childrenMap = new Map();
-  const rootPosts = [];
-  const keySet = new Set(allPostsCache.map(p => p.id));
-  allPostsCache.forEach(p => {
-    let pid = p.parentId || null;
-    if (pid && !keySet.has(pid)) pid = null;
-    if (pid === null) rootPosts.push(p);
-    else {
-      if (!childrenMap.has(pid)) childrenMap.set(pid, []);
-      childrenMap.get(pid).push(p);
-    }
-  });
-
-  const frag = document.createDocumentFragment();
-  const rootsToRender = visibleIds ? rootPosts.filter(p => visibleIds.has(p.id)) : rootPosts;
-  const childMapToUse = visibleIds
-    ? new Map([...childrenMap].map(([pid, ch]) => [pid, ch.filter(c => visibleIds.has(c.id))]).filter(([, ch]) => ch.length))
-    : childrenMap;
-
-  rootsToRender.forEach(p => frag.appendChild(renderPostTree(p, childMapToUse)));
-  postsContainer.appendChild(frag);
-
-  // 開いていた返信/編集ボックスを復元
-  if (activeEditPostId && keySet.has(activeEditPostId)) openEditBox(activeEditPostId);
-  if (activeReplyParentId && keySet.has(activeReplyParentId)) openReplyBox(activeReplyParentId);
-}
-
-// ---------------- レス1件 + 子孫 ----------------
 function isPostBanned(post) {
   if (!post) return false;
   if (post.authorUid && bannedUsersCache[post.authorUid]) return true;
@@ -428,6 +323,68 @@ function resolveDisplayName(post) {
   return post.author || '名無しさん';
 }
 
+function renderPostsFromCache() {
+  postsContainer.innerHTML = '';
+  if (allPostsCache.length === 0) {
+    postsContainer.innerHTML = '<p class="text-gray-500 text-sm">まだ書き込みがありません。</p>';
+    inThreadSearchInfo.classList.remove('show');
+    return;
+  }
+
+  const inThreadTokens = tokenizeQuery(inThreadSearchQuery);
+  const hasSearch = inThreadTokens.length > 0;
+
+  let visibleIds = null;
+  if (hasSearch) {
+    const matched = new Set();
+    allPostsCache.forEach(p => {
+      const text = p.contentText || stripRichHtml(p.content || '');
+      if (matchesAllTokens(text, inThreadTokens)) matched.add(p.id);
+    });
+    visibleIds = new Set();
+    const byId = new Map(allPostsCache.map(p => [p.id, p]));
+    matched.forEach(id => {
+      let cur = byId.get(id);
+      while (cur) {
+        visibleIds.add(cur.id);
+        if (!cur.parentId) break;
+        cur = byId.get(cur.parentId);
+      }
+    });
+    inThreadSearchInfo.classList.add('show');
+    inThreadSearchInfo.innerHTML = `「${escapeHtml(inThreadSearchQuery)}」 の検索結果: <strong>${matched.size}</strong> 件のレスがヒット`;
+  } else {
+    inThreadSearchInfo.classList.remove('show');
+  }
+
+  const childrenMap = new Map();
+  const rootPosts = [];
+  const keySet = new Set(allPostsCache.map(p => p.id));
+  allPostsCache.forEach(p => {
+    let pid = p.parentId || null;
+    if (pid && !keySet.has(pid)) pid = null;
+    if (pid === null) rootPosts.push(p);
+    else {
+      if (!childrenMap.has(pid)) childrenMap.set(pid, []);
+      childrenMap.get(pid).push(p);
+    }
+  });
+
+  const frag = document.createDocumentFragment();
+  const rootsToRender = visibleIds ? rootPosts.filter(p => visibleIds.has(p.id)) : rootPosts;
+  const childMapToUse = visibleIds
+    ? new Map([...childrenMap].map(([pid, ch]) => [pid, ch.filter(c => visibleIds.has(c.id))]).filter(([, ch]) => ch.length))
+    : childrenMap;
+
+  rootsToRender.forEach(p => frag.appendChild(renderPostTree(p, childMapToUse)));
+  postsContainer.appendChild(frag);
+
+  if (activeEditPostId && keySet.has(activeEditPostId)) openEditBox(activeEditPostId);
+  else activeEditPostId = null;
+  if (activeReplyParentId && keySet.has(activeReplyParentId)) openReplyBox(activeReplyParentId);
+  else activeReplyParentId = null;
+}
+
 function renderPostTree(post, childrenMap) {
   const wrap = document.createElement('div');
   wrap.className = 'post-tree';
@@ -441,14 +398,12 @@ function renderPostTree(post, childrenMap) {
     const ed = (() => { try { return new Date(post.editedAt).toLocaleString('ja-JP'); } catch (e) { return '不明'; } })();
     editedMark = `<span class="edited-mark" title="編集日時: ${escapeHtml(ed)}">✏️ 編集済み</span>`;
   }
-
   const roleBadgeHtml = buildPostRoleBadge(post);
   const customBadgeHtml = buildPostCustomBadge(post);
   const officialBadgeHtml = buildOfficialBadge(post);
   const isBannedPost = isPostBanned(post);
   const bannedMark = isBannedPost ? `<span class="banned-mark">BAN中</span>` : '';
   const displayName = resolveDisplayName(post);
-
   const adminInfo = canViewEmail() ? `<span class="admin-email">${escapeHtml(post.authorEmail || 'メール不明')}</span>` : '';
 
   let replyLabel = '';
@@ -468,7 +423,7 @@ function renderPostTree(post, childrenMap) {
   const liked = !!(currentUser && likes[currentUser.uid]);
   const likeBtnHtml = `
     <button class="like-btn ${liked ? 'liked' : ''}" data-like-post-id="${post.id}">
-      ❤ <span class="like-count">${likeCount}</span>
+      <span class="like-heart">${liked ? '❤' : '🤍'}</span> <span class="like-count">${likeCount}</span>
     </button>`;
 
   const isMyPost = !!(currentUser && post.authorUid === currentUser.uid);
@@ -488,7 +443,7 @@ function renderPostTree(post, childrenMap) {
         ${likeBtnHtml}
         ${editBtnHtml}
         <button class="reply-btn" data-reply-key="${post.id}">返信</button>
-        ${canDelete() || canDo('canDeletePost') ? `<button class="delete-btn" data-post-key="${post.id}">削除</button>` : ''}
+        ${canDelete() ? `<button class="delete-btn" data-post-key="${post.id}">削除</button>` : ''}
       </span>
     </div>
     ${post.content ? `<div class="text-gray-900 rich-content mb-1">${contentHtml}</div>` : ''}
@@ -498,7 +453,7 @@ function renderPostTree(post, childrenMap) {
 
   const rbtn = postDiv.querySelector('.reply-btn');
   if (rbtn) rbtn.addEventListener('click', () => onReplyClick(post.id));
-  if (canDelete() || canDo('canDeletePost')) {
+  if (canDelete()) {
     const dbtn = postDiv.querySelector('.delete-btn');
     if (dbtn) dbtn.addEventListener('click', () => deletePost(post.id, postNumberMap.get(post.id)));
   }
@@ -577,7 +532,7 @@ function setupLikeButton() {
 }
 
 // ---------------- レス投稿 ----------------
-function setupPostForm() {
+function setupFileInput() {
   $('fileInput').addEventListener('change', async () => {
     const file = $('fileInput').files[0];
     const box = $('postPreviewBox');
@@ -591,7 +546,8 @@ function setupPostForm() {
       box.classList.add('show');
     } catch (err) { alert(err.message); $('fileInput').value = ''; box.classList.remove('show'); }
   });
-
+}
+function setupPostForm() {
   $('postForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!currentUser) { alert('ログインが必要です。'); return; }
@@ -611,14 +567,10 @@ function setupPostForm() {
         authorRole: userRole || null, badgeVisible: myBadgePublic,
         parentId: null, file: fileData, editedAt: null
       });
-      // スレッドのメタ更新（一覧ページで使う）
       const threadRef = doc(db, COL.threads, threadId);
       const snap = await getDoc(threadRef);
       if (snap.exists()) {
-        await updateDoc(threadRef, {
-          lastPostAt: now,
-          postCount: (snap.data().postCount || 0) + 1
-        });
+        await updateDoc(threadRef, { lastPostAt: now, postCount: (snap.data().postCount || 0) + 1 });
       }
       $('postForm').reset();
       $('postPreviewBox').classList.remove('show');
@@ -655,6 +607,7 @@ function openReplyBox(parentId) {
     <div class="reply-target-label">>>${parentNum} への返信</div>
     <div class="reply-editor-wrap"></div>
     <div class="mt-2">
+      <label class="block text-xs text-gray-600 mb-1">画像を添付（任意）:</label>
       <input type="file" class="reply-file text-xs text-gray-600 w-full" accept="image/*">
       <div class="preview-box reply-preview">
         <img class="reply-preview-img" alt="プレビュー">
@@ -705,10 +658,7 @@ function openReplyBox(parentId) {
       const threadRef = doc(db, COL.threads, threadId);
       const snap = await getDoc(threadRef);
       if (snap.exists()) {
-        await updateDoc(threadRef, {
-          lastPostAt: now,
-          postCount: (snap.data().postCount || 0) + 1
-        });
+        await updateDoc(threadRef, { lastPostAt: now, postCount: (snap.data().postCount || 0) + 1 });
       }
       activeReplyParentId = null;
       box.remove();
@@ -729,9 +679,7 @@ function onEditClick(postId) {
   if (!currentUser) { alert('ログインが必要です。'); return; }
   const post = allPostsCache.find(p => p.id === postId);
   if (!post) return;
-  if (!post.authorUid || post.authorUid !== currentUser.uid) {
-    alert('自分の投稿のみ編集できます。'); return;
-  }
+  if (!post.authorUid || post.authorUid !== currentUser.uid) { alert('自分の投稿のみ編集できます。'); return; }
   if (activeEditPostId === postId) { closeEditBox(); return; }
   closeReplyBox();
   activeEditPostId = postId;
@@ -756,7 +704,7 @@ function openEditBox(postId) {
     </div>`;
   targetCard.insertAdjacentElement('afterend', box);
   const editEditorWrap = box.querySelector('.edit-editor-wrap');
-  createRichEditor(editEditorWrap, '編集内容', post.content || '');
+  createRichEditor(editEditorWrap, '編集内容を入力', post.content || '');
   const cancelBtn = box.querySelector('.edit-cancel-btn');
   const saveBtn = box.querySelector('.edit-save-btn');
   cancelBtn.addEventListener('click', () => { activeEditPostId = null; box.remove(); });
@@ -786,10 +734,10 @@ function closeEditBox() {
 
 // ---------------- 削除 ----------------
 async function deletePost(postId, index) {
-  if (!canDelete() && !canDo('canDeletePost')) { alert('削除権限がありません。'); return; }
+  if (!canDelete()) { alert('削除権限がありません。'); return; }
   const hasChildren = allPostsCache.some(p => p.parentId === postId);
   const msg = hasChildren
-    ? `レス #${index} を削除しますか？\n※ 返信もすべて削除されます。`
+    ? `レス #${index} を削除しますか？\n※ このレスへの返信もすべて削除されます。`
     : `レス #${index} を削除しますか？`;
   if (!confirm(msg)) return;
   try {
@@ -800,7 +748,6 @@ async function deletePost(postId, index) {
       batch.delete(doc(db, COL.threads, threadId, 'postLikes', id));
     });
     await batch.commit();
-    // postCount を減らす
     const threadRef = doc(db, COL.threads, threadId);
     const snap = await getDoc(threadRef);
     if (snap.exists()) {
@@ -827,10 +774,10 @@ function collectDescendants(parentKey) {
 // ---------------- スレッド削除 ----------------
 function setupDeleteThreadBtn() {
   const btn = $('deleteThreadBtn');
-  if (canDelete() || canDo('canDeleteThread')) btn.classList.remove('hidden');
+  if (canDelete()) btn.classList.remove('hidden');
   btn.addEventListener('click', async () => {
-    if (!canDelete() && !canDo('canDeleteThread')) { alert('削除権限がありません。'); return; }
-    if (!confirm('このスレッドをすべてのレスごと削除しますか？')) return;
+    if (!canDelete()) { alert('削除権限がありません。'); return; }
+    if (!confirm('このスレッドをすべてのレスごと削除しますか？\nこの操作は取り消せません。')) return;
     try {
       const postsSnap = await getDocs(collection(db, COL.threads, threadId, 'posts'));
       const batch = writeBatch(db);
@@ -840,7 +787,6 @@ function setupDeleteThreadBtn() {
       batch.delete(doc(db, COL.threadLikes, threadId));
       batch.delete(doc(db, COL.threads, threadId));
       await batch.commit();
-      // 既読記録も消す
       delete readThreads[threadId];
       if (currentUser) saveReadThreads(currentUser.uid, readThreads);
       showBanner('スレッドを削除しました', false);
@@ -855,7 +801,7 @@ function setupDeleteThreadBtn() {
 function cleanupAll() {
   [postsUnsubscribe, postLikesUnsubscribe, threadLikesUnsubscribe,
    nicknamesUnsubscribe, badgesUnsubscribe, officialUnsubscribe,
-   bannedUsersUnsubscribe, badgeFeatureUnsubscribe, threadDocUnsubscribe]
+   bannedUsersUnsubscribe, threadDocUnsubscribe]
    .forEach(un => { if (un) un(); });
 }
 window.addEventListener('beforeunload', cleanupAll);
