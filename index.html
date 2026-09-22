@@ -10,16 +10,13 @@
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans p-4 max-w-5xl mx-auto">
 
-  <!-- 起動オーバーレイ -->
   <div id="bootOverlay">
     <div class="boot-spinner"></div>
     <div class="boot-msg">アカウントを確認しています...</div>
   </div>
 
-  <!-- ステータスバナー -->
   <div id="statusBanner" class="bg-red-600 text-white"></div>
 
-  <!-- 利用ルール（折りたたみ） -->
   <div id="siteRules" class="collapsed bg-white border-2 border-blue-800 rounded-lg shadow mb-4 overflow-hidden">
     <button id="rulesToggleBtn" type="button"
       class="w-full bg-blue-900 hover:bg-blue-800 text-white text-left px-4 py-3 flex items-center justify-between transition">
@@ -51,10 +48,8 @@
     </div>
   </div>
 
-  <!-- アナウンス表示エリア -->
   <div id="announcementArea" class="hidden mb-4"></div>
 
-  <!-- ログインビュー -->
   <div id="loginView" class="hidden">
     <div class="bg-white border border-gray-300 rounded-lg shadow p-8 max-w-md mx-auto mt-16 text-center">
       <h1 class="text-3xl font-bold text-blue-900 mb-2">どんぐり学びの広場</h1>
@@ -69,10 +64,10 @@
         </svg>
         Googleでログイン
       </button>
+      <p class="text-xs text-gray-400 mt-4">※ 表示名は自由に設定できます</p>
     </div>
   </div>
 
-  <!-- メインビュー -->
   <div id="mainView" class="hidden">
     <header class="border-b-2 border-blue-800 pb-2 mb-4 flex justify-between items-center flex-wrap gap-2">
       <div>
@@ -85,9 +80,7 @@
         </p>
       </div>
       <div class="flex items-center gap-2 flex-wrap">
-        <button id="myNicknameBtn" class="my-nickname-btn unset hidden" title="自分のニックネームを設定">
-          🏷️ 名無しさん
-        </button>
+        <button id="myNicknameBtn" class="my-nickname-btn unset hidden" title="自分のニックネームを設定">🏷️ 名無しさん</button>
         <div id="adminControls" class="hidden flex gap-2 flex-wrap">
           <button id="announcementBtn" class="announcement-btn hidden">📢 アナウンス</button>
           <button id="userListBtn" class="userlist-btn hidden">ユーザー一覧</button>
@@ -97,7 +90,6 @@
       </div>
     </header>
 
-    <!-- 新規スレッド作成 -->
     <section class="bg-blue-50 border border-blue-200 p-4 rounded mb-6 shadow-sm">
       <h2 class="text-lg font-bold text-gray-700 mb-2">新しい質問・スレッドを作成</h2>
       <form id="createThreadForm" class="space-y-3">
@@ -133,7 +125,6 @@
       </form>
     </section>
 
-    <!-- スレッド一覧 -->
     <main>
       <h2 class="text-xl font-bold border-b pb-1 mb-4 text-gray-700">スレッド一覧</h2>
 
