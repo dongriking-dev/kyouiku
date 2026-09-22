@@ -508,9 +508,6 @@
     .announcement-body  { color: #1f2937; font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; margin-top: 4px; }
     .announcement-meta  { color: #6b7280; font-size: 10px; margin-top: 6px; }
 
-    /* ============================================================
-     * ★ 問い合わせチャット関連
-     * ============================================================ */
     .contact-btn {
       background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
       color: #fff; font-size: 13px; font-weight: 700;
@@ -871,7 +868,7 @@
     </div>
   </div>
 
-  <!-- ★ アナウンス投稿モーダル -->
+  <!-- アナウンス投稿モーダル -->
   <div id="announcementModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 560px;">
       <h3 class="text-lg font-bold text-gray-800 mb-1">アナウンスを投稿</h3>
@@ -898,7 +895,7 @@
     </div>
   </div>
 
-  <!-- ★ 問い合わせチャットモーダル（一般ユーザー用） -->
+  <!-- 問い合わせチャットモーダル（一般ユーザー用） -->
   <div id="contactChatModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 560px;">
       <div class="flex justify-between items-center mb-3">
@@ -925,7 +922,7 @@
     </div>
   </div>
 
-  <!-- ★ 管理者用：問い合わせ一覧モーダル -->
+  <!-- 管理者用：問い合わせ一覧モーダル -->
   <div id="adminInboxModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 640px;">
       <div class="flex justify-between items-center mb-3">
@@ -938,7 +935,7 @@
     </div>
   </div>
 
-  <!-- ★ 管理者用：個別問い合わせチャットモーダル -->
+  <!-- 管理者用：個別問い合わせチャットモーダル -->
   <div id="adminChatModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 560px;">
       <div class="flex justify-between items-center mb-3">
@@ -964,7 +961,7 @@
     </div>
   </div>
 
-  <!-- ★ 管理者バトンタッチモーダル -->
+  <!-- 管理者バトンタッチモーダル -->
   <div id="adminHandoverModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 480px;">
       <h3 class="text-lg font-bold text-gray-800 mb-1">管理者バトンタッチ</h3>
@@ -988,7 +985,7 @@
     </div>
   </div>
 
-  <!-- ★ 管理者バトン管理モーダル -->
+  <!-- 管理者バトン管理モーダル -->
   <div id="adminHandoverListModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 600px;">
       <div class="flex justify-between items-center mb-3">
@@ -1005,7 +1002,7 @@
     </div>
   </div>
 
-  <!-- ★ 一般ユーザー用：管理者からの返信受信箱 -->
+  <!-- 一般ユーザー用：管理者からの返信受信箱 -->
   <div id="myInboxModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 620px;">
       <div class="flex justify-between items-center mb-3">
@@ -1347,7 +1344,7 @@
     let readThreads = {};
     let banOverlayShown = false;
 
-    // ★ 問い合わせチャット用
+    // 問い合わせチャット用
     let contactAdminsCache = {};
     let contactAdminsUnsubscribe = null;
     let myContactRoomUnsubscribe = null;
@@ -1359,7 +1356,7 @@
     let contactChatMessagesCache = [];
     let adminChatMessagesCache = [];
 
-    // ★ マイ受信箱用
+    // マイ受信箱用
     let myInboxUnsubscribe = null;
     let myInboxUnreadUnsubscribe = null;
     let myInboxCache = [];
@@ -1497,14 +1494,16 @@
     function loadNewMarkSetting(uid) { const v = localStorage.getItem(newMarkSettingKey(uid)); return v === null ? true : v === 'true'; }
     function saveNewMarkSetting(uid, enabled) { localStorage.setItem(newMarkSettingKey(uid), enabled ? 'true' : 'false'); }
 
+    // ========== 既読管理（改修版） ==========
     function readThreadsKey(uid) { return 'manabi_readThreads_' + (uid || 'anonymous'); }
     function loadReadThreads(uid) {
       try {
         const v = localStorage.getItem(readThreadsKey(uid));
         const parsed = v ? JSON.parse(v) : {};
+        // 値は数値（最後に読んだときの lastPostAt）として保持
         const cleaned = {};
-        Object.entries(parsed).forEach(([tid, ts]) => {
-          if (typeof ts === 'number' && !isNaN(ts) && ts > 0) cleaned[tid] = ts;
+        Object.entries(parsed).forEach(([tid, val]) => {
+          if (typeof val === 'number' && !isNaN(val) && val > 0) cleaned[tid] = val;
         });
         return cleaned;
       } catch (e) { return {}; }
@@ -1513,9 +1512,18 @@
       try { localStorage.setItem(readThreadsKey(uid), JSON.stringify(data)); }
       catch (e) { console.warn('既読記録の保存に失敗:', e); }
     }
-    function markThreadAsRead(threadId) {
+    /**
+     * スレッドを既読にする。
+     * @param {string} threadId
+     * @param {number} [lastPostAt] そのスレッドの最終投稿時刻（省略時はキャッシュから取得）
+     */
+    function markThreadAsRead(threadId, lastPostAt) {
       if (!currentUser || !threadId) return;
-      readThreads[threadId] = Date.now();
+      const thread = allThreadsCache.find(t => t.id === threadId);
+      const lp = (typeof lastPostAt === 'number' && lastPostAt > 0)
+        ? lastPostAt
+        : (thread ? (thread.lastPostAt || thread.createdAt || Date.now()) : Date.now());
+      readThreads[threadId] = lp;
       saveReadThreads(currentUser.uid, readThreads);
     }
     function isThreadNew(thread) {
@@ -1523,9 +1531,11 @@
       if (!thread || !thread.id) return false;
       const exists = allThreadsCache.some(t => t.id === thread.id);
       if (!exists) return false;
-      const lastRead = readThreads[thread.id] || 0;
-      if (!lastRead) return true;
+      const lastRead = readThreads[thread.id];
+      if (lastRead === undefined || lastRead === null) return true; // 一度も開いていない
+      // スレッド作成時刻が最終既読より新しければ新着
       if ((thread.createdAt || 0) > lastRead) return true;
+      // 最終投稿時刻が最終既読より新しければ新着
       if ((thread.lastPostAt || 0) > lastRead) return true;
       return false;
     }
@@ -2320,7 +2330,7 @@
     }
 
     /* ============================================================
-     * ★ アナウンス
+     * アナウンス
      * ============================================================ */
     function initAnnouncementsListener() {
       if (announcementsUnsubscribe) announcementsUnsubscribe();
@@ -2442,7 +2452,7 @@
     })();
 
     /* ============================================================
-     * ★ 問い合わせチャット機能
+     * 問い合わせチャット機能
      * ============================================================ */
     function initContactAdminsListener() {
       if (contactAdminsUnsubscribe) contactAdminsUnsubscribe();
@@ -2480,12 +2490,10 @@
       return names.slice(0, 3).join('、') + (names.length > 3 ? ' 他' : '');
     }
 
-    // ★ メッセージをクライアント側でソート（インデックス不要）
     function sortMessagesByTime(messages) {
       return [...messages].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
     }
 
-    // ★ エラー表示用
     function showChatError(boxId, msg, retryFn) {
       const box = document.getElementById(boxId);
       if (!box) return;
@@ -2541,7 +2549,6 @@
       } catch (e) {
         console.warn('チャットルーム準備失敗:', e);
       }
-      // ★ orderByを使わず、whereだけで取得 → クライアント側でソート
       if (myContactMessagesUnsubscribe) myContactMessagesUnsubscribe();
       const q = query(
         collection(db, COL.contactMessages),
@@ -2556,7 +2563,6 @@
         renderContactChatMessages();
       }, (err) => {
         console.error('問い合わせメッセージ監視エラー:', err);
-        // ★ フォールバック: 1回限りのgetDocs
         getDocs(q).then((s) => {
           hideChatError('contactChatErrorBox');
           contactChatMessagesCache = [];
@@ -2624,7 +2630,6 @@
       }, { merge: true });
     }
 
-    /* --- 管理者側 --- */
     window.openAdminInbox = function() {
       if (!isContactAdmin()) { alert('問い合わせ対応権限がありません。'); return; }
       document.getElementById('adminInboxModal').classList.remove('hidden');
@@ -2640,7 +2645,6 @@
       if (!container) return;
       container.innerHTML = '<p class="text-xs text-gray-400">読み込み中...</p>';
       try {
-        // ★ orderBy を使わず、全件取得してクライアント側でソート
         const snap = await getDocs(collection(db, COL.contactChats));
         if (snap.empty) {
           container.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">まだ問い合わせはありません。</p>';
@@ -2722,7 +2726,6 @@
       try { await updateDoc(doc(db, COL.contactChats, roomId), { unreadByAdmin: 0 }); } catch (e) {}
 
       if (adminChatMessagesUnsubscribe) adminChatMessagesUnsubscribe();
-      // ★ orderBy を使わない
       const q = query(
         collection(db, COL.contactMessages),
         where('roomId', '==', roomId),
@@ -2736,7 +2739,6 @@
         renderAdminChatMessages();
       }, (err) => {
         console.error('管理者チャット監視エラー:', err);
-        // ★ フォールバック
         getDocs(q).then((s) => {
           hideChatError('adminChatErrorBox');
           adminChatMessagesCache = [];
@@ -2808,7 +2810,7 @@
     }
 
     /* ============================================================
-     * ★ 一般ユーザー用：管理者からの返信受信箱
+     * 一般ユーザー用：管理者からの返信受信箱
      * ============================================================ */
     window.openMyInbox = function() {
       if (!currentUser) { alert('ログインが必要です。'); return; }
@@ -2845,7 +2847,6 @@
       const unreadByUser = roomData.unreadByUser || 0;
       updateMyInboxBadge(unreadByUser);
 
-      // ★ orderBy を使わずに取得（インデックス不要）
       let messages = [];
       try {
         const q = query(
@@ -2928,7 +2929,6 @@
           updateMyInboxBadge(0);
         }
       }, (err) => {
-        // 監視失敗は致命ではないので無視
         console.warn('未読数監視エラー:', err);
       });
     }
@@ -2958,7 +2958,7 @@
     window.deleteMyContactChat = deleteMyContactChat;
 
     /* ============================================================
-     * ★ 管理者バトン 一覧・取り消し
+     * 管理者バトン 一覧・取り消し
      * ============================================================ */
     window.openHandoverListModal = function() {
       if (!canSetOfficial() && !isContactAdmin()) { alert('権限がありません。'); return; }
@@ -3164,7 +3164,6 @@
         });
       }
 
-      // バトンタッチモーダル
       const handoverCancel = document.getElementById('handoverCancelBtn');
       const handoverModal = document.getElementById('adminHandoverModal');
       const handoverSave = document.getElementById('handoverSaveBtn');
@@ -3204,7 +3203,6 @@
         });
       }
 
-      // バトン一覧モーダル
       const handoverListClose = document.getElementById('adminHandoverListCloseBtn');
       const handoverListModal = document.getElementById('adminHandoverListModal');
       const handoverAddBtn = document.getElementById('adminHandoverAddBtn');
@@ -3212,7 +3210,6 @@
       if (handoverListModal) handoverListModal.addEventListener('click', (e) => { if (e.target.id === 'adminHandoverListModal') closeHandoverListModal(); });
       if (handoverAddBtn) handoverAddBtn.addEventListener('click', () => { closeHandoverListModal(); window.openHandoverModal(); });
 
-      // マイ受信箱
       const myInboxClose = document.getElementById('myInboxCloseBtn');
       const myInboxModal = document.getElementById('myInboxModal');
       const myInboxReloadBtn = document.getElementById('myInboxReloadBtn');
@@ -3837,7 +3834,11 @@
       activeEditPostId = null;
 
       resetInThreadSearch();
-      markThreadAsRead(threadId);
+
+      // スレッドを開いた時点の lastPostAt で既読にする
+      const thread = allThreadsCache.find(t => t.id === threadId);
+      const lastPostAt = thread ? (thread.lastPostAt || thread.createdAt || Date.now()) : Date.now();
+      markThreadAsRead(threadId, lastPostAt);
 
       const targetItem = threadsContainer.querySelector(`.thread-item[data-thread-id="${threadId}"]`);
       if (targetItem) {
@@ -4027,10 +4028,11 @@
             thread.lastPostAt = lastPost.createdAt || 0;
             thread.postCount = posts.length;
           }
+          // 最新の投稿時刻で既読を更新（開いている間の新着も既読にする）
+          markThreadAsRead(threadId, lastPost.createdAt || Date.now());
         }
 
         renderPostsFromCache();
-        if (threadId) markThreadAsRead(threadId);
       }, (error) => {
         console.error("レス読み込みエラー:", error);
         setConnection(false);
@@ -5145,7 +5147,7 @@
       if (!threadSearchIndex[currentThreadKey]) threadSearchIndex[currentThreadKey] = { posts: [] };
       threadSearchIndex[currentThreadKey].posts.push({ content: contentText || '' });
 
-      markThreadAsRead(currentThreadKey);
+      markThreadAsRead(currentThreadKey, now);
       showBanner('返信を保存しました', false);
     }
 
@@ -5223,7 +5225,7 @@
         if (!threadSearchIndex[currentThreadKey]) threadSearchIndex[currentThreadKey] = { posts: [] };
         threadSearchIndex[currentThreadKey].posts.push({ content: contentText || '' });
 
-        markThreadAsRead(currentThreadKey);
+        markThreadAsRead(currentThreadKey, now);
         showBanner('書き込みを保存しました', false);
         const el = document.getElementById(tempId);
         if (el) el.remove();
