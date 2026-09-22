@@ -484,7 +484,6 @@
     .edit-save-btn:hover { background: #0e7490; }
     .edit-save-btn:disabled { background: #9ca3af; cursor: not-allowed; }
 
-    /* ★ アナウンス */
     .announcement-card {
       border-radius: 8px; padding: 12px 16px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
@@ -559,6 +558,18 @@
       display: block; font-size: 9px; opacity: 0.7; margin-top: 4px;
     }
 
+    .chat-error-box {
+      background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px;
+      padding: 10px 12px; font-size: 11px; color: #991b1b; margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .chat-retry-btn {
+      background: #dc2626; color: #fff; font-size: 11px; font-weight: 700;
+      padding: 4px 12px; border-radius: 4px; border: none; cursor: pointer;
+      margin-top: 6px;
+    }
+    .chat-retry-btn:hover { background: #b91c1c; }
+
     .inbox-item {
       display: flex; align-items: center; gap: 10px;
       padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;
@@ -594,7 +605,6 @@
     .handover-candidate .email { font-family: monospace; color: #1e40af; }
     .handover-candidate.selected { background: #dbeafe; border-color: #1d4ed8; }
 
-    /* ★ マイ受信箱 */
     .my-inbox-item {
       display: flex; align-items: flex-start; gap: 10px;
       padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;
@@ -617,7 +627,6 @@
     }
     .my-inbox-item .del-btn:hover { background: #b91c1c; }
 
-    /* ★ バトン一覧 */
     .handover-admin-row {
       display: flex; align-items: center; gap: 10px;
       padding: 10px; border: 1px solid #fcd34d; border-radius: 8px;
@@ -673,7 +682,6 @@
         <li><strong class="text-blue-900">ルールの変更</strong><br>本ルールは予告なく変更されることがあります。</li>
       </ol>
 
-      <!-- ★ 規約についての問い合わせボタン -->
       <div class="contact-cta-box">
         <div class="contact-title">
           <svg class="icon-svg" viewBox="0 0 24 24" width="18" height="18"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -693,7 +701,6 @@
     </div>
   </div>
 
-  <!-- ★ アナウンス表示エリア -->
   <div id="announcementArea" class="hidden mb-4"></div>
 
   <div id="statusBanner" class="bg-red-600 text-white"></div>
@@ -716,7 +723,7 @@
         <div class="color-swatch-row mb-3" id="badgeColorRow"></div>
         <div class="flex items-center gap-2 mb-3">
           <input type="color" id="badgeColorPicker" value="#ef4444" class="w-10 h-8 border rounded cursor-pointer">
-          <input type="text" id="badgeColorText" value="#ef4444" maxlength="7" class="flex-1 border p-2 rounded text-sm font-mono">
+          <input type="text" id="badgeColorText" value="#ef4444" maxlength="#ef4444".length class="flex-1 border p-2 rounded text-sm font-mono">
         </div>
         <div class="mb-3">
           <p class="text-xs text-gray-600 mb-1">プレビュー:</p>
@@ -907,6 +914,7 @@
           <span class="text-gray-600">規約やサイトについてわからないことを1対1で質問できます。</span>
         </p>
       </div>
+      <div id="contactChatErrorBox" class="chat-error-box hidden"></div>
       <div id="contactChatMessages" style="max-height: 340px; overflow-y: auto; padding: 8px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 8px;">
         <p class="text-xs text-gray-400 text-center">読み込み中...</p>
       </div>
@@ -945,6 +953,7 @@
           <strong>相手:</strong> <span id="adminChatPartnerLabel">-</span>
         </p>
       </div>
+      <div id="adminChatErrorBox" class="chat-error-box hidden"></div>
       <div id="adminChatMessages" style="max-height: 340px; overflow-y: auto; padding: 8px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 8px;">
         <p class="text-xs text-gray-400 text-center">読み込み中...</p>
       </div>
@@ -979,7 +988,7 @@
     </div>
   </div>
 
-  <!-- ★ 管理者バトン管理モーダル（一覧＆取り消し） -->
+  <!-- ★ 管理者バトン管理モーダル -->
   <div id="adminHandoverListModal" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 600px;">
       <div class="flex justify-between items-center mb-3">
@@ -1001,9 +1010,13 @@
     <div class="modal-content" style="max-width: 620px;">
       <div class="flex justify-between items-center mb-3">
         <h3 class="text-lg font-bold text-gray-800">📬 管理者からの返信</h3>
-        <button id="myInboxCloseBtn" class="reply-cancel-btn">閉じる</button>
+        <div class="flex gap-2">
+          <button id="myInboxReloadBtn" class="userlist-btn">🔄 再読み込み</button>
+          <button id="myInboxCloseBtn" class="reply-cancel-btn">閉じる</button>
+        </div>
       </div>
       <p class="text-xs text-gray-500 mb-3">過去にあなたが送った問い合わせと、管理者からの返信の履歴です。</p>
+      <div id="myInboxErrorBox" class="chat-error-box hidden"></div>
       <div id="myInboxList" style="max-height: 60vh; overflow-y: auto;">
         <p class="text-xs text-gray-400">読み込み中...</p>
       </div>
@@ -1429,7 +1442,6 @@
       return false;
     }
 
-    // ★ 問い合わせ対応管理者判定
     function isContactAdmin() {
       if (!currentUser) return false;
       if (userRole === 'admin' || userRole === 'owner') return true;
@@ -2468,6 +2480,27 @@
       return names.slice(0, 3).join('、') + (names.length > 3 ? ' 他' : '');
     }
 
+    // ★ メッセージをクライアント側でソート（インデックス不要）
+    function sortMessagesByTime(messages) {
+      return [...messages].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    }
+
+    // ★ エラー表示用
+    function showChatError(boxId, msg, retryFn) {
+      const box = document.getElementById(boxId);
+      if (!box) return;
+      box.classList.remove('hidden');
+      box.innerHTML = `
+        <div>⚠️ ${escapeHtml(msg)}</div>
+        <button class="chat-retry-btn">再読み込み</button>`;
+      const btn = box.querySelector('.chat-retry-btn');
+      if (btn && retryFn) btn.addEventListener('click', () => { box.classList.add('hidden'); retryFn(); });
+    }
+    function hideChatError(boxId) {
+      const box = document.getElementById(boxId);
+      if (box) { box.classList.add('hidden'); box.innerHTML = ''; }
+    }
+
     window.openContactChatModal = async function() {
       if (!currentUser) { alert('ログインが必要です。'); return; }
       if (isContactAdmin()) {
@@ -2489,36 +2522,53 @@
     async function loadMyContactRoom() {
       const roomId = getContactRoomId(currentUser.uid);
       const roomRef = doc(db, COL.contactChats, roomId);
-      const snap = await getDoc(roomRef);
-      if (!snap.exists()) {
-        await setDoc(roomRef, {
-          userId: currentUser.uid,
-          userEmail: currentUser.email || '',
-          userName: nicknamesCache[currentUser.uid]?.nickname || currentUser.displayName || '名無しさん',
-          createdAt: Date.now(),
-          lastMessageAt: Date.now(),
-          lastMessage: '',
-          unreadByAdmin: 0,
-          unreadByUser: 0
-        });
-      } else {
-        try { await updateDoc(roomRef, { unreadByUser: 0 }); } catch (e) {}
+      try {
+        const snap = await getDoc(roomRef);
+        if (!snap.exists()) {
+          await setDoc(roomRef, {
+            userId: currentUser.uid,
+            userEmail: currentUser.email || '',
+            userName: nicknamesCache[currentUser.uid]?.nickname || currentUser.displayName || '名無しさん',
+            createdAt: Date.now(),
+            lastMessageAt: Date.now(),
+            lastMessage: '',
+            unreadByAdmin: 0,
+            unreadByUser: 0
+          });
+        } else {
+          try { await updateDoc(roomRef, { unreadByUser: 0 }); } catch (e) {}
+        }
+      } catch (e) {
+        console.warn('チャットルーム準備失敗:', e);
       }
+      // ★ orderByを使わず、whereだけで取得 → クライアント側でソート
       if (myContactMessagesUnsubscribe) myContactMessagesUnsubscribe();
       const q = query(
         collection(db, COL.contactMessages),
         where('roomId', '==', roomId),
-        orderBy('createdAt', 'asc'),
-        limit(200)
+        limit(300)
       );
       myContactMessagesUnsubscribe = onSnapshot(q, (s) => {
+        hideChatError('contactChatErrorBox');
         contactChatMessagesCache = [];
         s.forEach(d => contactChatMessagesCache.push({ id: d.id, ...d.data() }));
+        contactChatMessagesCache = sortMessagesByTime(contactChatMessagesCache);
         renderContactChatMessages();
       }, (err) => {
         console.error('問い合わせメッセージ監視エラー:', err);
-        document.getElementById('contactChatMessages').innerHTML =
-          '<p class="text-xs text-red-500 text-center">読み込みに失敗しました。<br>（インデックスが必要な場合があります）</p>';
+        // ★ フォールバック: 1回限りのgetDocs
+        getDocs(q).then((s) => {
+          hideChatError('contactChatErrorBox');
+          contactChatMessagesCache = [];
+          s.forEach(d => contactChatMessagesCache.push({ id: d.id, ...d.data() }));
+          contactChatMessagesCache = sortMessagesByTime(contactChatMessagesCache);
+          renderContactChatMessages();
+        }).catch((err2) => {
+          showChatError('contactChatErrorBox',
+            `メッセージの読み込みに失敗しました。(${err.code || err.message})`,
+            () => loadMyContactRoom()
+          );
+        });
       });
     }
 
@@ -2590,19 +2640,22 @@
       if (!container) return;
       container.innerHTML = '<p class="text-xs text-gray-400">読み込み中...</p>';
       try {
-        const q = query(collection(db, COL.contactChats), orderBy('lastMessageAt', 'desc'), limit(100));
-        const snap = await getDocs(q);
+        // ★ orderBy を使わず、全件取得してクライアント側でソート
+        const snap = await getDocs(collection(db, COL.contactChats));
         if (snap.empty) {
           container.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">まだ問い合わせはありません。</p>';
           return;
         }
+        const rooms = [];
+        snap.forEach(d => rooms.push({ id: d.id, ...d.data() }));
+        rooms.sort((a, b) => (b.lastMessageAt || 0) - (a.lastMessageAt || 0));
+
         let html = '';
-        snap.forEach(d => {
-          const r = d.data();
+        rooms.forEach(r => {
           const unread = r.unreadByAdmin || 0;
           const initial = (r.userName || r.userEmail || '?').charAt(0).toUpperCase();
           const time = r.lastMessageAt ? new Date(r.lastMessageAt).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
-          html += `<div class="inbox-item ${unread > 0 ? 'unread' : ''}" data-room-id="${d.id}" data-user-id="${r.userId || ''}">
+          html += `<div class="inbox-item ${unread > 0 ? 'unread' : ''}" data-room-id="${r.id}" data-user-id="${r.userId || ''}">
             <div class="avatar">${escapeHtml(initial)}</div>
             <div class="info">
               <div class="name">${escapeHtml(r.userName || '名無しさん')}</div>
@@ -2611,7 +2664,7 @@
             <div style="text-align:right;display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
               <div class="time">${time}</div>
               ${unread > 0 ? `<div class="unread-count">${unread}</div>` : ''}
-              <button class="del-btn" data-del-room="${d.id}" data-del-user="${r.userId || ''}" title="このチャットを削除" style="background:#dc2626;color:#fff;font-size:10px;padding:3px 8px;border-radius:4px;border:none;cursor:pointer;">削除</button>
+              <button class="del-btn" data-del-room="${r.id}" data-del-user="${r.userId || ''}" title="このチャットを削除" style="background:#dc2626;color:#fff;font-size:10px;padding:3px 8px;border-radius:4px;border:none;cursor:pointer;">削除</button>
             </div>
           </div>`;
         });
@@ -2630,7 +2683,7 @@
         });
       } catch (err) {
         console.error('問い合わせ一覧取得エラー:', err);
-        container.innerHTML = '<p class="text-xs text-red-500 text-center py-4">読み込みに失敗しました。</p>';
+        container.innerHTML = `<p class="text-xs text-red-500 text-center py-4">読み込みに失敗しました。<br>(${escapeHtml(err.code || err.message)})</p>`;
       }
     }
 
@@ -2658,29 +2711,44 @@
       currentAdminChatRoomId = roomId;
       currentAdminChatUserId = userId;
       document.getElementById('adminChatModal').classList.remove('hidden');
-      const roomSnap = await getDoc(doc(db, COL.contactChats, roomId));
-      if (roomSnap.exists()) {
-        const r = roomSnap.data();
-        document.getElementById('adminChatPartnerLabel').textContent =
-          `${r.userName || '名無しさん'}（${r.userEmail || 'メール不明'}）`;
-      }
+      try {
+        const roomSnap = await getDoc(doc(db, COL.contactChats, roomId));
+        if (roomSnap.exists()) {
+          const r = roomSnap.data();
+          document.getElementById('adminChatPartnerLabel').textContent =
+            `${r.userName || '名無しさん'}（${r.userEmail || 'メール不明'}）`;
+        }
+      } catch (e) { console.warn('ルーム情報取得失敗:', e); }
       try { await updateDoc(doc(db, COL.contactChats, roomId), { unreadByAdmin: 0 }); } catch (e) {}
 
       if (adminChatMessagesUnsubscribe) adminChatMessagesUnsubscribe();
+      // ★ orderBy を使わない
       const q = query(
         collection(db, COL.contactMessages),
         where('roomId', '==', roomId),
-        orderBy('createdAt', 'asc'),
         limit(300)
       );
       adminChatMessagesUnsubscribe = onSnapshot(q, (s) => {
+        hideChatError('adminChatErrorBox');
         adminChatMessagesCache = [];
         s.forEach(d => adminChatMessagesCache.push({ id: d.id, ...d.data() }));
+        adminChatMessagesCache = sortMessagesByTime(adminChatMessagesCache);
         renderAdminChatMessages();
       }, (err) => {
         console.error('管理者チャット監視エラー:', err);
-        document.getElementById('adminChatMessages').innerHTML =
-          '<p class="text-xs text-red-500 text-center">読み込みに失敗しました。</p>';
+        // ★ フォールバック
+        getDocs(q).then((s) => {
+          hideChatError('adminChatErrorBox');
+          adminChatMessagesCache = [];
+          s.forEach(d => adminChatMessagesCache.push({ id: d.id, ...d.data() }));
+          adminChatMessagesCache = sortMessagesByTime(adminChatMessagesCache);
+          renderAdminChatMessages();
+        }).catch((err2) => {
+          showChatError('adminChatErrorBox',
+            `メッセージの読み込みに失敗しました。(${err.code || err.message})`,
+            () => openAdminChat(roomId, userId)
+          );
+        });
       });
     }
 
@@ -2757,67 +2825,82 @@
       const container = document.getElementById('myInboxList');
       if (!container) return;
       container.innerHTML = '<p class="text-xs text-gray-400">読み込み中...</p>';
+      hideChatError('myInboxErrorBox');
+
       const roomId = getContactRoomId(currentUser.uid);
+      let roomData = null;
       try {
         const roomSnap = await getDoc(doc(db, COL.contactChats, roomId));
-        if (!roomSnap.exists()) {
-          container.innerHTML = '<p class="text-xs text-gray-400 text-center py-6">まだ問い合わせを送っていません。<br>利用規約の「管理者に質問する」ボタンから送信できます。</p>';
-          updateMyInboxBadge(0);
-          return;
-        }
-        const roomData = roomSnap.data();
-        const unreadByUser = roomData.unreadByUser || 0;
-        updateMyInboxBadge(unreadByUser);
+        if (roomSnap.exists()) roomData = roomSnap.data();
+      } catch (e) {
+        console.warn('ルーム情報取得失敗:', e);
+      }
 
+      if (!roomData) {
+        container.innerHTML = '<p class="text-xs text-gray-400 text-center py-6">まだ問い合わせを送っていません。<br>利用規約の「管理者に質問する」ボタンから送信できます。</p>';
+        updateMyInboxBadge(0);
+        return;
+      }
+
+      const unreadByUser = roomData.unreadByUser || 0;
+      updateMyInboxBadge(unreadByUser);
+
+      // ★ orderBy を使わずに取得（インデックス不要）
+      let messages = [];
+      try {
         const q = query(
           collection(db, COL.contactMessages),
           where('roomId', '==', roomId),
-          orderBy('createdAt', 'asc'),
           limit(300)
         );
         const snap = await getDocs(q);
-        if (snap.empty) {
-          container.innerHTML = '<p class="text-xs text-gray-400 text-center py-6">まだメッセージがありません。</p>';
-          return;
-        }
-        const messages = [];
         snap.forEach(d => messages.push({ id: d.id, ...d.data() }));
-
-        let html = '<div style="padding: 4px;">';
-        messages.forEach(m => {
-          const isMe = m.senderUid === currentUser.uid;
-          const time = m.createdAt ? new Date(m.createdAt).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
-          const senderLabel = isMe ? 'あなた' : (m.senderName || '管理者');
-          html += `<div class="chat-row ${isMe ? 'me' : 'other'}">
-            <div class="chat-bubble ${isMe ? 'me' : 'other'}">
-              ${!isMe ? `<div class="chat-sender">${escapeHtml(senderLabel)}</div>` : ''}
-              ${escapeHtml(m.text || '')}
-              <span class="chat-time">${time}</span>
-            </div>
-          </div>`;
-        });
-        html += '</div>';
-        html += `<div class="flex justify-end gap-2 mt-4 flex-wrap">
-          <button id="myInboxReplyBtn" class="contact-btn" style="font-size:12px;padding:8px 14px;">この問い合わせに返信する</button>
-          <button id="myInboxDeleteBtn" class="delete-btn">このチャットを削除</button>
-        </div>`;
-        container.innerHTML = html;
-
-        document.getElementById('myInboxReplyBtn').addEventListener('click', () => {
-          closeMyInbox();
-          window.openContactChatModal();
-        });
-        document.getElementById('myInboxDeleteBtn').addEventListener('click', () => {
-          deleteMyContactChat();
-        });
-
-        if (unreadByUser > 0) {
-          try { await updateDoc(doc(db, COL.contactChats, roomId), { unreadByUser: 0 }); } catch (e) {}
-          updateMyInboxBadge(0);
-        }
+        messages = sortMessagesByTime(messages);
       } catch (err) {
         console.error('マイ受信箱読み込みエラー:', err);
-        container.innerHTML = '<p class="text-xs text-red-500 text-center py-6">読み込みに失敗しました。</p>';
+        showChatError('myInboxErrorBox',
+          `メッセージの読み込みに失敗しました。(${err.code || err.message})`,
+          renderMyInbox
+        );
+        return;
+      }
+
+      if (messages.length === 0) {
+        container.innerHTML = '<p class="text-xs text-gray-400 text-center py-6">まだメッセージがありません。</p>';
+        return;
+      }
+
+      let html = '<div style="padding: 4px;">';
+      messages.forEach(m => {
+        const isMe = m.senderUid === currentUser.uid;
+        const time = m.createdAt ? new Date(m.createdAt).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+        const senderLabel = isMe ? 'あなた' : (m.senderName || '管理者');
+        html += `<div class="chat-row ${isMe ? 'me' : 'other'}">
+          <div class="chat-bubble ${isMe ? 'me' : 'other'}">
+            ${!isMe ? `<div class="chat-sender">${escapeHtml(senderLabel)}</div>` : ''}
+            ${escapeHtml(m.text || '')}
+            <span class="chat-time">${time}</span>
+          </div>
+        </div>`;
+      });
+      html += '</div>';
+      html += `<div class="flex justify-end gap-2 mt-4 flex-wrap">
+        <button id="myInboxReplyBtn" class="contact-btn" style="font-size:12px;padding:8px 14px;">この問い合わせに返信する</button>
+        <button id="myInboxDeleteBtn" class="delete-btn">このチャットを削除</button>
+      </div>`;
+      container.innerHTML = html;
+
+      document.getElementById('myInboxReplyBtn').addEventListener('click', () => {
+        closeMyInbox();
+        window.openContactChatModal();
+      });
+      document.getElementById('myInboxDeleteBtn').addEventListener('click', () => {
+        deleteMyContactChat();
+      });
+
+      if (unreadByUser > 0) {
+        try { await updateDoc(doc(db, COL.contactChats, roomId), { unreadByUser: 0 }); } catch (e) {}
+        updateMyInboxBadge(0);
       }
     }
 
@@ -2844,7 +2927,10 @@
         } else {
           updateMyInboxBadge(0);
         }
-      }, (err) => console.error('未読数監視エラー:', err));
+      }, (err) => {
+        // 監視失敗は致命ではないので無視
+        console.warn('未読数監視エラー:', err);
+      });
     }
 
     async function deleteMyContactChat() {
@@ -2949,7 +3035,6 @@
       }
     }
 
-    /* --- 管理者バトンタッチ --- */
     window.openHandoverModal = function() {
       if (!canSetOfficial() && !isContactAdmin()) { alert('バトンタッチ権限がありません。'); return; }
       document.getElementById('handoverEmailInput').value = '';
@@ -2991,7 +3076,6 @@
       });
     }
 
-    /* --- イベント登録 --- */
     (function initContactChatEvents() {
       const openBtn = document.getElementById('openContactChatBtn');
       const chatModal = document.getElementById('contactChatModal');
@@ -3131,8 +3215,10 @@
       // マイ受信箱
       const myInboxClose = document.getElementById('myInboxCloseBtn');
       const myInboxModal = document.getElementById('myInboxModal');
+      const myInboxReloadBtn = document.getElementById('myInboxReloadBtn');
       if (myInboxClose) myInboxClose.addEventListener('click', closeMyInbox);
       if (myInboxModal) myInboxModal.addEventListener('click', (e) => { if (e.target.id === 'myInboxModal') closeMyInbox(); });
+      if (myInboxReloadBtn) myInboxReloadBtn.addEventListener('click', () => renderMyInbox());
     })();
 
     function updateThreadLikeButton() {
@@ -5248,7 +5334,7 @@
         const contactMessages = await grab(COL.contactMessages);
 
         const payload = {
-          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 10 },
+          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 11 },
           threads: threadsData, customBadges, knownUsers, bannedUsers,
           badgeFeatures, nicknames, officialUsers, threadLikes, announcements,
           contactAdmins, contactChats, contactMessages
