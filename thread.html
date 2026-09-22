@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>スレッド - どんぐり学びの広場</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='56' height='56' rx='8' fill='%231d4ed8'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='56' height='56' rx='8' fill='%231d4ed8'/%3E%3Crect x='8' y='8' width='48' height='48' rx='4' fill='%232563eb'/%3E%3Cpath d='M20 22h24M20 30h24M20 38h16' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='44' cy='44' r='10' fill='%23fbbf24'/%3E%3Cpath d='M40 44l3 3 6-6' stroke='%231f2937' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="list.css">
 </head>
@@ -20,8 +20,14 @@
   <div id="loginView" class="hidden">
     <div class="bg-white border border-gray-300 rounded-lg shadow p-8 max-w-md mx-auto mt-16 text-center">
       <h1 class="text-3xl font-bold text-blue-900 mb-2">どんぐり学びの広場</h1>
-      <p class="text-sm text-gray-600 mb-6">ご利用にはGoogleログインが必要です。</p>
-      <button id="googleLoginBtn" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold py-3 px-6 rounded shadow-sm mx-auto w-full">
+      <p class="text-sm text-gray-600 mb-6">ご利用にはGoogleアカウントでのログインが必要です。</p>
+      <button id="googleLoginBtn" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold py-3 px-6 rounded shadow-sm flex items-center justify-center gap-3 mx-auto transition w-full">
+        <svg width="20" height="20" viewBox="0 0 48 48">
+          <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/>
+          <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+          <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+          <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.2 5.2C41.4 35.3 44 30.1 44 24c0-1.3-.1-2.3-.4-3.5z"/>
+        </svg>
         Googleでログイン
       </button>
     </div>
@@ -40,8 +46,8 @@
         </p>
       </div>
       <div class="flex items-center gap-2 flex-wrap">
-        <a href="index.html" class="bg-gray-600 hover:bg-gray-700 text-white text-xs py-1.5 px-3 rounded">← 一覧に戻る</a>
-        <button id="logoutBtn" class="bg-gray-500 hover:bg-gray-600 text-white text-xs py-1.5 px-3 rounded">ログアウト</button>
+        <a href="index.html" class="bg-gray-600 hover:bg-gray-700 text-white text-xs py-1.5 px-3 rounded transition shadow">← 一覧に戻る</a>
+        <button id="logoutBtn" class="bg-gray-500 hover:bg-gray-600 text-white text-xs py-1.5 px-3 rounded transition shadow">ログアウト</button>
       </div>
     </header>
 
@@ -49,19 +55,19 @@
       <div id="currentThreadSubjectWrap" class="mb-1"></div>
       <h2 id="currentThreadTitle" class="text-2xl font-bold text-blue-900 mb-1 break-words">読み込み中...</h2>
       <p id="currentThreadDate" class="text-xs text-gray-500"></p>
-      <div class="mt-3">
+      <div class="mt-3 flex gap-2 flex-wrap items-center">
         <button id="threadLikeBtn" class="thread-like-btn" data-thread-id="">
-          <span class="like-heart">❤</span>
+          <span class="like-heart">🤍</span>
           <span class="like-count">0</span>
         </button>
-        <button id="deleteThreadBtn" class="delete-btn hidden ml-2">スレッドを削除</button>
+        <button id="deleteThreadBtn" class="delete-btn hidden">スレッドを削除</button>
       </div>
     </div>
 
     <div class="in-thread-search-wrap">
       <span class="in-thread-search-icon">🔍</span>
-      <input type="text" id="inThreadSearchInput" class="in-thread-search-input" placeholder="このスレッド内を検索...">
-      <button id="inThreadSearchClear" class="in-thread-search-clear">✕</button>
+      <input type="text" id="inThreadSearchInput" class="in-thread-search-input" placeholder="このスレッド内を検索（レスを絞り込み）...">
+      <button id="inThreadSearchClear" class="in-thread-search-clear" title="クリア">✕</button>
     </div>
     <div id="inThreadSearchInfo" class="in-thread-search-info"></div>
 
@@ -71,15 +77,14 @@
         <div id="postEditorWrap"></div>
         <div class="flex items-center justify-between flex-wrap gap-3">
           <div class="flex-1 min-w-[200px]">
-            <label class="block text-xs text-gray-600 mb-1">画像添付（任意）:</label>
+            <label class="block text-xs text-gray-600 mb-1">画像を添付（自動リサイズ・最大200KB）:</label>
             <input type="file" id="fileInput" accept="image/*" class="text-xs text-gray-600 w-full">
             <div class="preview-box" id="postPreviewBox">
               <img id="postPreviewImg" alt="プレビュー">
               <div class="preview-info" id="postPreviewInfo"></div>
             </div>
           </div>
-          <button type="submit" id="submitBtn"
-            class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-6 rounded text-sm whitespace-nowrap">書き込む</button>
+          <button type="submit" id="submitBtn" class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-6 rounded text-sm transition shadow-sm whitespace-nowrap">書き込む</button>
         </div>
       </form>
     </section>
