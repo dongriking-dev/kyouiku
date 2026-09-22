@@ -1,19 +1,17 @@
 // ============================================================
 // list.js — スレッド一覧ページ専用
-// ★ 一覧の onSnapshot 1本だけ。スレッドの中身は一切読まない。
 // ============================================================
 import {
   db, auth, provider, COL, SUBJECTS, getSubjectInfo, subjectBadgeHtml,
   roleFromEmail, escapeHtml, showBanner, fileToBase64Image, formatSize,
   createRichEditor, getEditorHtml, getEditorText, clearEditor,
   tokenizeQuery, matchesAllTokens,
-  loadBadgeVisibility, loadEmailVisibility, loadSubjectFilter, saveSubjectFilter,
-  loadNewMarkSetting, saveNewMarkSetting,
-  loadReadThreads, saveReadThreads, emailToKey
+  loadBadgeVisibility, loadSubjectFilter, saveSubjectFilter,
+  loadNewMarkSetting, loadReadThreads, saveReadThreads
 } from './common.js';
 
 import {
-  collection, doc, addDoc, setDoc, getDoc, getDocs, deleteDoc, updateDoc,
+  collection, doc, addDoc, getDoc, setDoc, updateDoc, deleteDoc,
   onSnapshot, query, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import {
@@ -31,12 +29,10 @@ let currentSearchQuery = '';
 let selectedSubjectForNewThread = '';
 let newMarkEnabled = true;
 let readThreads = {};
-let badgeFeaturePermissions = {};
 let customBadgesCache = {};
 let officialUsersCache = {};
 let nicknamesCache = {};
 let myBadgePublic = true;
-let myEmailVisible = true;
 
 let threadsUnsubscribe = null;
 let threadLikesUnsubscribe = null;
@@ -44,7 +40,6 @@ let announcementsUnsubscribe = null;
 let badgesUnsubscribe = null;
 let officialUnsubscribe = null;
 let nicknamesUnsubscribe = null;
-let badgeFeatureUnsubscribe = null;
 
 let intentionalSignOut = false;
 let initialAuthCheckDone = false;
@@ -61,22 +56,15 @@ const searchInput = $('searchInput');
 const searchClearBtn = $('searchClearBtn');
 const searchResultInfo = $('searchResultInfo');
 
-// ---------------- 権限ヘルパー ----------------
+// ---------------- 権限 ----------------
 function canAnnounce() { return userRole === 'admin' || userRole === 'owner'; }
 function canViewUserList() { return userRole === 'admin' || userRole === 'owner'; }
-function canManageBadge() { return userRole === 'admin' || userRole === 'owner'; }
-function canBan() { return userRole === 'admin' || userRole === 'owner'; }
-function isContactAdmin() {
-  if (!currentUser) return false;
-  if (userRole === 'admin' || userRole === 'owner') return true;
-  return false;
-}
 
-// ---------------- バナー ----------------
+// ---------------- 接続表示 ----------------
 function setConnection(online) {
   if (online) {
     connDot.className = 'inline-block w-2 h-2 rounded-full bg-green-500';
-    connText.textContent = 'オンライン';
+    connText.textContent = 'オンライン（リアルタイム同期中）';
   } else {
     connDot.className = 'inline-block w-2 h-2 rounded-full bg-red-500';
     connText.textContent = 'オフライン';
@@ -101,7 +89,7 @@ window.addEventListener('offline', () => setConnection(false));
 })();
 
 // ---------------- エディタ ----------------
-createRichEditor($('firstPostEditorWrap'), '最初の書き込み内容（任意）');
+createRichEditor($('firstPostEditorWrap'), '最初の書き込み内容（質問内容など・任意）');
 
 // ---------------- ログイン ----------------
 $('googleLoginBtn').addEventListener('click', async () => {
@@ -111,30 +99,24 @@ $('googleLoginBtn').addEventListener('click', async () => {
   }
 });
 
-window.doLogout = async function() {
+$('logoutBtn').addEventListener('click', async () => {
   intentionalSignOut = true;
-  if (threadsUnsubscribe) { threadsUnsubscribe(); threadsUnsubscribe = null; }
-  if (threadLikesUnsubscribe) { threadLikesUnsubscribe(); threadLikesUnsubscribe = null; }
-  if (announcementsUnsubscribe) { announcementsUnsubscribe(); announcementsUnsubscribe = null; }
-  if (badgesUnsubscribe) { badgesUnsubscribe(); badgesUnsubscribe = null; }
-  if (officialUnsubscribe) { officialUnsubscribe(); officialUnsubscribe = null; }
-  if (nicknamesUnsubscribe) { nicknamesUnsubscribe(); nicknamesUnsubscribe = null; }
-  if (badgeFeatureUnsubscribe) { badgeFeatureUnsubscribe(); badgeFeatureUnsubscribe = null; }
+  [threadsUnsubscribe, threadLikesUnsubscribe, announcementsUnsubscribe,
+   badgesUnsubscribe, officialUnsubscribe, nicknamesUnsubscribe]
+   .forEach(un => { if (un) un(); });
   try { await signOut(auth); } catch (e) {}
-  showLoginView();
-  hideBootOverlay();
+  showLoginView(); hideBootOverlay();
   setTimeout(() => { intentionalSignOut = false; initialAuthCheckDone = false; }, 500);
-};
-$('logoutBtn').addEventListener('click', window.doLogout);
+});
 
 function showMainView() { loginView.classList.add('hidden'); mainView.classList.remove('hidden'); }
 function showLoginView() { loginView.classList.remove('hidden'); mainView.classList.add('hidden'); }
 function hideBootOverlay() { bootOverlay.classList.add('hidden'); }
 
-// ---------------- 起動 ----------------
 async function trySilentSignIn() {
   try {
-    const p = new (await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js")).GoogleAuthProvider();
+    const { GoogleAuthProvider } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+    const p = new GoogleAuthProvider();
     p.setCustomParameters({ prompt: 'none' });
     await signInWithPopup(auth, p);
   } catch (err) {
@@ -142,6 +124,7 @@ async function trySilentSignIn() {
   } finally { initialAuthCheckDone = true; }
 }
 
+// ---------------- 認証 ----------------
 onAuthStateChanged(auth, async (user) => {
   if (intentionalSignOut) { currentUser = null; userRole = null; return; }
   currentUser = user;
@@ -151,24 +134,19 @@ onAuthStateChanged(auth, async (user) => {
     hideBootOverlay(); showLoginView();
     return;
   }
-
   userRole = roleFromEmail(user.email);
   myBadgePublic = loadBadgeVisibility(user.email);
-  myEmailVisible = loadEmailVisibility(user.email);
   newMarkEnabled = loadNewMarkSetting(user.uid);
   readThreads = loadReadThreads(user.uid);
 
-  // 一覧ページで必要な監視のみ
   initThreadsListener();
   initThreadLikesListener();
   initAnnouncementsListener();
   initBadgesListener();
   initOfficialListener();
   initNicknamesListener();
-  initBadgeFeatureListener();
 
   await registerMyFingerprint();
-
   renderRoleBadge(userRole);
   updateAdminControlsVisibility();
   updateMyNicknameBtn();
@@ -181,27 +159,30 @@ onAuthStateChanged(auth, async (user) => {
   setupSubjectTabs();
   setupSubjectSelectUI();
   setupSearchEvents();
+  setupNicknameBtn();
+  setupLogoutBtn();
+  setupAnnouncementBtn();
+  setupUserListBtn();
+  setupCreateThreadForm();
+  setupFileInput();
 });
 
-// ---------------- 既知ユーザー登録 ----------------
-async function registerMyFingerprint() {
+function registerMyFingerprint() {
   if (!currentUser) return;
   const now = Date.now();
-  try {
-    const userRef = doc(db, COL.knownUsers, currentUser.uid);
-    const snap = await getDoc(userRef);
-    const existing = snap.exists() ? snap.data() : null;
-    await setDoc(userRef, {
+  const ref = doc(db, COL.knownUsers, currentUser.uid);
+  return getDoc(ref).then(snap => {
+    const ex = snap.exists() ? snap.data() : null;
+    return setDoc(ref, {
       email: currentUser.email || '',
       displayName: currentUser.displayName || '',
       lastSeen: now,
-      firstSeen: existing?.firstSeen || now,
+      firstSeen: ex?.firstSeen || now,
       role: userRole || null
     }, { merge: true });
-  } catch (e) { console.warn('knownUsers 登録スキップ:', e.message); }
+  }).catch(e => console.warn('knownUsers 登録スキップ:', e.message));
 }
 
-// ---------------- ロール表示 ----------------
 function renderRoleBadge(role) {
   const c = $('roleBadgeContainer');
   c.innerHTML = '';
@@ -227,28 +208,25 @@ function updateMyNicknameBtn() {
   if (nickname) {
     btn.textContent = `🏷️ ${nickname}`;
     btn.classList.remove('unset');
+    btn.title = `現在のニックネーム: ${nickname}（クリックで変更）`;
   } else {
     btn.textContent = '🏷️ ニックネーム未設定';
     btn.classList.add('unset');
+    btn.title = 'クリックしてニックネームを設定';
   }
 }
 function updateAdminControlsVisibility() {
   const showAnnounce = canAnnounce();
-  const showInbox = isContactAdmin();
   const showUserList = canViewUserList();
   const ann = $('announcementBtn');
-  const inbox = $('adminInboxBtn');
   const ul = $('userListBtn');
   if (ann) ann.classList.toggle('hidden', !showAnnounce);
-  if (inbox) inbox.classList.toggle('hidden', !showInbox);
   if (ul) ul.classList.toggle('hidden', !showUserList);
-  const any = showAnnounce || showInbox || showUserList;
+  const any = showAnnounce || showUserList;
   $('adminControls').classList.toggle('hidden', !any);
-  const myInbox = $('myInboxBtn');
-  if (myInbox) myInbox.classList.toggle('hidden', isContactAdmin());
 }
 
-// ---------------- 監視：スレッド一覧 ----------------
+// ---------------- 監視 ----------------
 function initThreadsListener() {
   if (threadsUnsubscribe) threadsUnsubscribe();
   const q = query(collection(db, COL.threads), orderBy('createdAt', 'desc'), limit(100));
@@ -260,13 +238,12 @@ function initThreadsListener() {
     cleanupReadThreads();
     renderThreadList();
   }, (error) => {
-    console.error("スレッド一覧の取得エラー:", error);
+    console.error("スレッド一覧エラー:", error);
     setConnection(false);
     threadsContainer.innerHTML = '<p class="text-red-500 text-sm">読み込みに失敗しました。</p>';
     showBanner('読み込み失敗: ' + (error.code || error.message), true);
   });
 }
-
 function cleanupReadThreads() {
   if (!currentUser) return;
   const activeIds = new Set(allThreadsCache.map(t => t.id));
@@ -285,8 +262,6 @@ function isThreadNew(thread) {
   if ((thread.lastPostAt || 0) > lastRead) return true;
   return false;
 }
-
-// ---------------- 監視：いいね ----------------
 function initThreadLikesListener() {
   if (threadLikesUnsubscribe) threadLikesUnsubscribe();
   threadLikesUnsubscribe = onSnapshot(collection(db, COL.threadLikes), (snap) => {
@@ -295,8 +270,6 @@ function initThreadLikesListener() {
     renderThreadList();
   }, (err) => console.error('スレッドいいね監視エラー:', err));
 }
-
-// ---------------- 監視：アナウンス ----------------
 function initAnnouncementsListener() {
   if (announcementsUnsubscribe) announcementsUnsubscribe();
   const q = query(collection(db, COL.announcements), orderBy('createdAt', 'desc'), limit(20));
@@ -306,6 +279,34 @@ function initAnnouncementsListener() {
     renderAnnouncements();
   }, (err) => console.error('アナウンス監視エラー:', err));
 }
+function initBadgesListener() {
+  if (badgesUnsubscribe) badgesUnsubscribe();
+  badgesUnsubscribe = onSnapshot(collection(db, COL.customBadges), (snap) => {
+    customBadgesCache = {};
+    snap.forEach(d => { customBadgesCache[d.id] = d.data().badges || {}; });
+    renderThreadList();
+  }, (err) => console.error('バッジ監視エラー:', err));
+}
+function initOfficialListener() {
+  if (officialUnsubscribe) officialUnsubscribe();
+  officialUnsubscribe = onSnapshot(collection(db, COL.officialUsers), (snap) => {
+    officialUsersCache = {};
+    snap.forEach(d => { officialUsersCache[d.id] = d.data(); });
+    updateMyOfficialBadge();
+    renderThreadList();
+  }, (err) => console.error('公式監視エラー:', err));
+}
+function initNicknamesListener() {
+  if (nicknamesUnsubscribe) nicknamesUnsubscribe();
+  nicknamesUnsubscribe = onSnapshot(collection(db, COL.nicknames), (snap) => {
+    nicknamesCache = {};
+    snap.forEach(d => { nicknamesCache[d.id] = d.data(); });
+    updateMyNicknameBtn();
+    renderThreadList();
+  }, (err) => console.error('ニックネーム監視エラー:', err));
+}
+
+// ---------------- アナウンス描画 ----------------
 function renderAnnouncements() {
   const area = $('announcementArea');
   if (!area) return;
@@ -335,40 +336,6 @@ function renderAnnouncements() {
   });
   html += '</div>';
   area.innerHTML = html;
-}
-
-// ---------------- 監視：バッジ・公式・ニックネーム ----------------
-function initBadgesListener() {
-  if (badgesUnsubscribe) badgesUnsubscribe();
-  badgesUnsubscribe = onSnapshot(collection(db, COL.customBadges), (snap) => {
-    customBadgesCache = {};
-    snap.forEach(d => { customBadgesCache[d.id] = d.data().badges || {}; });
-  }, (err) => console.error('バッジ監視エラー:', err));
-}
-function initOfficialListener() {
-  if (officialUnsubscribe) officialUnsubscribe();
-  officialUnsubscribe = onSnapshot(collection(db, COL.officialUsers), (snap) => {
-    officialUsersCache = {};
-    snap.forEach(d => { officialUsersCache[d.id] = d.data(); });
-    updateMyOfficialBadge();
-    renderThreadList();
-  }, (err) => console.error('公式監視エラー:', err));
-}
-function initNicknamesListener() {
-  if (nicknamesUnsubscribe) nicknamesUnsubscribe();
-  nicknamesUnsubscribe = onSnapshot(collection(db, COL.nicknames), (snap) => {
-    nicknamesCache = {};
-    snap.forEach(d => { nicknamesCache[d.id] = d.data(); });
-    updateMyNicknameBtn();
-    renderThreadList();
-  }, (err) => console.error('ニックネーム監視エラー:', err));
-}
-function initBadgeFeatureListener() {
-  if (badgeFeatureUnsubscribe) badgeFeatureUnsubscribe();
-  badgeFeatureUnsubscribe = onSnapshot(collection(db, COL.badgeFeatures), (snap) => {
-    badgeFeaturePermissions = {};
-    snap.forEach(d => { badgeFeaturePermissions[d.id] = d.data(); });
-  }, (err) => console.error('バッジ機能監視エラー:', err));
 }
 
 // ---------------- 検索 ----------------
@@ -443,7 +410,7 @@ function updateSubjectTabCounts() {
   $('countOther').textContent = counts.other;
 }
 
-// ---------------- スレッド一覧描画 ----------------
+// ---------------- 一覧描画 ----------------
 function renderThreadList() {
   threadsContainer.innerHTML = '';
   let threads = allThreadsCache;
@@ -473,7 +440,7 @@ function renderThreadList() {
   if (results.length === 0) {
     threadsContainer.innerHTML = tokens.length > 0
       ? `<p class="text-gray-500 text-sm">「${escapeHtml(currentSearchQuery)}」に一致するスレッドがありません。</p>`
-      : '<p class="text-gray-500 text-sm">該当するスレッドがありません。</p>';
+      : '<p class="text-gray-500 text-sm">該当するスレッドがありません。新しく作成してください。</p>';
     updateSubjectTabCounts();
     return;
   }
@@ -488,20 +455,24 @@ function renderThreadList() {
     const likeCount = Object.keys(likes).length;
     const likeCountHtml = likeCount > 0
       ? `<span class="thread-like-count-inline">❤ ${likeCount}</span>` : '';
+    const totalPosts = thread.postCount || 0;
+    const unreadCount = hasNew ? Math.max(1, totalPosts) : 0;
+    const unreadBadge = (hasNew && unreadCount > 1)
+      ? `<span class="unread-badge">新着 ${unreadCount}件</span>` : '';
 
     const item = document.createElement('a');
-    // ★ ポイント：a タグで別URLへ遷移。ブラウザが前ページの購読を破棄する
     item.href = `thread.html?id=${encodeURIComponent(thread.id)}`;
     item.className = 'thread-item bg-white p-3 border border-gray-300 rounded hover:bg-blue-50 cursor-pointer transition flex justify-between items-center shadow-sm'
       + (hasNew ? ' has-new' : '');
     item.dataset.threadId = thread.id;
     item.innerHTML = `
       ${hasNew ? '<span class="new-mark"></span>' : ''}
-      <div class="flex-1 min-w-0">
+      <div class="flex-1 min-w-0" style="padding-left: ${hasNew ? '16px' : '0'};">
         ${subjHtml}
         <span class="font-bold text-blue-900 break-words">${escapeHtml(thread.title)}</span>
         <span class="text-xs text-gray-400 ml-2 whitespace-nowrap">(${date})</span>
         ${likeCountHtml}
+        ${unreadBadge}
       </div>
       <span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full ml-2 whitespace-nowrap">開く</span>`;
     frag.appendChild(item);
@@ -511,71 +482,127 @@ function renderThreadList() {
 }
 
 // ---------------- スレッド作成 ----------------
-$('createThreadForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  if (!currentUser) { alert('ログインが必要です。'); return; }
-  const subject = $('selectedSubject').value;
-  const title = $('threadTitle').value.trim();
-  const contentHtml = getEditorHtml($('firstPostEditorWrap'));
-  const contentText = getEditorText($('firstPostEditorWrap'));
-  const fileInput = $('threadFileInput');
-  const file = fileInput.files[0];
-  const btn = $('createThreadBtn');
-  if (!subject) { alert('教科を選択してください。'); return; }
-  if (!title) { alert('タイトルを入力してください。'); return; }
-  btn.disabled = true; btn.innerText = '作成中...';
-  try {
-    let fileData = null;
-    if (file) fileData = await fileToBase64Image(file);
-    const now = Date.now();
-    const threadRef = await addDoc(collection(db, COL.threads), {
-      title, subject, createdAt: now, lastPostAt: now,
-      postCount: (contentText || fileData) ? 1 : 0,
-      authorEmail: currentUser.email, authorUid: currentUser.uid, authorRole: userRole || null
-    });
-    if (contentText || fileData) {
-      await addDoc(collection(db, COL.threads, threadRef.id, 'posts'), {
-        author: '名無しさん', content: contentHtml || '', contentText: contentText || '',
-        createdAt: now, authorEmail: currentUser.email, authorUid: currentUser.uid,
-        authorRole: userRole || null, badgeVisible: myBadgePublic,
-        parentId: null, file: fileData, editedAt: null
+function setupCreateThreadForm() {
+  $('createThreadForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!currentUser) { alert('ログインが必要です。'); return; }
+    const subject = $('selectedSubject').value;
+    const title = $('threadTitle').value.trim();
+    const contentHtml = getEditorHtml($('firstPostEditorWrap'));
+    const contentText = getEditorText($('firstPostEditorWrap'));
+    const file = $('threadFileInput').files[0];
+    const btn = $('createThreadBtn');
+    if (!subject) { alert('教科を選択してください。'); return; }
+    if (!title) { alert('タイトルを入力してください。'); return; }
+    btn.disabled = true; btn.innerText = '作成中...';
+    try {
+      let fileData = null;
+      if (file) fileData = await fileToBase64Image(file);
+      const now = Date.now();
+      const threadRef = await addDoc(collection(db, COL.threads), {
+        title, subject, createdAt: now, lastPostAt: now,
+        postCount: (contentText || fileData) ? 1 : 0,
+        authorEmail: currentUser.email, authorUid: currentUser.uid, authorRole: userRole || null
       });
+      if (contentText || fileData) {
+        await addDoc(collection(db, COL.threads, threadRef.id, 'posts'), {
+          author: '名無しさん', content: contentHtml || '', contentText: contentText || '',
+          createdAt: now, authorEmail: currentUser.email, authorUid: currentUser.uid,
+          authorRole: userRole || null, badgeVisible: myBadgePublic,
+          parentId: null, file: fileData, editedAt: null
+        });
+      }
+      $('createThreadForm').reset();
+      $('threadPreviewBox').classList.remove('show');
+      clearEditor($('firstPostEditorWrap'));
+      document.querySelectorAll('#subjectSelectBig .subject-select-btn').forEach(b => b.classList.remove('selected'));
+      $('selectedSubject').value = '';
+      selectedSubjectForNewThread = '';
+      showBanner('スレッドを作成しました', false);
+      setTimeout(() => { location.href = `thread.html?id=${encodeURIComponent(threadRef.id)}`; }, 400);
+    } catch (err) {
+      console.error(err);
+      showBanner('保存失敗: ' + (err.code || err.message), true);
+    } finally {
+      btn.disabled = false; btn.innerText = 'スレッドを立てる';
     }
-    $('createThreadForm').reset();
-    $('threadPreviewBox').classList.remove('show');
-    clearEditor($('firstPostEditorWrap'));
-    document.querySelectorAll('#subjectSelectBig .subject-select-btn').forEach(b => b.classList.remove('selected'));
-    $('selectedSubject').value = '';
-    selectedSubjectForNewThread = '';
-    showBanner('スレッドを作成しました', false);
-    // ★ 新しいスレッドページへ遷移
-    location.href = `thread.html?id=${encodeURIComponent(threadRef.id)}`;
-  } catch (err) {
-    console.error(err);
-    showBanner('保存失敗: ' + (err.code || err.message), true);
-  } finally {
-    btn.disabled = false; btn.innerText = 'スレッドを立てる';
-  }
-});
+  });
+}
 
-// ---------------- 画像プレビュー ----------------
-$('threadFileInput').addEventListener('change', async () => {
-  const file = $('threadFileInput').files[0];
-  const box = $('threadPreviewBox');
-  const img = $('threadPreviewImg');
-  const info = $('threadPreviewInfo');
-  if (!file) { box.classList.remove('show'); return; }
-  try {
-    const r = await fileToBase64Image(file);
-    img.src = r.dataUrl;
-    info.textContent = `${file.name}（${r.width}×${r.height}, ${formatSize(r.size)}）`;
-    box.classList.add('show');
-  } catch (err) { alert(err.message); $('threadFileInput').value = ''; box.classList.remove('show'); }
-});
+function setupFileInput() {
+  $('threadFileInput').addEventListener('change', async () => {
+    const file = $('threadFileInput').files[0];
+    const box = $('threadPreviewBox');
+    const img = $('threadPreviewImg');
+    const info = $('threadPreviewInfo');
+    if (!file) { box.classList.remove('show'); return; }
+    try {
+      const r = await fileToBase64Image(file);
+      img.src = r.dataUrl;
+      info.textContent = `${file.name}（${r.width}×${r.height}, ${formatSize(r.size)}）`;
+      box.classList.add('show');
+    } catch (err) { alert(err.message); $('threadFileInput').value = ''; box.classList.remove('show'); }
+  });
+}
 
-// ---------------- ページ離脱時に監視解放（保険） ----------------
+// ---------------- ボタン設定 ----------------
+function setupNicknameBtn() {
+  $('myNicknameBtn').addEventListener('click', () => {
+    if (!currentUser) { alert('ログインが必要です。'); return; }
+    const n = nicknamesCache[currentUser.uid];
+    const current = n?.nickname || '';
+    const input = prompt('ニックネームを入力してください（最大20文字）:\n空欄で削除します。', current);
+    if (input === null) return;
+    const nickname = input.trim();
+    if (nickname.length > 20) { alert('20文字以内で入力してください。'); return; }
+    if (!nickname) {
+      if (!confirm('ニックネームを削除しますか？')) return;
+      deleteDoc(doc(db, COL.nicknames, currentUser.uid))
+        .then(() => showBanner('ニックネームを削除しました', false))
+        .catch(err => showBanner('削除失敗: ' + (err.code || err.message), true));
+      return;
+    }
+    setDoc(doc(db, COL.nicknames, currentUser.uid), {
+      nickname, email: currentUser.email,
+      updatedAt: Date.now(), updatedBy: currentUser.email, selfSet: true
+    })
+      .then(() => showBanner('ニックネームを保存しました', false))
+      .catch(err => showBanner('保存失敗: ' + (err.code || err.message), true));
+  });
+}
+function setupLogoutBtn() {
+  // onAuthStateChanged 内で既に紐付け済みなので何もしない
+}
+function setupAnnouncementBtn() {
+  $('announcementBtn').addEventListener('click', async () => {
+    if (!canAnnounce()) { alert('権限がありません。'); return; }
+    const title = prompt('タイトル（任意）:') || '';
+    const body = prompt('本文（必須）:');
+    if (!body) return;
+    const level = prompt('重要度 (info/warning/danger):', 'info') || 'info';
+    const pinned = confirm('ピン留めしますか？');
+    try {
+      await addDoc(collection(db, COL.announcements), {
+        title, body, level, pinned,
+        createdAt: Date.now(),
+        authorEmail: currentUser.email,
+        authorUid: currentUser.uid
+      });
+      showBanner('アナウンスを投稿しました', false);
+    } catch (err) {
+      showBanner('投稿失敗: ' + (err.code || err.message), true);
+    }
+  });
+}
+function setupUserListBtn() {
+  $('userListBtn').addEventListener('click', () => {
+    alert('ユーザー一覧機能は今後のバージョンで追加予定です。\n（必要なら thread.js 側と統合します）');
+  });
+}
+
+// ---------------- 離脱時 ----------------
 window.addEventListener('beforeunload', () => {
   [threadsUnsubscribe, threadLikesUnsubscribe, announcementsUnsubscribe,
-   badgesUnsubscribe, officialUnsubscribe, nicknamesUnsubscribe,
-   badgeFeatureUnsubscribe].forEach(un => { if (un) un(); });
+   badgesUnsubscribe, officialUnsubscribe, nicknamesUnsubscribe]
+   .forEach(un => { if (un) un(); });
 });
