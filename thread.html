@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>スレッド - どんぐり学びの広場</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='56' height='56' rx='8' fill='%231d4ed8'/%3E%3C/svg%3E">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="list.css">
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans p-4 max-w-5xl mx-auto">
+
+  <div id="bootOverlay">
+    <div class="boot-spinner"></div>
+    <div class="boot-msg">読み込んでいます...</div>
+  </div>
+
+  <div id="statusBanner" class="bg-red-600 text-white"></div>
+
+  <div id="loginView" class="hidden">
+    <div class="bg-white border border-gray-300 rounded-lg shadow p-8 max-w-md mx-auto mt-16 text-center">
+      <h1 class="text-3xl font-bold text-blue-900 mb-2">どんぐり学びの広場</h1>
+      <p class="text-sm text-gray-600 mb-6">ご利用にはGoogleログインが必要です。</p>
+      <button id="googleLoginBtn" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold py-3 px-6 rounded shadow-sm mx-auto w-full">
+        Googleでログイン
+      </button>
+    </div>
+  </div>
+
+  <div id="mainView" class="hidden">
+    <header class="border-b-2 border-blue-800 pb-2 mb-4 flex justify-between items-center flex-wrap gap-2">
+      <div>
+        <h1 class="text-3xl font-bold text-blue-900">
+          <a href="index.html" class="hover:underline">どんぐり学びの広場</a>
+        </h1>
+        <p class="text-sm text-gray-600 flex flex-wrap items-center gap-2">
+          <span id="connDot" class="inline-block w-2 h-2 rounded-full bg-gray-400"></span>
+          <span id="connText">接続中...</span>
+          <span id="roleBadgeContainer"></span>
+        </p>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="index.html" class="bg-gray-600 hover:bg-gray-700 text-white text-xs py-1.5 px-3 rounded">← 一覧に戻る</a>
+        <button id="logoutBtn" class="bg-gray-500 hover:bg-gray-600 text-white text-xs py-1.5 px-3 rounded">ログアウト</button>
+      </div>
+    </header>
+
+    <div id="threadHeader" class="bg-white p-4 border border-gray-300 rounded mb-4 shadow-sm">
+      <div id="currentThreadSubjectWrap" class="mb-1"></div>
+      <h2 id="currentThreadTitle" class="text-2xl font-bold text-blue-900 mb-1 break-words">読み込み中...</h2>
+      <p id="currentThreadDate" class="text-xs text-gray-500"></p>
+      <div class="mt-3">
+        <button id="threadLikeBtn" class="thread-like-btn" data-thread-id="">
+          <span class="like-heart">❤</span>
+          <span class="like-count">0</span>
+        </button>
+        <button id="deleteThreadBtn" class="delete-btn hidden ml-2">スレッドを削除</button>
+      </div>
+    </div>
+
+    <div class="in-thread-search-wrap">
+      <span class="in-thread-search-icon">🔍</span>
+      <input type="text" id="inThreadSearchInput" class="in-thread-search-input" placeholder="このスレッド内を検索...">
+      <button id="inThreadSearchClear" class="in-thread-search-clear">✕</button>
+    </div>
+    <div id="inThreadSearchInfo" class="in-thread-search-info"></div>
+
+    <section class="bg-blue-50 border border-blue-200 p-4 rounded mb-6 shadow-sm">
+      <h3 class="text-md font-bold text-gray-700 mb-2">このスレッドに書き込む</h3>
+      <form id="postForm" class="space-y-3">
+        <div id="postEditorWrap"></div>
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div class="flex-1 min-w-[200px]">
+            <label class="block text-xs text-gray-600 mb-1">画像添付（任意）:</label>
+            <input type="file" id="fileInput" accept="image/*" class="text-xs text-gray-600 w-full">
+            <div class="preview-box" id="postPreviewBox">
+              <img id="postPreviewImg" alt="プレビュー">
+              <div class="preview-info" id="postPreviewInfo"></div>
+            </div>
+          </div>
+          <button type="submit" id="submitBtn"
+            class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-6 rounded text-sm whitespace-nowrap">書き込む</button>
+        </div>
+      </form>
+    </section>
+
+    <main>
+      <h3 class="text-lg font-bold border-b pb-1 mb-4 text-gray-700">レス一覧</h3>
+      <div id="postsContainer" class="post-tree">
+        <p class="text-gray-500 text-sm"><span class="loading-spinner"></span> 読み込み中...</p>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="thread.js"></script>
+</body>
+</html>
