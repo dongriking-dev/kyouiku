@@ -1164,10 +1164,11 @@
     function loadNewMarkSetting(uid) { const v = localStorage.getItem(newMarkSettingKey(uid)); return v === null ? true : v === 'true'; }
     function saveNewMarkSetting(uid, enabled) { localStorage.setItem(newMarkSettingKey(uid), enabled ? 'true' : 'false'); }
 
-    // ========== 既読管理（改修版） ==========
-    // 既読情報は「そのスレッドを最後に開いた時点の lastPostAt」を保存する。
-    // これにより、サイトを更新（リロード）しても、前回見た時点の lastPostAt が保持され、
-    // 新しい投稿がない限り新着にならない。
+    /* ========== 既読管理（修正版） ==========
+     * 既読情報は「そのスレッドを最後に開いた時点の lastPostAt」を保存する。
+     * サイトをリロードしても localStorage に残るため、一度読んだスレッドは
+     * 新しい投稿がない限り新着にならない。
+     */
     function readThreadsKey(uid) { return 'manabi_readThreads_' + (uid || 'anonymous'); }
     function loadReadThreads(uid) {
       try {
@@ -1184,11 +1185,6 @@
       try { localStorage.setItem(readThreadsKey(uid), JSON.stringify(data)); }
       catch (e) { console.warn('既読記録の保存に失敗:', e); }
     }
-    /**
-     * スレッドを既読にする。
-     * @param {string} threadId
-     * @param {number} [lastPostAt] そのスレッドの最終投稿時刻。省略時はキャッシュから取得。
-     */
     function markThreadAsRead(threadId, lastPostAt) {
       if (!currentUser || !threadId) return;
       const thread = allThreadsCache.find(t => t.id === threadId);
@@ -1198,18 +1194,13 @@
       readThreads[threadId] = lp;
       saveReadThreads(currentUser.uid, readThreads);
     }
-    /**
-     * スレッドが新着かどうかを判定する。
-     * - 一度も開いていなければ新着。
-     * - 最後に開いた時点の lastPostAt より、現在の lastPostAt が新しければ新着。
-     */
     function isThreadNew(thread) {
       if (!newMarkEnabled) return false;
       if (!thread || !thread.id) return false;
       const exists = allThreadsCache.some(t => t.id === thread.id);
       if (!exists) return false;
       const lastRead = readThreads[thread.id];
-      if (lastRead === undefined || lastRead === null) return true; // 一度も開いていない
+      if (lastRead === undefined || lastRead === null) return true;
       const threadLast = Math.max(thread.lastPostAt || 0, thread.createdAt || 0);
       if (threadLast > lastRead) return true;
       return false;
