@@ -593,6 +593,48 @@
     .handover-candidate:hover { background: #eff6ff; border-color: #93c5fd; }
     .handover-candidate .email { font-family: monospace; color: #1e40af; }
     .handover-candidate.selected { background: #dbeafe; border-color: #1d4ed8; }
+
+    /* ★ マイ受信箱 */
+    .my-inbox-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;
+      background: #fff; margin-bottom: 6px; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .my-inbox-item:hover { background: #f3f4f6; border-color: #9ca3af; }
+    .my-inbox-item.unread { background: #eff6ff; border-left: 4px solid #1d4ed8; }
+    .my-inbox-item .info { flex: 1; min-width: 0; }
+    .my-inbox-item .title { font-weight: 700; font-size: 13px; color: #1f2937; }
+    .my-inbox-item .preview {
+      font-size: 11px; color: #6b7280; margin-top: 2px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .my-inbox-item .time { font-size: 10px; color: #9ca3af; }
+    .my-inbox-item .del-btn {
+      background: #dc2626; color: #fff; font-size: 10px;
+      padding: 3px 8px; border-radius: 4px; border: none;
+      cursor: pointer; white-space: nowrap;
+    }
+    .my-inbox-item .del-btn:hover { background: #b91c1c; }
+
+    /* ★ バトン一覧 */
+    .handover-admin-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px; border: 1px solid #fcd34d; border-radius: 8px;
+      background: #fffbeb; margin-bottom: 6px; font-size: 12px;
+    }
+    .handover-admin-row .info { flex: 1; min-width: 0; }
+    .handover-admin-row .email { font-family: monospace; color: #92400e; font-weight: 600; word-break: break-all; }
+    .handover-admin-row .meta { font-size: 10px; color: #6b7280; margin-top: 2px; }
+    .handover-admin-row .revoke-btn {
+      background: #dc2626; color: #fff; font-size: 11px;
+      padding: 4px 10px; border-radius: 4px; border: none;
+      cursor: pointer; white-space: nowrap;
+    }
+    .handover-admin-row .revoke-btn:hover { background: #b91c1c; }
+    .handover-admin-row .revoke-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+    .handover-admin-row.protected { background: #fef3c7; border-color: #f59e0b; }
+    .handover-admin-row.protected .revoke-btn { display: none; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans p-4 max-w-5xl mx-auto">
@@ -854,7 +896,10 @@
     <div class="modal-content" style="max-width: 560px;">
       <div class="flex justify-between items-center mb-3">
         <h3 class="text-lg font-bold text-gray-800">📩 管理者への問い合わせ</h3>
-        <button id="contactChatCloseBtn" class="reply-cancel-btn">閉じる</button>
+        <div class="flex gap-2">
+          <button id="contactChatDeleteBtn" class="delete-btn">チャットを削除</button>
+          <button id="contactChatCloseBtn" class="reply-cancel-btn">閉じる</button>
+        </div>
       </div>
       <div class="p-2 bg-blue-50 border border-blue-200 rounded mb-3">
         <p class="text-xs text-blue-800">
@@ -890,7 +935,10 @@
     <div class="modal-content" style="max-width: 560px;">
       <div class="flex justify-between items-center mb-3">
         <h3 class="text-lg font-bold text-gray-800">問い合わせ対応</h3>
-        <button id="adminChatCloseBtn" class="reply-cancel-btn">閉じる</button>
+        <div class="flex gap-2">
+          <button id="adminChatDeleteBtn" class="delete-btn">チャットを削除</button>
+          <button id="adminChatCloseBtn" class="reply-cancel-btn">閉じる</button>
+        </div>
       </div>
       <div class="p-2 bg-amber-50 border border-amber-200 rounded mb-3">
         <p class="text-xs text-amber-800">
@@ -925,7 +973,39 @@
       <div id="handoverCandidateList" class="mb-3"></div>
       <div class="flex justify-end gap-2 flex-wrap">
         <button id="handoverCancelBtn" class="reply-cancel-btn">キャンセル</button>
+        <button id="handoverListBtn" class="userlist-btn">🔑 バトン一覧</button>
         <button id="handoverSaveBtn" class="bg-amber-600 hover:bg-amber-700 text-white text-xs py-1.5 px-4 rounded font-bold">バトンを渡す</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ★ 管理者バトン管理モーダル（一覧＆取り消し） -->
+  <div id="adminHandoverListModal" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-lg font-bold text-gray-800">🔑 管理者バトン 一覧</h3>
+        <button id="adminHandoverListCloseBtn" class="reply-cancel-btn">閉じる</button>
+      </div>
+      <p class="text-xs text-gray-500 mb-3">現在「問い合わせ対応管理者」権限を持っているユーザーの一覧です。不要な場合は取り消せます。</p>
+      <div id="adminHandoverListContainer" style="max-height: 55vh; overflow-y: auto;">
+        <p class="text-xs text-gray-400">読み込み中...</p>
+      </div>
+      <div class="flex justify-end mt-4 gap-2">
+        <button id="adminHandoverAddBtn" class="bg-amber-600 hover:bg-amber-700 text-white text-xs py-1.5 px-4 rounded font-bold">＋ 新しくバトンを渡す</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ★ 一般ユーザー用：管理者からの返信受信箱 -->
+  <div id="myInboxModal" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 620px;">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-lg font-bold text-gray-800">📬 管理者からの返信</h3>
+        <button id="myInboxCloseBtn" class="reply-cancel-btn">閉じる</button>
+      </div>
+      <p class="text-xs text-gray-500 mb-3">過去にあなたが送った問い合わせと、管理者からの返信の履歴です。</p>
+      <div id="myInboxList" style="max-height: 60vh; overflow-y: auto;">
+        <p class="text-xs text-gray-400">読み込み中...</p>
       </div>
     </div>
   </div>
@@ -975,6 +1055,10 @@
         <button id="myNicknameBtn" class="my-nickname-btn unset hidden" title="自分のニックネームを設定">
           <svg class="icon-svg" viewBox="0 0 24 24" width="14" height="14"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
           名無しさん
+        </button>
+        <button id="myInboxBtn" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-1.5 px-3 rounded transition shadow relative" onclick="openMyInbox()">
+          📬 返信
+          <span id="myInboxUnreadBadge" class="hidden" style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9999px;">0</span>
         </button>
         <div id="adminControls" class="hidden flex gap-2 flex-wrap">
           <button id="announcementBtn" class="announcement-btn hidden" onclick="openAnnouncementModal()">📢 アナウンス</button>
@@ -1261,6 +1345,13 @@
     let currentAdminChatUserId = null;
     let contactChatMessagesCache = [];
     let adminChatMessagesCache = [];
+
+    // ★ マイ受信箱用
+    let myInboxUnsubscribe = null;
+    let myInboxUnreadUnsubscribe = null;
+    let myInboxCache = [];
+    let myRoomDataCache = null;
+    let myInboxUnreadCount = 0;
 
     const loginView = document.getElementById('loginView');
     const mainView = document.getElementById('mainView');
@@ -2349,6 +2440,8 @@
         updateContactAdminVisibility();
         const modal = document.getElementById('adminInboxModal');
         if (modal && !modal.classList.contains('hidden')) renderAdminInbox();
+        const listModal = document.getElementById('adminHandoverListModal');
+        if (listModal && !listModal.classList.contains('hidden')) renderHandoverAdminList();
         updateAdminControlsVisibility();
       }, (err) => console.error('問い合わせ管理者監視エラー:', err));
     }
@@ -2515,21 +2608,51 @@
               <div class="name">${escapeHtml(r.userName || '名無しさん')}</div>
               <div class="preview">${escapeHtml(r.lastMessage || '（メッセージなし）')}</div>
             </div>
-            <div style="text-align:right;">
+            <div style="text-align:right;display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
               <div class="time">${time}</div>
               ${unread > 0 ? `<div class="unread-count">${unread}</div>` : ''}
+              <button class="del-btn" data-del-room="${d.id}" data-del-user="${r.userId || ''}" title="このチャットを削除" style="background:#dc2626;color:#fff;font-size:10px;padding:3px 8px;border-radius:4px;border:none;cursor:pointer;">削除</button>
             </div>
           </div>`;
         });
         container.innerHTML = html;
         container.querySelectorAll('.inbox-item').forEach(item => {
-          item.addEventListener('click', () => openAdminChat(item.dataset.roomId, item.dataset.userId));
+          item.addEventListener('click', (e) => {
+            if (e.target.closest('.del-btn')) return;
+            openAdminChat(item.dataset.roomId, item.dataset.userId);
+          });
+        });
+        container.querySelectorAll('.del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteAdminContactChat(btn.dataset.delRoom, btn.dataset.delUser);
+          });
         });
       } catch (err) {
         console.error('問い合わせ一覧取得エラー:', err);
-        container.innerHTML = '<p class="text-xs text-red-500 text-center py-4">読み込みに失敗しました。<br>（インデックスが必要な場合があります）</p>';
+        container.innerHTML = '<p class="text-xs text-red-500 text-center py-4">読み込みに失敗しました。</p>';
       }
     }
+
+    async function deleteAdminContactChat(roomId, userId) {
+      if (!isContactAdmin()) { alert('権限がありません。'); return; }
+      if (!confirm('この問い合わせチャットを削除しますか？\n（メッセージ履歴もすべて削除され、元に戻せません）')) return;
+      try {
+        const q = query(collection(db, COL.contactMessages), where('roomId', '==', roomId));
+        const snap = await getDocs(q);
+        const batch = writeBatch(db);
+        snap.forEach(d => batch.delete(d.ref));
+        batch.delete(doc(db, COL.contactChats, roomId));
+        await batch.commit();
+        showBanner('チャットを削除しました', false);
+        renderAdminInbox();
+      } catch (err) {
+        console.error('チャット削除エラー:', err);
+        showBanner('削除失敗: ' + (err.code || err.message), true);
+      }
+    }
+
+    window.deleteAdminContactChat = deleteAdminContactChat;
 
     async function openAdminChat(roomId, userId) {
       currentAdminChatRoomId = roomId;
@@ -2616,6 +2739,216 @@
       }, { merge: true });
     }
 
+    /* ============================================================
+     * ★ 一般ユーザー用：管理者からの返信受信箱
+     * ============================================================ */
+    window.openMyInbox = function() {
+      if (!currentUser) { alert('ログインが必要です。'); return; }
+      document.getElementById('myInboxModal').classList.remove('hidden');
+      renderMyInbox();
+    };
+
+    function closeMyInbox() {
+      document.getElementById('myInboxModal').classList.add('hidden');
+      if (myInboxUnsubscribe) { myInboxUnsubscribe(); myInboxUnsubscribe = null; }
+    }
+
+    async function renderMyInbox() {
+      const container = document.getElementById('myInboxList');
+      if (!container) return;
+      container.innerHTML = '<p class="text-xs text-gray-400">読み込み中...</p>';
+      const roomId = getContactRoomId(currentUser.uid);
+      try {
+        const roomSnap = await getDoc(doc(db, COL.contactChats, roomId));
+        if (!roomSnap.exists()) {
+          container.innerHTML = '<p class="text-xs text-gray-400 text-center py-6">まだ問い合わせを送っていません。<br>利用規約の「管理者に質問する」ボタンから送信できます。</p>';
+          updateMyInboxBadge(0);
+          return;
+        }
+        const roomData = roomSnap.data();
+        const unreadByUser = roomData.unreadByUser || 0;
+        updateMyInboxBadge(unreadByUser);
+
+        const q = query(
+          collection(db, COL.contactMessages),
+          where('roomId', '==', roomId),
+          orderBy('createdAt', 'asc'),
+          limit(300)
+        );
+        const snap = await getDocs(q);
+        if (snap.empty) {
+          container.innerHTML = '<p class="text-xs text-gray-400 text-center py-6">まだメッセージがありません。</p>';
+          return;
+        }
+        const messages = [];
+        snap.forEach(d => messages.push({ id: d.id, ...d.data() }));
+
+        let html = '<div style="padding: 4px;">';
+        messages.forEach(m => {
+          const isMe = m.senderUid === currentUser.uid;
+          const time = m.createdAt ? new Date(m.createdAt).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+          const senderLabel = isMe ? 'あなた' : (m.senderName || '管理者');
+          html += `<div class="chat-row ${isMe ? 'me' : 'other'}">
+            <div class="chat-bubble ${isMe ? 'me' : 'other'}">
+              ${!isMe ? `<div class="chat-sender">${escapeHtml(senderLabel)}</div>` : ''}
+              ${escapeHtml(m.text || '')}
+              <span class="chat-time">${time}</span>
+            </div>
+          </div>`;
+        });
+        html += '</div>';
+        html += `<div class="flex justify-end gap-2 mt-4 flex-wrap">
+          <button id="myInboxReplyBtn" class="contact-btn" style="font-size:12px;padding:8px 14px;">この問い合わせに返信する</button>
+          <button id="myInboxDeleteBtn" class="delete-btn">このチャットを削除</button>
+        </div>`;
+        container.innerHTML = html;
+
+        document.getElementById('myInboxReplyBtn').addEventListener('click', () => {
+          closeMyInbox();
+          window.openContactChatModal();
+        });
+        document.getElementById('myInboxDeleteBtn').addEventListener('click', () => {
+          deleteMyContactChat();
+        });
+
+        if (unreadByUser > 0) {
+          try { await updateDoc(doc(db, COL.contactChats, roomId), { unreadByUser: 0 }); } catch (e) {}
+          updateMyInboxBadge(0);
+        }
+      } catch (err) {
+        console.error('マイ受信箱読み込みエラー:', err);
+        container.innerHTML = '<p class="text-xs text-red-500 text-center py-6">読み込みに失敗しました。</p>';
+      }
+    }
+
+    function updateMyInboxBadge(count) {
+      myInboxUnreadCount = count;
+      const badge = document.getElementById('myInboxUnreadBadge');
+      if (!badge) return;
+      if (count > 0) {
+        badge.textContent = count > 99 ? '99+' : count;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    function initMyInboxBadgeListener() {
+      if (!currentUser) return;
+      if (myInboxUnreadUnsubscribe) myInboxUnreadUnsubscribe();
+      const roomId = getContactRoomId(currentUser.uid);
+      myInboxUnreadUnsubscribe = onSnapshot(doc(db, COL.contactChats, roomId), (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          updateMyInboxBadge(data.unreadByUser || 0);
+        } else {
+          updateMyInboxBadge(0);
+        }
+      }, (err) => console.error('未読数監視エラー:', err));
+    }
+
+    async function deleteMyContactChat() {
+      if (!currentUser) return;
+      if (!confirm('この問い合わせチャットを削除しますか？\n（メッセージ履歴もすべて削除され、元に戻せません）')) return;
+      const roomId = getContactRoomId(currentUser.uid);
+      try {
+        const q = query(collection(db, COL.contactMessages), where('roomId', '==', roomId));
+        const snap = await getDocs(q);
+        const batch = writeBatch(db);
+        snap.forEach(d => batch.delete(d.ref));
+        batch.delete(doc(db, COL.contactChats, roomId));
+        await batch.commit();
+        showBanner('チャットを削除しました', false);
+        closeMyInbox();
+        closeContactChatModal();
+        updateMyInboxBadge(0);
+      } catch (err) {
+        console.error('チャット削除エラー:', err);
+        showBanner('削除失敗: ' + (err.code || err.message), true);
+        alert('削除に失敗しました。');
+      }
+    }
+
+    window.deleteMyContactChat = deleteMyContactChat;
+
+    /* ============================================================
+     * ★ 管理者バトン 一覧・取り消し
+     * ============================================================ */
+    window.openHandoverListModal = function() {
+      if (!canSetOfficial() && !isContactAdmin()) { alert('権限がありません。'); return; }
+      document.getElementById('adminHandoverListModal').classList.remove('hidden');
+      renderHandoverAdminList();
+    };
+
+    function closeHandoverListModal() {
+      document.getElementById('adminHandoverListModal').classList.add('hidden');
+    }
+
+    function renderHandoverAdminList() {
+      const container = document.getElementById('adminHandoverListContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const fixedAdmins = [
+        { email: ROLE_ADMIN_EMAIL, label: '管理者（固定）' },
+        { email: ROLE_OWNER_EMAIL, label: '主（固定）' }
+      ];
+
+      const dynamicAdmins = Object.entries(contactAdminsCache || {}).map(([uid, data]) => ({
+        uid,
+        email: data.email || '',
+        displayName: data.displayName || '',
+        grantedAt: data.grantedAt || 0,
+        grantedBy: data.grantedBy || '',
+      }));
+
+      let html = '<p class="text-xs font-bold text-gray-600 mb-2">固定管理者（取り消し不可）:</p>';
+      fixedAdmins.forEach(a => {
+        html += `<div class="handover-admin-row protected">
+          <div class="info">
+            <div class="email">${escapeHtml(a.email)}</div>
+            <div class="meta">${a.label}</div>
+          </div>
+        </div>`;
+      });
+
+      html += '<p class="text-xs font-bold text-gray-600 mb-2 mt-4">バトンで任命された管理者:</p>';
+      if (dynamicAdmins.length === 0) {
+        html += '<p class="text-xs text-gray-400 mb-2">（現在バトンで任命された管理者はいません）</p>';
+      } else {
+        dynamicAdmins.forEach(a => {
+          const date = a.grantedAt ? new Date(a.grantedAt).toLocaleString('ja-JP') : '不明';
+          const isSelf = currentUser && a.uid === currentUser.uid;
+          html += `<div class="handover-admin-row">
+            <div class="info">
+              <div class="email">${escapeHtml(a.email)}</div>
+              ${a.displayName ? `<div class="meta">表示名: ${escapeHtml(a.displayName)}</div>` : ''}
+              <div class="meta">任命日: ${date} ／ 任命者: ${escapeHtml(a.grantedBy || '不明')}${isSelf ? '（あなた）' : ''}</div>
+            </div>
+            <button class="revoke-btn" data-revoke-uid="${escapeHtml(a.uid)}" data-revoke-email="${escapeHtml(a.email)}">取り消す</button>
+          </div>`;
+        });
+      }
+      container.innerHTML = html;
+
+      container.querySelectorAll('.revoke-btn').forEach(btn => {
+        btn.addEventListener('click', () => revokeHandover(btn.dataset.revokeUid, btn.dataset.revokeEmail));
+      });
+    }
+
+    async function revokeHandover(uid, email) {
+      if (!canSetOfficial() && !isContactAdmin()) { alert('権限がありません。'); return; }
+      if (!confirm(`${email} から問い合わせ対応管理者の権限を取り消しますか？`)) return;
+      try {
+        await deleteDoc(doc(db, COL.contactAdmins, uid));
+        showBanner('バトンを取り消しました', false);
+        renderHandoverAdminList();
+      } catch (err) {
+        console.error('バトン取り消しエラー:', err);
+        showBanner('取り消し失敗: ' + (err.code || err.message), true);
+      }
+    }
+
     /* --- 管理者バトンタッチ --- */
     window.openHandoverModal = function() {
       if (!canSetOfficial() && !isContactAdmin()) { alert('バトンタッチ権限がありません。'); return; }
@@ -2665,10 +2998,14 @@
       const closeBtn = document.getElementById('contactChatCloseBtn');
       const sendBtn = document.getElementById('contactChatSendBtn');
       const input = document.getElementById('contactChatInput');
+      const contactChatDeleteBtn = document.getElementById('contactChatDeleteBtn');
 
       if (openBtn) openBtn.addEventListener('click', () => window.openContactChatModal());
       if (closeBtn) closeBtn.addEventListener('click', closeContactChatModal);
       if (chatModal) chatModal.addEventListener('click', (e) => { if (e.target.id === 'contactChatModal') closeContactChatModal(); });
+      if (contactChatDeleteBtn) {
+        contactChatDeleteBtn.addEventListener('click', () => { deleteMyContactChat(); });
+      }
       if (sendBtn && input) {
         const doSend = async () => {
           const t = input.value.trim();
@@ -2699,8 +3036,29 @@
       const adminChatModal = document.getElementById('adminChatModal');
       const adminSendBtn = document.getElementById('adminChatSendBtn');
       const adminInput = document.getElementById('adminChatInput');
+      const adminChatDeleteBtn = document.getElementById('adminChatDeleteBtn');
       if (adminChatClose) adminChatClose.addEventListener('click', closeAdminChat);
       if (adminChatModal) adminChatModal.addEventListener('click', (e) => { if (e.target.id === 'adminChatModal') closeAdminChat(); });
+      if (adminChatDeleteBtn) {
+        adminChatDeleteBtn.addEventListener('click', async () => {
+          if (!currentAdminChatRoomId) return;
+          if (!confirm('この問い合わせチャットを削除しますか？\n（メッセージ履歴もすべて削除され、元に戻せません）')) return;
+          try {
+            const q = query(collection(db, COL.contactMessages), where('roomId', '==', currentAdminChatRoomId));
+            const snap = await getDocs(q);
+            const batch = writeBatch(db);
+            snap.forEach(d => batch.delete(d.ref));
+            batch.delete(doc(db, COL.contactChats, currentAdminChatRoomId));
+            await batch.commit();
+            showBanner('チャットを削除しました', false);
+            closeAdminChat();
+            renderAdminInbox();
+          } catch (err) {
+            console.error('チャット削除エラー:', err);
+            showBanner('削除失敗: ' + (err.code || err.message), true);
+          }
+        });
+      }
       if (adminSendBtn && adminInput) {
         const doSend = async () => {
           const t = adminInput.value.trim();
@@ -2722,13 +3080,16 @@
         });
       }
 
+      // バトンタッチモーダル
       const handoverCancel = document.getElementById('handoverCancelBtn');
       const handoverModal = document.getElementById('adminHandoverModal');
       const handoverSave = document.getElementById('handoverSaveBtn');
       const handoverEmail = document.getElementById('handoverEmailInput');
+      const handoverListBtn = document.getElementById('handoverListBtn');
       if (handoverCancel) handoverCancel.addEventListener('click', closeHandoverModal);
       if (handoverModal) handoverModal.addEventListener('click', (e) => { if (e.target.id === 'adminHandoverModal') closeHandoverModal(); });
       if (handoverEmail) handoverEmail.addEventListener('input', renderHandoverCandidates);
+      if (handoverListBtn) handoverListBtn.addEventListener('click', () => { closeHandoverModal(); window.openHandoverListModal(); });
       if (handoverSave) {
         handoverSave.addEventListener('click', async () => {
           if (!canSetOfficial() && !isContactAdmin()) { alert('権限がありません。'); return; }
@@ -2758,6 +3119,20 @@
           }
         });
       }
+
+      // バトン一覧モーダル
+      const handoverListClose = document.getElementById('adminHandoverListCloseBtn');
+      const handoverListModal = document.getElementById('adminHandoverListModal');
+      const handoverAddBtn = document.getElementById('adminHandoverAddBtn');
+      if (handoverListClose) handoverListClose.addEventListener('click', closeHandoverListModal);
+      if (handoverListModal) handoverListModal.addEventListener('click', (e) => { if (e.target.id === 'adminHandoverListModal') closeHandoverListModal(); });
+      if (handoverAddBtn) handoverAddBtn.addEventListener('click', () => { closeHandoverListModal(); window.openHandoverModal(); });
+
+      // マイ受信箱
+      const myInboxClose = document.getElementById('myInboxCloseBtn');
+      const myInboxModal = document.getElementById('myInboxModal');
+      if (myInboxClose) myInboxClose.addEventListener('click', closeMyInbox);
+      if (myInboxModal) myInboxModal.addEventListener('click', (e) => { if (e.target.id === 'myInboxModal') closeMyInbox(); });
     })();
 
     function updateThreadLikeButton() {
@@ -2870,6 +3245,7 @@
       const announcementBtn = document.getElementById('announcementBtn');
       const inboxBtn = document.getElementById('adminInboxBtn');
       const handoverBtn = document.getElementById('handoverBtn');
+      const myInboxBtn = document.getElementById('myInboxBtn');
 
       const showBackup = canBackup();
       const showBan = canBan();
@@ -2893,6 +3269,10 @@
       if (handoverBtn) {
         if (showHandover) handoverBtn.classList.remove('hidden');
         else handoverBtn.classList.add('hidden');
+      }
+      if (myInboxBtn) {
+        if (isContactAdmin()) myInboxBtn.classList.add('hidden');
+        else myInboxBtn.classList.remove('hidden');
       }
 
       const anyVisible = showBackup || showBan || showUserList || showAnnounce || showInbox || showHandover;
@@ -2940,6 +3320,8 @@
       if (myContactMessagesUnsubscribe) { myContactMessagesUnsubscribe(); myContactMessagesUnsubscribe = null; }
       if (adminChatRoomUnsubscribe) { adminChatRoomUnsubscribe(); adminChatRoomUnsubscribe = null; }
       if (adminChatMessagesUnsubscribe) { adminChatMessagesUnsubscribe(); adminChatMessagesUnsubscribe = null; }
+      if (myInboxUnsubscribe) { myInboxUnsubscribe(); myInboxUnsubscribe = null; }
+      if (myInboxUnreadUnsubscribe) { myInboxUnreadUnsubscribe(); myInboxUnreadUnsubscribe = null; }
       try { await signOut(auth); } catch (e) { console.error(e); }
       document.body.style.background = '';
       showLoginView(); hideBootOverlay();
@@ -3030,6 +3412,7 @@
       initThreadLikesListener();
       initAnnouncementsListener();
       initContactAdminsListener();
+      initMyInboxBadgeListener();
 
       setTimeout(() => { if (checkSelfBan()) return; }, 800);
 
@@ -4865,7 +5248,7 @@
         const contactMessages = await grab(COL.contactMessages);
 
         const payload = {
-          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 9 },
+          _meta: { exportedAt: new Date().toISOString(), exportedBy: currentUser.email, app: 'manabi-no-hiroba-firestore', version: 10 },
           threads: threadsData, customBadges, knownUsers, bannedUsers,
           badgeFeatures, nicknames, officialUsers, threadLikes, announcements,
           contactAdmins, contactChats, contactMessages
@@ -4979,6 +5362,8 @@
       if (myContactMessagesUnsubscribe) myContactMessagesUnsubscribe();
       if (adminChatRoomUnsubscribe) adminChatRoomUnsubscribe();
       if (adminChatMessagesUnsubscribe) adminChatMessagesUnsubscribe();
+      if (myInboxUnsubscribe) myInboxUnsubscribe();
+      if (myInboxUnreadUnsubscribe) myInboxUnreadUnsubscribe();
     });
     window.addEventListener('unhandledrejection', (event) => {
       console.error('未処理のPromiseエラー:', event.reason);
